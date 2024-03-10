@@ -231,7 +231,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		
 		self.tabWidgetDbg.addTab(self.wdtBPsWPs, "Breakpoints")
 		
-		self.tabWatchpoints = WatchpointsTableWidget(self.driver)
+		self.tabWatchpoints = WatchpointsTableWidget(self.driver, self.workerManager)
 		
 		self.tabWidgetDbg.addTab(self.tabWatchpoints, "Watchpoints")
 		
@@ -629,6 +629,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			self.wdtBPsWPs.treBPs.setPC(self.rip)
 			self.start_loadRegisterWorker(False)
 			self.wdtBPsWPs.reloadBreakpoints(False)
+			self.tabWatchpoints.reloadWatchpoints(False)
 			self.loadStacktrace()
 #			context = frm.GetSymbolContext(lldb.eSymbolContextEverything)
 #			self.start_loadSourceWorker(self.debugger, ConfigClass.testTargetSource, self.interruptLoadSourceWorker, context.GetLineEntry().GetLine())
@@ -669,6 +670,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.start_loadRegisterWorker()
 #		self.reloadBreakpoints(True)
 		self.wdtBPsWPs.reloadBreakpoints(True)
+		self.tabWatchpoints.reloadWatchpoints(True)
 		self.loadStacktrace()
 #		print(f'self.rip => {self.rip}')
 		QApplication.processEvents()

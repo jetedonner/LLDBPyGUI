@@ -27,10 +27,10 @@ class WatchpointsTableWidget(QTableWidget):
 	
 	ommitCellChanged = False
 	
-	def __init__(self, driver):
+	def __init__(self, driver, workerManager):
 		super().__init__()
 		self.driver = driver
-		
+		self.workerManager = workerManager
 #		self.driver.handleCommand("command script add -h '(lldbinit) The breakpoint callback function (auto).' --function breakpointTableWidget.breakpointHandlerAuto bpcbauto")
 		
 		self.initTable()
@@ -159,7 +159,35 @@ class WatchpointsTableWidget(QTableWidget):
 						wp_cur.SetCondition(self.item(self.selectedItems()[0].row(), 8).text())
 						break
 			pass
+	
+	def reloadWatchpoints(self, initTable = True):
+		self.workerManager.start_loadWatchpointsWorker(self.handle_loadWatchpointsFinished, self.handle_loadWatchpointValue, self.handle_updateWatchpointValue, initTable)
+	
+	def handle_loadWatchpointsFinished(self):
+#		self.wdtBPsWPs.treBPs.setPC(self.rip)
+		pass
+		
+	def handle_loadWatchpointValue(self, wp):
+#		if initTable:
+#			self.txtMultiline.table.setBPAtAddress(loadAddr, True, False)
+#		self.wpsEnabled[wp.GetID()] = wp.IsEnabled()
+		self.addRow(wp.IsEnabled(), wp.GetID(), hex(wp.GetWatchAddress()), hex(wp.GetWatchSize()), wp.GetWatchSpec(), ("r" if wp.IsWatchingReads() else "") + ("" if wp.IsWatchingReads() and wp.IsWatchingWrites() else "") + ("w" if wp.IsWatchingWrites() else ""), wp.GetHitCount(), wp.GetIgnoreCount(), wp.GetCondition())
+		
+		
+	def handle_updateWatchpointValue(self, wp):
+#		print(f'wp.GetWatchValueKind() =====================>>>>>>>>>>>>>> {wp.GetWatchValueKind()} / {lldb.eWatchPointValueKindExpression}')
+		
+		newEnabled = wp.IsEnabled()
+#		if wp.GetID() in self.wpsEnabled.keys():
+#			if self.wpsEnabled[wp.GetID()] != newEnabled:
+#				newEnabled = not newEnabled
+#				wp.SetEnabled(newEnabled)
+#		else:
+#			self.wpsEnabled[wp.GetID()] = newEnabled
+#			wp.SetEnabled(newEnabled)
 			
+		self.updateRow(newEnabled, wp.GetID(), hex(wp.GetWatchAddress()), hex(wp.GetWatchSize()), wp.GetWatchSpec(), ("r" if wp.IsWatchingReads() else "") + ("" if wp.IsWatchingReads() and wp.IsWatchingWrites() else "") + ("w" if wp.IsWatchingWrites() else ""), wp.GetHitCount(), wp.GetIgnoreCount(), wp.GetCondition())
+		
 	def updateRow(self, state, num, address, size, spec, name, hitcount, ignore, condition):
 		self.ommitCellChanged = True
 		

@@ -42,11 +42,11 @@ class LoadBreakpointsWorker(BaseWorker):
 			else:
 				self.signals.updateBreakpointsValue.emit(bp_cur)
 		
-#		for wp_loc in target.watchpoint_iter():
-#			if self.initTable:
-#				self.signals.loadWatchpointsValue.emit(wp_loc)
-#			else:
-#				self.signals.updateWatchpointsValue.emit(wp_loc)
+		for wp_loc in target.watchpoint_iter():
+			if self.initTable:
+				self.signals.loadWatchpointsValue.emit(wp_loc) #, self.initTable)
+			else:
+				self.signals.updateWatchpointsValue.emit(wp_loc)
 #		pass
 		
 

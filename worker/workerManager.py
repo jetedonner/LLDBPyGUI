@@ -7,6 +7,7 @@ from PyQt6 import uic, QtWidgets, QtCore
 from worker.loadDisassemblyWorker import *
 from worker.loadRegisterWorker import *
 from worker.loadBreakpointsWorker import *
+from worker.loadWatchpointsWorker import *
 from worker.execCommandWorker import *
 from worker.debugWorker import *
 from worker.loadSourceWorker import *
@@ -68,6 +69,18 @@ class WorkerManager(QObject):
 #		self.loadBreakpointsWorker.signals.loadWatchpointsValue.connect(self.handle_loadWatchpointsLoadBreakpointValue)
 #		self.loadBreakpointsWorker.signals.updateWatchpointsValue.connect(self.handle_updateWatchpointsLoadBreakpointValue)
 		self.threadpool.start(self.loadBreakpointsWorker)
+		
+	def start_loadWatchpointsWorker(self, handle_loadWatchpointsFinished, handle_loadWatchpointValue, handle_updateWatchpointValue, initTable = True):
+		self.loadWatchpointsWorker = LoadWatchpointsWorker(self.driver, initTable)
+		self.loadWatchpointsWorker.signals.finished.connect(handle_loadWatchpointsFinished)
+		#		self.loadWatchpointsWorker.signals.sendStatusBarUpdate.connect(self.handle_statusBarUpdate)
+		#		self.loadWatchpointsWorker.signals.sendProgressUpdate.connect(self.handle_progressUpdate)
+		self.loadWatchpointsWorker.signals.loadWatchpointsValue.connect(handle_loadWatchpointValue)
+		self.loadWatchpointsWorker.signals.updateWatchpointsValue.connect(handle_updateWatchpointValue)
+#			self.loadWatchpointsWorker.signals.loadWatchpointsValue.connect(handle_loadWatchpointValue)
+#			self.loadWatchpointsWorker.signals.updateWatchpointsValue.connect(handle_updateWatchpointValue)
+		self.threadpool.start(self.loadWatchpointsWorker)
+		
 		
 	def start_execCommandWorker(self, command, handle_commandFinished):
 		self.workerExecCommand = ExecCommandWorker(self.driver, command)
