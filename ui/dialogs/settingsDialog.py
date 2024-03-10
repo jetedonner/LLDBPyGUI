@@ -78,6 +78,7 @@ class SettingsDialog(QDialog):
 		self.settings.setValue(SettingsValues.VisualizeCurrentBP.value[0], True)
 		self.settings.setValue(SettingsValues.UseNativeDialogs.value[0], True)
 		self.settings.setValue(SettingsValues.EventListenerTimestampFormat.value[0], "%Y-%m-%d %H:%M:%S")
+		self.settings.setValue(SettingsValues.KeepWatchpointsEnabled.value[0], True)
 		
 		self.settings.setValue(SettingsValues.LoadTestTarget.value[0], True)
 		self.settings.setValue(SettingsValues.LoadTestBPs.value[0], True)
@@ -121,6 +122,7 @@ class SettingsDialog(QDialog):
 			self.tblGeneral.item(4, i).setCheckState(self.setHelper.getChecked(SettingsValues.MemViewShowSelectedStatubarMsg))
 			self.tblGeneral.item(5, i).setCheckState(self.setHelper.getChecked(SettingsValues.VisualizeCurrentBP))
 			self.tblGeneral.item(6, i).setCheckState(self.setHelper.getChecked(SettingsValues.UseNativeDialogs))
+			self.tblGeneral.item(9, i).setCheckState(self.setHelper.getChecked(SettingsValues.KeepWatchpointsEnabled))
 		
 		
 		
@@ -171,6 +173,8 @@ class SettingsDialog(QDialog):
 		self.setHelper.setChecked(SettingsValues.VisualizeCurrentBP, self.tblGeneral.item(5, colCheckBox))
 		self.setHelper.setChecked(SettingsValues.UseNativeDialogs, self.tblGeneral.item(6, colCheckBox))
 		self.setHelper.setValue(SettingsValues.EventListenerTimestampFormat, self.tblGeneral.item(8, 1).text())
+		self.setHelper.setChecked(SettingsValues.KeepWatchpointsEnabled, self.tblGeneral.item(9, colCheckBox))
+		
 		
 		self.setHelper.setChecked(SettingsValues.LoadTestTarget, self.tblDeveloper.item(0, 1))
 		self.setHelper.setChecked(SettingsValues.LoadTestBPs, self.tblDeveloper.item(1, 1))

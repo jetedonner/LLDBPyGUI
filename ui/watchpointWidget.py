@@ -11,6 +11,7 @@ from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 from PyQt6 import uic, QtWidgets
 from config import *
+from lib.settings import *
 
 #from ui.customQt.QClickLabel import *
 from ui.assemblerTextEdit import *
@@ -23,20 +24,70 @@ from ui.dialogs.dialogHelper import *
 #		print("breakpointHandlerAuto ...")
 #		print("YESSSSSSS GETTTTTTTIIIIINNNNNNNGGGGG THERE!!!!!!")
 
+class WatchpointsWidget(QWidget):
+	
+	def __init__(self, driver, workerManager):
+		super().__init__()
+		self.driver = driver
+		self.workerManager = workerManager
+	
+		self.setLayout(QVBoxLayout())
+		self.tblWatchpoints = WatchpointsTableWidget(self.driver, self.workerManager)
+		self.layout().addWidget(self.tblWatchpoints)
+		self.layCtrls = QHBoxLayout()
+		self.lblType = QLabel("Type:")
+		self.layCtrls.addWidget(self.lblType)
+		self.optVariable = QRadioButton("Variable")
+		self.optVariable.setChecked(True)
+		self.optVariable.clicked.connect(self.optvariable_clicked)
+		self.layCtrls.addWidget(self.optVariable)
+		self.optAddress = QRadioButton("Address")
+		self.optAddress.clicked.connect(self.optaddress_clicked)
+		self.layCtrls.addWidget(self.optAddress)
+#		self.lblAddrVar = QLabel("Variable:")
+#		self.layCtrls.addWidget(self.lblAddrVar)
+		self.txtMemoryAddress = QLineEdit()
+		self.txtMemoryAddress.setPlaceholderText("Variable name ...")
+		self.layCtrls.addWidget(self.txtMemoryAddress)
+		self.cmdAddWatchpoint = QPushButton("Add Watchpoint")
+		self.cmdAddWatchpoint.clicked.connect(self.addWatchpoint_clicked)
+		self.layCtrls.addWidget(self.cmdAddWatchpoint)
+		self.wgtCtrls = QWidget()
+		self.wgtCtrls.setLayout(self.layCtrls)
+		self.layout().addWidget(self.wgtCtrls)
+	
+	def optvariable_clicked(self):
+#		self.lblAddrVar.setText("Variable:")
+		self.txtMemoryAddress.setPlaceholderText("Variable name ...")
+		
+	def optaddress_clicked(self):
+#		self.lblAddrVar.setText("Address:")
+		self.txtMemoryAddress.setPlaceholderText("Memory address ...")
+		
+	def addWatchpoint_clicked(self):
+		print(f"addWatchpoint_clicked")
+		
+	def reloadWatchpoints(self, initTable = True):
+		self.tblWatchpoints.reloadWatchpoints(initTable)
+		
 class WatchpointsTableWidget(QTableWidget):
 	
+	wpsEnabled = {}
 	ommitCellChanged = False
 	
 	def __init__(self, driver, workerManager):
 		super().__init__()
 		self.driver = driver
 		self.workerManager = workerManager
+		self.setHelper = SettingsHelper()
 #		self.driver.handleCommand("command script add -h '(lldbinit) The breakpoint callback function (auto).' --function breakpointTableWidget.breakpointHandlerAuto bpcbauto")
 		
 		self.initTable()
 		self.context_menu = QMenu(self)
 		self.actionEnableWP = self.context_menu.addAction("Enable / Disable Watchpoint")
-#		self.actionEnableWP.triggered.connect(self.handle_enableWP)
+		self.actionEnableWP.triggered.connect(self.handle_enableWP)
+		self.actionDeleteWP = self.context_menu.addAction("Delete Watchpoint")
+		self.actionDeleteWP.triggered.connect(self.handle_deleteWP)
 		self.context_menu.addSeparator()
 #		actionDeleteBP = self.context_menu.addAction("Delete Breakpoint")
 #		actionDeleteBP.triggered.connect(self.handle_deleteBP)
@@ -125,6 +176,26 @@ class WatchpointsTableWidget(QTableWidget):
 #			print(self.selectedItems())
 		self.context_menu.exec(event.globalPos())
 		
+	def handle_deleteWP(self):
+		row = self.selectedItems()[0].row()
+		selItem = self.item(row, 1)
+		print(f"{selItem.text()[1:]}")
+		if self.driver.getTarget().DeleteWatchpoint(int(selItem.text()[1:])):
+			self.removeRow(row)
+		else:
+			print(f"Could not delete Watchpoint #{selItem.text()[1:]}")
+		
+	def handle_enableWP(self):
+#		item.enableBP(state)
+		selItem = self.item(self.selectedItems()[0].row(), 0)
+		selItem.isBPEnabled = not selItem.isBPEnabled
+		if self.item(self.selectedItems()[0].row(), 0).isBPEnabled:
+#			self.actionEnableWP.setText("Disable Watchpoint")
+#			self.item(self.selectedItems()[0].row(), 0).isBPEnabled
+			selItem.setIcon(ConfigClass.iconEyeRed)
+		else:
+			selItem.setIcon(ConfigClass.iconEyeGrey)
+		
 	def item_changed_handler(self, row, col):
 		if not self.ommitCellChanged:
 			if col == 7: # Name changed
@@ -135,21 +206,6 @@ class WatchpointsTableWidget(QTableWidget):
 					if "#" + str(wp_cur.GetID()) == self.item(self.selectedItems()[0].row(), 1).text():
 						wp_cur.SetIgnoreCount(int(self.item(self.selectedItems()[0].row(), 7).text()))
 						break
-#					for bl in bp_cur:
-#						name_list = lldb.SBStringList()
-#						bp_cur.GetNames(name_list)
-#						num_names = name_list.GetSize()
-#						name_list.AppendString("")
-#						num_names = 1
-#						for j in range(num_names):
-#							name = name_list.GetStringAtIndex(j)
-#							if name == self.oldBPName:
-#								bp_cur.RemoveName(self.oldBPName)
-#								bp_cur.AddName(self.item(row, 3).text())
-#						wpFound = True
-##								break
-#						if wpFound:
-#							break
 			elif col == 8: # Name changed
 				target = self.driver.getTarget()
 				wpFound = False
@@ -170,7 +226,7 @@ class WatchpointsTableWidget(QTableWidget):
 	def handle_loadWatchpointValue(self, wp):
 #		if initTable:
 #			self.txtMultiline.table.setBPAtAddress(loadAddr, True, False)
-#		self.wpsEnabled[wp.GetID()] = wp.IsEnabled()
+		self.wpsEnabled[wp.GetID()] = wp.IsEnabled()
 		self.addRow(wp.IsEnabled(), wp.GetID(), hex(wp.GetWatchAddress()), hex(wp.GetWatchSize()), wp.GetWatchSpec(), ("r" if wp.IsWatchingReads() else "") + ("" if wp.IsWatchingReads() and wp.IsWatchingWrites() else "") + ("w" if wp.IsWatchingWrites() else ""), wp.GetHitCount(), wp.GetIgnoreCount(), wp.GetCondition())
 		
 		
@@ -178,13 +234,13 @@ class WatchpointsTableWidget(QTableWidget):
 #		print(f'wp.GetWatchValueKind() =====================>>>>>>>>>>>>>> {wp.GetWatchValueKind()} / {lldb.eWatchPointValueKindExpression}')
 		
 		newEnabled = wp.IsEnabled()
-#		if wp.GetID() in self.wpsEnabled.keys():
-#			if self.wpsEnabled[wp.GetID()] != newEnabled:
-#				newEnabled = not newEnabled
-#				wp.SetEnabled(newEnabled)
-#		else:
-#			self.wpsEnabled[wp.GetID()] = newEnabled
-#			wp.SetEnabled(newEnabled)
+		if self.setHelper.getValue(SettingsValues.KeepWatchpointsEnabled) and wp.GetID() in self.wpsEnabled.keys():
+			if self.wpsEnabled[wp.GetID()] != newEnabled:
+				newEnabled = not newEnabled
+				wp.SetEnabled(newEnabled)
+			else:
+				self.wpsEnabled[wp.GetID()] = newEnabled
+				wp.SetEnabled(newEnabled)
 			
 		self.updateRow(newEnabled, wp.GetID(), hex(wp.GetWatchAddress()), hex(wp.GetWatchSize()), wp.GetWatchSpec(), ("r" if wp.IsWatchingReads() else "") + ("" if wp.IsWatchingReads() and wp.IsWatchingWrites() else "") + ("w" if wp.IsWatchingWrites() else ""), wp.GetHitCount(), wp.GetIgnoreCount(), wp.GetCondition())
 		
@@ -214,7 +270,7 @@ class WatchpointsTableWidget(QTableWidget):
 		self.setRowCount(currRowCount + 1)
 		item = DisassemblyImageTableWidgetItem()
 		
-#		item.enableBP(state)
+		item.enableBP(state)
 #		item.setIcon(ConfigClass.iconEyeRed)
 		if not state:
 			item.setIcon(ConfigClass.iconEyeGrey)

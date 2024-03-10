@@ -76,6 +76,9 @@ class LLDBListener(QtCore.QObject, Thread):
 		if thread.GetStopReason() == lldb.eStopReasonBreakpoint:
 			print(f'REASON BP RFEACHED (listener) Event: {event} => Continuing...')
 			self.suspended = True
+		elif thread.GetStopReason() == lldb.eStopReasonWatchpoint:
+			print(f'REASON WATCHPOINT RFEACHED (listener) Event: {event} => Continuing...')
+#			pass
 			
 		print(f"======================== IN HEA ========================")
 		self.processEvent.emit(process)

@@ -46,7 +46,7 @@ class SBStreamForwarder(io.StringIO):
 			
 class ListenerLogTreeWidget(QTreeWidget):
 #	self.lblModule.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
-#	
+#		
 #	self.lblModule.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
 	def getTimestamp(self):
 		now = datetime.datetime.now()
@@ -128,6 +128,8 @@ class ListenerLogTreeWidget(QTreeWidget):
 		if str(event.GetBroadcasterClass()) == "lldb.anonymous" and str(event.GetDataFlavor()) == "ProgressEventData":
 			sectionNode.setIcon(0, ConfigClass.iconAnon)
 			return
+		elif SBWatchpoint.EventIsWatchpointEvent(event):
+			sectionNode.setIcon(0, ConfigClass.iconGlasses)
 		elif SBTarget.EventIsTargetEvent(event):
 			print(f"EventIsTargetEvent")
 		elif SBProcess.EventIsProcessEvent(event):
@@ -179,7 +181,12 @@ class ListenerLogTreeWidget(QTreeWidget):
 			else:
 				thread = extObj.selected_thread
 			reason = thread.GetStopReason()
-			if reason == lldb.eStopReasonBreakpoint:# or reason == lldb.eBroadcastBitBreakpointChanged:
+			if reason == lldb.eStopReasonWatchpoint:
+				print(f"WATCHPOINT HIT!!!")
+				sectionNode.setIcon(0, ConfigClass.iconGlasses)
+#				self.driver.debugger.SetAsync(False)
+				self.driver.getTarget().GetProcess().Stop() #GetThreadAtIndex(0).Suspend()
+			elif reason == lldb.eStopReasonBreakpoint:# or reason == lldb.eBroadcastBitBreakpointChanged:
 #				self.window().handle_processEvent(event, extObj)
 				#assert(thread.GetStopReasonDataCount() == 2)
 				if bp_id == -1:

@@ -231,7 +231,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		
 		self.tabWidgetDbg.addTab(self.wdtBPsWPs, "Breakpoints")
 		
-		self.tabWatchpoints = WatchpointsTableWidget(self.driver, self.workerManager)
+		self.tabWatchpoints = WatchpointsWidget(self.driver, self.workerManager)
 		
 		self.tabWidgetDbg.addTab(self.tabWatchpoints, "Watchpoints")
 		
@@ -425,7 +425,9 @@ class LLDBPyGUIWindow(QMainWindow):
 		
 #		self.dialog = SpinnerDialog()
 #		self.dialog.show()
-		self.driver.removeListener(lldb.SBTarget, SBTarget.eBroadcastBitBreakpointChanged)
+#		self.driver.removeListener(lldb.SBTarget, SBTarget.eBroadcastBitBreakpointChanged)
+		self.tabWatchpoints.reloadWatchpoints(True)
+		pass
 		
 	def updateStatusBar(self, msg):
 		self.statusBar.showMessage(msg)

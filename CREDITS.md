@@ -32,3 +32,4 @@
 - <a href="https://www.flaticon.com/free-icons/terminal" title="terminal icons">Terminal icons created by Smashicons - Flaticon</a>
 - <a href="https://www.flaticon.com/free-icons/process" title="process icons">Process icons created by Freepik - Flaticon</a>
 - <a href="https://www.flaticon.com/free-icons/hacker" title="hacker icons">Hacker icons created by Freepik - Flaticon</a>
+- <a href="https://www.flaticon.com/free-icons/glasses" title="glasses icons">Glasses icons created by Freepik - Flaticon</a>

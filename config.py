@@ -136,7 +136,7 @@ class ConfigClass():
 	companyName = "DaVe_inc"
 	appName = "LLDBPyGUI"
 	
-	initialCommand = "breakpoint set -a 0x100003f6a" # re read
+	initialCommand = "w s v idx" # "breakpoint set -a 0x100003f6a" # re read
 	font = QFont("Courier New") # ("Monaco") #("Courier New")
 #	font.setFixedPitch(True)
 	
@@ -192,6 +192,7 @@ class ConfigClass():
 	iconTerminal = None
 	iconProcess = None
 	iconAnon = None
+	iconGlasses = None
 	
 	iconStepOver = None
 	iconStepInto = None
@@ -228,7 +229,7 @@ class ConfigClass():
 #		ui->label->setStyleSheet("border-image:url(:/2.png);");
 #		ui->label->setPixmap(pix);
 		
-		
+		ConfigClass.iconGlasses = QIcon(os.path.join(resources_root, 'glasses.png'))
 		ConfigClass.iconAnon = QIcon(os.path.join(resources_root, 'hacker.png'))
 		ConfigClass.iconProcess = QIcon(os.path.join(resources_root, 'process.png'))
 		ConfigClass.iconTerminal = QIcon(os.path.join(resources_root, 'terminal.png'))
@@ -244,9 +245,9 @@ class ConfigClass():
 #		ConfigClass.iconLoad = QIcon(os.path.join(resources_root, 'folder.png'))
 		ConfigClass.iconInfo = QIcon(os.path.join(resources_root, 'info.png'))
 #		
-#		ConfigClass.iconEyeRed = QIcon(os.path.join(resources_root, 'Eye_Red.png'))
-#		ConfigClass.iconEyeGrey = QIcon(os.path.join(resources_root, 'Eye_Grey.png'))
-#		ConfigClass.iconEyeGreen = QIcon(os.path.join(resources_root, 'Eye_Green.png'))
+		ConfigClass.iconEyeRed = QIcon(os.path.join(resources_root, 'eye_red.png'))
+		ConfigClass.iconEyeGrey = QIcon(os.path.join(resources_root, 'eye_grey.png'))
+		ConfigClass.iconEyeGreen = QIcon(os.path.join(resources_root, 'eye_green.png'))
 		
 		ConfigClass.iconBug = QIcon(os.path.join(resources_root, 'bug.png'))
 		ConfigClass.iconBugGreen = QIcon(os.path.join(resources_root, 'bug_green.png'))
