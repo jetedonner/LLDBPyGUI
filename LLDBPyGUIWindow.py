@@ -15,6 +15,7 @@ from PyQt6.QtWidgets import *
 from PyQt6 import uic, QtWidgets
 
 from lib.settings import *
+from lib.devHelper import *
 
 import dbg.debuggerdriver
 from dbg.debuggerdriver import *
@@ -70,6 +71,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.setHelper = SettingsHelper()
 		self.workerManager = WorkerManager(self.driver)
 		self.bpHelper = BreakpointHelperNG(self.driver)
+		self.devHelper = DevHelper(self.driver)
 		
 		self.setWinTitleWithState("GUI Started")
 		self.setBaseSize(WINDOW_SIZE * 2, WINDOW_SIZE)
@@ -426,6 +428,7 @@ class LLDBPyGUIWindow(QMainWindow):
 #		self.dialog = SpinnerDialog()
 #		self.dialog.show()
 #		self.driver.removeListener(lldb.SBTarget, SBTarget.eBroadcastBitBreakpointChanged)
+		self.tabWatchpoints.tblWatchpoints.resetContent()
 		self.tabWatchpoints.reloadWatchpoints(True)
 		pass
 		
@@ -519,7 +522,7 @@ class LLDBPyGUIWindow(QMainWindow):
 				
 				fileInfos = FileInfos()
 				fileInfos.loadFileInfo(target, self.tblFileInfos)
-				
+#				self.devHelper.setDevWatchpoints()
 				self.treStats.loadFileStats()
 #					
 				self.process = target.GetProcess()
@@ -572,6 +575,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.tabWidgetReg.clear()
 		self.tblVariables.resetContent()
 		self.wdtBPsWPs.treBPs.clear()
+		self.tabWatchpoints.tblWatchpoints.resetContent()
 #		self.wdtBPsWPs.tblWPs.resetContent()
 #		self.txtSource.setText("")
 #		self.treThreads.clear()
@@ -778,6 +782,7 @@ class LLDBPyGUIWindow(QMainWindow):
 				
 			self.processNode.setExpanded(True)
 			self.threadNode.setExpanded(True)
+#			self.devHelper.setDevWatchpoints()
 			
 	def GuessLanguage(self, frame):
 		return lldb.SBLanguageRuntime.GetNameForLanguageType(frame.GuessLanguage())

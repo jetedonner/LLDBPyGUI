@@ -41,6 +41,7 @@ class CommandsWidget(QWidget):
 		self.txtCmd.setText(ConfigClass.initialCommand)
 		self.txtCmd.returnPressed.connect(self.execCommand_clicked)
 		self.txtCmd.availCompletitions.connect(self.handle_availCompletitions)
+		self.txtCmd.setFocus(Qt.FocusReason.NoFocusReason)
 		
 		self.swtAutoscroll = QSwitch("Autoscroll")
 		self.swtAutoscroll.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)

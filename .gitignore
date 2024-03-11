@@ -14,7 +14,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+#lib/
+#!lib/devHelper.py
 lib64/
 parts/
 sdist/

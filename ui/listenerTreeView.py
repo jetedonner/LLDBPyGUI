@@ -130,6 +130,8 @@ class ListenerLogTreeWidget(QTreeWidget):
 			return
 		elif SBWatchpoint.EventIsWatchpointEvent(event):
 			sectionNode.setIcon(0, ConfigClass.iconGlasses)
+			self.window().tabWatchpoints.tblWatchpoints.resetContent()
+			self.window().tabWatchpoints.reloadWatchpoints(True)
 		elif SBTarget.EventIsTargetEvent(event):
 			print(f"EventIsTargetEvent")
 		elif SBProcess.EventIsProcessEvent(event):
@@ -185,7 +187,7 @@ class ListenerLogTreeWidget(QTreeWidget):
 				print(f"WATCHPOINT HIT!!!")
 				sectionNode.setIcon(0, ConfigClass.iconGlasses)
 #				self.driver.debugger.SetAsync(False)
-				self.driver.getTarget().GetProcess().Stop() #GetThreadAtIndex(0).Suspend()
+#				self.driver.getTarget().GetProcess().Stop() #GetThreadAtIndex(0).Suspend()
 			elif reason == lldb.eStopReasonBreakpoint:# or reason == lldb.eBroadcastBitBreakpointChanged:
 #				self.window().handle_processEvent(event, extObj)
 				#assert(thread.GetStopReasonDataCount() == 2)
