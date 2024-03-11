@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+		#!/usr/bin/env python3
 
 import lldb
 import enum
@@ -591,10 +591,12 @@ def SymbolTypeString(symType):
 def BroadcastBitString(broadcastClass, broadcastBit):
 	if broadcastClass == lldb.SBTarget or broadcastClass == "lldb.target":
 		return TargetBroadcastBitString(broadcastBit)
-	elif broadcastClass == lldb.SBProcess or  broadcastClass == "lldb.process":
+	elif broadcastClass == lldb.SBProcess or broadcastClass == "lldb.process":
 		return ProcessBroadcastBitString(broadcastBit)
-	elif broadcastClass == lldb.SBCommandInterpreter or  broadcastClass == "lldb.commandinterpreter":
+	elif broadcastClass == lldb.SBCommandInterpreter or broadcastClass == "lldb.commandinterpreter":
 		return CommandInterpreterBroadcastBitString(broadcastBit)
+	elif broadcastClass == lldb.SBThread or broadcastClass == "lldb.thread":
+		return ThreadBroadcastBitString(broadcastBit)
 	elif broadcastClass == "lldb.anonymous":
 		return "Anonymous"
 	else:
@@ -644,6 +646,26 @@ def ProcessBroadcastBitString(broadcastBit):
 		return "eBroadcastBitStructuredData"
 	else:
 		return "Unknown"
+	
+def ThreadBroadcastBitString(broadcastBit):
+	if broadcastBit == lldb.SBThread.eBroadcastBitStackChanged:
+		return "eBroadcastBitStackChanged"
+	elif broadcastBit == lldb.SBThread.eBroadcastBitThreadSuspended:
+		return "eBroadcastBitThreadSuspended"
+	elif broadcastBit == lldb.SBThread.eBroadcastBitThreadResumed:
+		return "eBroadcastBitThreadResumed"
+	elif broadcastBit == lldb.SBThread.eBroadcastBitSelectedFrameChanged:
+		return "eBroadcastBitSelectedFrameChanged"
+	elif broadcastBit == lldb.SBThread.eBroadcastBitThreadSelected:
+		return "eBroadcastBitThreadSelected"
+	else:
+		return "Unknown"
+	
+#eBroadcastBitStackChanged = (1 << 0),
+#eBroadcastBitThreadSuspended = (1 << 1),
+#eBroadcastBitThreadResumed = (1 << 2),
+#eBroadcastBitSelectedFrameChanged = (1 << 3),
+#eBroadcastBitThreadSelected = (1 << 4)
 	
 def convert_address(address):
 	# Convert the address to hex
