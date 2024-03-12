@@ -40,7 +40,7 @@ from ui.watchpointWidget import *
 from ui.threadFrameTreeView import *
 from ui.sourceTextEdit import *
 from ui.listenerTreeView import *
-#from ui.customQt.QHEXTextEditSplitter import *
+from ui.searchTableWidget import *
 from ui.customQt.QHexTableWidget import *
 from ui.customQt.QMemoryViewer import *
 
@@ -280,16 +280,22 @@ class LLDBPyGUIWindow(QMainWindow):
 		
 		self.tabWidgetMain.addTab(self.tabWidgetFileInfos, "File Info")
 		
-		self.wdtCommands = CommandsWidget(self.workerManager)
-		self.tabWidgetMain.addTab(self.wdtCommands, "Commands")
-		
 		self.tblHex = QMemoryViewer(self.driver)
+		self.tblHex.cmbGrouping.setCurrentIndex(self.setHelper.getValue(SettingsValues.HexGrouping))
 		
 		self.tabMemory = QWidget()
 		self.tabMemory.setLayout(QVBoxLayout())
 		self.tabMemory.layout().addWidget(self.tblHex)
 		
 		self.tabWidgetMain.addTab(self.tabMemory, "Memory")
+		
+		self.wdtSearch = SearchWidget(self.driver)
+		self.tabWidgetMain.addTab(self.wdtSearch, "Search")
+		
+		self.wdtCommands = CommandsWidget(self.workerManager)
+		self.tabWidgetMain.addTab(self.wdtCommands, "Commands")
+		
+		
 		
 		self.layout.addWidget(self.tabWidgetMain)
 		
@@ -313,6 +319,41 @@ class LLDBPyGUIWindow(QMainWindow):
 	def setWinTitleWithState(self, state):
 		self.setWindowTitle(APP_NAME + " " + APP_VERSION + " - " + self.targetBasename + " - " + state)
 		
+	def handle_showMemoryFor(self):
+		sender = self.sender()  # get the sender object
+		if isinstance(sender, QAction):
+			action = sender  # it's the QAction itself
+		else:
+			# Find the QAction within the sender (e.g., QMenu or QToolBar)
+			action = sender.findChild(QAction)
+			
+		self.doReadMemory(self.quickToolTip.get_memory_address(self.driver.debugger, action.data()))
+#		print(f"Triggering QAction: {action.text()}")
+		
+	def doReadMemory(self, address, size = 0x100):
+		self.tabWidgetMain.setCurrentWidget(self.tabMemory)
+		self.tblHex.doReadMemory(address, size)
+#		self.window().tblHex.txtMemAddr.setText(hex(address))
+#		self.window().tblHex.txtMemSize.setText(hex(size))
+#		try:
+##           global debugger
+##			self.handle_readMemory(self.driver.debugger, int(self.window().tblHex.txtMemAddr.text(), 16), int(self.window().tblHex.txtMemSize.text(), 16))
+#			self.window().tblHex.handle_readMemory(self.driver.debugger, int(self.window().tblHex.txtMemAddr.text(), 16), int(self.window().tblHex.txtMemSize.text(), 16))
+#		except Exception as e:
+#			print(f"Error while reading memory from process: {e}")
+			
+		
+	def handle_progressUpdate(self, value, statusTxt):
+		self.setProgressValue(value)
+		self.updateStatusBar(statusTxt)
+		
+	def setProgressValue(self, newValue):
+		self.progressbar.setValue(newValue)
+		QCoreApplication.processEvents()
+	
+	def updateStatusBar(self, msg):
+		self.statusBar.showMessage(msg)
+		
 	def load_clicked(self):
 		filename = showOpenFileDialog()
 		if filename != None and filename != "":
@@ -323,6 +364,9 @@ class LLDBPyGUIWindow(QMainWindow):
 		if idx == 2:
 			self.wdtCommands.txtCmd.setFocus(Qt.FocusReason.ActiveWindowFocusReason)
 			print(f"self.wdtCommands.txtCmd.setFocus(Qt.FocusReason.ActiveWindowFocusReason)")
+#		elif idx == 3:
+#			self.tblHex.cmbGrouping.setCurrentIndex(self.setHelper.getValue(SettingsValues.HexGrouping))
+#			pass
 		pass
 		
 	isAttached = False
@@ -428,6 +472,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		settingsWindow = SettingsDialog(self.setHelper)
 		if settingsWindow.exec():
 			print(f'Settings saved')
+			self.tblHex.cmbGrouping.setCurrentIndex(self.setHelper.getValue(SettingsValues.HexGrouping))
 		
 	def help_clicked(self):
 		pass
@@ -601,7 +646,7 @@ class LLDBPyGUIWindow(QMainWindow):
 #		self.txtSource.setText("")
 #		self.treThreads.clear()
 #		self.wdtSearch.resetContent()
-#		self.tblHex.resetContent()
+		self.tblHex.resetContent()
 ##		self.wdtBPsWPs.treWPs.clear()
 		
 	inited = False

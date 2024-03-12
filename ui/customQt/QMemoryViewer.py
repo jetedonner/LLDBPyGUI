@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
+
 import lldb
-#import debuggerdriver
 
 import array
 #from enum import Enum
@@ -18,6 +18,8 @@ class QMemoryViewer(QWidget):
 	
 	driver = None
 	byteGrouping = ByteGrouping.TwoChars
+	startAddress = None
+	hexData = None
 	
 	def __init__(self, driver, parent=None):
 		QWidget.__init__(self, parent=parent)
@@ -62,12 +64,8 @@ class QMemoryViewer(QWidget):
 		# Access member names from the `__members__` dictionary
 		member_names = list(ByteGrouping.__members__.keys())
 		
-		
-#		print(ByteGrouping.__members__.keys())
-		
 		# Add names to the combo box
 		self.cmbGrouping.addItems(member_names)
-#		print(f'SELF GROUING: {self.byteGrouping.value[1]}')
 		self.cmbGrouping.setCurrentIndex(1)
 		self.cmbGrouping.currentIndexChanged.connect(self.cmbGrouping_changed)
 		
@@ -81,12 +79,32 @@ class QMemoryViewer(QWidget):
 		self.layMain.addWidget(self.tblHex)
 		self.setLayout(self.layMain)
 		
-	startAddress = None
-	#	hexData = None
-	
 	def resetContent(self):
 		self.tblHex.resetContent()
 		
+#	def handle_showMemoryFor(self):
+#		sender = self.sender()  # get the sender object
+#		if isinstance(sender, QAction):
+#			action = sender  # it's the QAction itself
+#		else:
+#			# Find the QAction within the sender (e.g., QMenu or QToolBar)
+#			action = sender.findChild(QAction)
+#			
+#		self.doReadMemory(self.quickToolTip.get_memory_address(self.driver.debugger, action.data()))
+##		print(f"Triggering QAction: {action.text()}")
+		
+	def doReadMemory(self, address, size = 0x100):
+#		self.window().tabWidgetDbg.setCurrentWidget(self.window().tabMemory)
+		self.txtMemAddr.setText(hex(address))
+		self.txtMemSize.setText(hex(size))
+		try:
+#           global debugger
+#			self.handle_readMemory(self.driver.debugger, int(self.window().tblHex.txtMemAddr.text(), 16), int(self.window().tblHex.txtMemSize.text(), 16))
+			self.handle_readMemory(self.driver.debugger, address, size)
+		except Exception as e:
+			print(f"Error while reading memory from process: {e}")
+			
+			
 	def cmbGrouping_changed(self, currentIdx:int):
 		idx = 0
 		for member in ByteGrouping:
@@ -98,17 +116,18 @@ class QMemoryViewer(QWidget):
 				
 	def formatGrouping(self):
 		self.tblHex.resetContent()
-		for i in range(0, len(self.hexData), 16):
-			rawData = ""
-			current_values = self.hexData[i:i+16]
-			print(f'current_values => {current_values} => len: {len(current_values)}')
-			for single in current_values:
-				integer_value = int(single, 16)
-				utf_8_char = chr(integer_value)
-				rawData += utf_8_char
-			print(f'rawData => {rawData} => len: {len(rawData)}')
-			current_string = self.formatHexStringFourChars(' '.join(current_values), self.byteGrouping)
-			self.tblHex.addRow(hex(self.startAddress + i), current_string, rawData)
+		if self.hexData != None:
+			for i in range(0, len(self.hexData), 16):
+				rawData = ""
+				current_values = self.hexData[i:i+16]
+				print(f'current_values => {current_values} => len: {len(current_values)}')
+				for single in current_values:
+					integer_value = int(single, 16)
+					utf_8_char = chr(integer_value)
+					rawData += utf_8_char
+				print(f'rawData => {rawData} => len: {len(rawData)}')
+				current_string = self.formatHexStringFourChars(' '.join(current_values), self.byteGrouping)
+				self.tblHex.addRow(hex(self.startAddress + i), current_string, rawData)
 			
 	def click_ReadMemory(self):
 		try:
@@ -155,18 +174,6 @@ class QMemoryViewer(QWidget):
 			self.startAddress = startAddress
 			self.hexData = [format(byte, '02x') for byte in txtInBytes]
 			self.formatGrouping()
-##			string2 = ""
-##			string = ""
-#			for i in range(0, len(self.hexData), 16):
-#				rawData = ""
-#				current_values = self.hexData[i:i+16]
-#				for single in current_values:
-#					integer_value = int(single, 16)
-#					utf_8_char = chr(integer_value)
-#					rawData += utf_8_char	
-#				current_string = self.formatHexStringFourChars(' '.join(current_values), ByteGrouping.EightChars)
-#				self.tblHex.addRow(hex(startAddress + i), current_string, rawData)
-				
 		except Exception as e:
 			print(f"Exception: '{e}' while converting bytes '{txtInBytes}' to HEX string")
 			pass

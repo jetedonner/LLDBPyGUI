@@ -5,9 +5,6 @@ import array
 import enum
 import re
 import math
-# from enum import StrEnum
-
-# import enum
 
 from PyQt6 import *
 from PyQt6.QtGui import *
@@ -16,18 +13,15 @@ from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 from PyQt6 import uic, QtWidgets
 
-#from helper import *
-
-#from QSwitch import *
 from config import *
 from ui.dialogs.settingsDialog import *
 
 
-class ByteGrouping(enum.Enum):
-	NoGrouping = ("No Grouping", 1) #"No grouping"
-	TwoChars = ("Two", 2) #"Two characters"
-	FourChars = ("Four", 4) #"Four characters"
-	EightChars = ("Eight", 8) #"Four characters"
+#class ByteGrouping(enum.Enum):
+#	NoGrouping = ("No Grouping", 1) #"No grouping"
+#	TwoChars = ("Two", 2) #"Two characters"
+#	FourChars = ("Four", 4) #"Four characters"
+#	EightChars = ("Eight", 8) #"Four characters"
 	
 class ReadOnlySelectableTextEdit(QTextEdit):
 	
@@ -95,51 +89,6 @@ class ReadOnlySelectableTextEdit(QTextEdit):
 			super().keyPressEvent(event)
 		else:
 			event.ignore()  # Ignore any editing-related key presses
-#		self.line_height = 20  # Set desired line height
-#		cursor = self.textCursor()
-#		if cursor.block():
-#			block_format = cursor.blockFormat()
-#			block_format.setLineHeight(30, 2)
-			
-#	def paintEvent(self, event):
-#		painter = QPainter(self)
-#		cursor = self.textCursor()
-#		while cursor.block():
-#			block_format = cursor.blockFormat()
-#			block_format.setLineHeight(20, 2)
-##			rect = self.cursorRect(cursor)
-##			y = rect.top()
-##			for j in range(block_format.length()):
-##				painter.drawText(rect.left(), y, cursor.charAt(j))
-##				y += self.line_height
-##			cursor.movePosition(QTextCursor.MoveOperation.NextBlock)
-			
-		
-#class TransparentLineEdit(QLineEdit):
-#	
-#	item_sel_changed = pyqtSignal(object, object)
-#	
-#	parent_item = None
-#	def __init__(self, parent=None, parent_item=None):
-#		super().__init__(parent)
-#		self.parent_item = parent_item
-##		self.setParent(parent)
-#		self.setAttribute(Qt.WidgetAttribute.WA_NoSystemBackground, True)
-#		self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-#		self.selectionChanged.connect(self.transparentLineEdit_selectionchanged)
-#		
-#	def paintEvent(self, event):
-#		painter = QPainter(self)
-#		painter.fillRect(event.rect(), Qt.GlobalColor.transparent)
-#		super().paintEvent(event)
-#		
-#	def transparentLineEdit_selectionchanged(self):
-##		cursor = self.cursor()
-#		print("TransparentLineEdit Selection start: %d end: %d" % (self.selectionStart(), self.selectionEnd()))
-#		self.item_sel_changed.emit(self.parent_item, self)
-#		
-#		pass
-		
 		
 class QHexTableWidget(QTableWidget):
 	

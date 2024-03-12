@@ -20,6 +20,7 @@ class SettingsValues(Enum):
 	UseNativeDialogs = ("Use native dialogs", True, bool)
 	EventListenerTimestampFormat = ("Event-Listener Timestamp Format", "%Y-%m-%d %H:%M:%S", str)
 	KeepWatchpointsEnabled = ("Keep watchpoints enabled", True, bool)
+	HexGrouping = ("Hex-Value Grouping", 1, int)
 	
 	# Developer Settings
 	LoadTestTarget = ("Load test target", True, bool)
@@ -58,6 +59,7 @@ class SettingsHelper(QObject):
 		self.settings.setValue(SettingsValues.UseNativeDialogs.value[0], True)
 		self.settings.setValue(SettingsValues.EventListenerTimestampFormat.value[0], "%Y-%m-%d %H:%M:%S")
 		self.settings.setValue(SettingsValues.KeepWatchpointsEnabled.value[0], True)
+		self.settings.setValue(SettingsValues.HexGrouping.value[0], 1)
 		
 		self.settings.setValue(SettingsValues.LoadTestTarget.value[0], True)
 		self.settings.setValue(SettingsValues.LoadTestBPs.value[0], True)

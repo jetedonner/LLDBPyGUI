@@ -91,6 +91,11 @@
            <string>Keep Watchpoints enabled / disabled</string>
           </property>
          </row>
+         <row>
+          <property name="text">
+           <string>Hex-Value Grouping</string>
+          </property>
+         </row>
          <column>
           <property name="text">
            <string>Setting</string>
@@ -292,6 +297,16 @@
           </property>
           <property name="checkState">
            <enum>Checked</enum>
+          </property>
+         </item>
+         <item row="10" column="0">
+          <property name="text">
+           <string>Hex-Value Grouping</string>
+          </property>
+         </item>
+         <item row="10" column="1">
+          <property name="text">
+           <string/>
           </property>
          </item>
         </widget>

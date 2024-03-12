@@ -2,6 +2,7 @@
 
 import os
 import sys
+import enum
 
 from os.path import abspath
 from os.path import dirname, realpath
@@ -271,3 +272,9 @@ class ConfigClass():
 #		ConfigClass.iconStop = QIcon(os.path.join(resources_root, 'Stop.png'))
 #		
 #		ConfigClass.iconGithub = QIcon(os.path.join(resources_root, 'github.png'))
+		
+class ByteGrouping(enum.Enum):
+	NoGrouping = ("No Grouping", 1) #"No grouping"
+	TwoChars = ("Two", 2) #"Two characters"
+	FourChars = ("Four", 4) #"Four characters"
+	EightChars = ("Eight", 8) #"Four characters"

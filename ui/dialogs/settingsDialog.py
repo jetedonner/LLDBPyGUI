@@ -18,13 +18,15 @@ from PyQt6 import uic, QtWidgets
 
 from config import *
 from lib.settings import *
-	
+from ui.dialogs.dialogHelper import *
+
 class BrowseWidget(QWidget):
 	def __init__(self, parent=None):
 		super().__init__(parent)
 		
 		self.path_label = QLabel()
 		self.browse_button = QPushButton("Browse")
+		self.browse_button.setContentsMargins(0, 0, 0, 0)
 		self.browse_button.clicked.connect(self.handle_browse_click)
 		
 		layout = QHBoxLayout()
@@ -32,23 +34,16 @@ class BrowseWidget(QWidget):
 		layout.addWidget(self.browse_button)
 		self.setLayout(layout)
 		
-		self.selected_path = None  # Store the selected path
+		self.selected_path = None
 		
 	def handle_browse_click(self):
-#		item = self# self.tblGeneral.item(row, column)
-#		if isinstance(item, ColorTableWidgetItem):
-		color = QColorDialog.getColor(self.parent().getColor())
-		if color.isValid():
-			self.parent().setColor(color)
-				
-#		# Get a filename using QFileDialog
-#		filename, _ = QFileDialog.getOpenFileName(self, "Select File")
-#		if filename:
-#			self.path_label.setText(filename)
-#			self.selected_path = filename  # Update stored path
-#			
-#			# Emit a custom signal for path selection (optional)
-#			# self.pathSelected.emit(filename)
+		filename = showOpenFileDialog()
+		if filename:
+			print(f"Setting: '{filename} as test target")
+			pass
+#		color = QColorDialog.getColor(self.parent().getColor())
+#		if color.isValid():
+#			self.parent().setColor(color)
 			
 class ColorTableWidgetItem(QTableWidgetItem):
 	def __init__(self, color=None, parent=None):
@@ -62,7 +57,6 @@ class ColorTableWidgetItem(QTableWidgetItem):
 	def setColor(self, color):
 		self._color = QColor(color)
 		self.setBackground(self._color)
-		
 		
 class SettingsDialog(QDialog):
 	
@@ -79,6 +73,7 @@ class SettingsDialog(QDialog):
 		self.settings.setValue(SettingsValues.UseNativeDialogs.value[0], True)
 		self.settings.setValue(SettingsValues.EventListenerTimestampFormat.value[0], "%Y-%m-%d %H:%M:%S")
 		self.settings.setValue(SettingsValues.KeepWatchpointsEnabled.value[0], True)
+		self.settings.setValue(SettingsValues.HexGrouping.value[0], 1)
 		
 		self.settings.setValue(SettingsValues.LoadTestTarget.value[0], True)
 		self.settings.setValue(SettingsValues.LoadTestBPs.value[0], True)
@@ -124,29 +119,41 @@ class SettingsDialog(QDialog):
 			self.tblGeneral.item(6, i).setCheckState(self.setHelper.getChecked(SettingsValues.UseNativeDialogs))
 			self.tblGeneral.item(9, i).setCheckState(self.setHelper.getChecked(SettingsValues.KeepWatchpointsEnabled))
 		
+		self.cmbGrouping = QComboBox()
+		member_names = list(ByteGrouping.__members__.keys())
+		self.cmbGrouping.addItems(member_names)
+		self.cmbGrouping.setCurrentIndex(self.setHelper.getValue(SettingsValues.HexGrouping))
+		self.tblGeneral.setCellWidget(10, 1, self.cmbGrouping)
 		
 		
 		item = ColorTableWidgetItem(QColor(0, 255, 0, 128))
-#		browse_widget = BrowseWidget()
-		
-		# Set the table item widget (assuming you have a table created)
-#		table_item = QTableWidgetItem()
-#		table_item.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)  # Adjust size policy
-#		table_widget.setItem(row, column, browse_widget)
 		
 		self.tblGeneral.setItem(7, 1, item)
 #		self.tblGeneral.setCellWidget(7, 1, item)
 		self.tblGeneral.item(8, 1).setText(self.setHelper.getValue(SettingsValues.EventListenerTimestampFormat))
 		
-		self.tblDeveloper.item(0, 1).setCheckState(self.setHelper.getChecked(SettingsValues.LoadTestTarget))
+		self.tblDeveloper.item(0, 0).setCheckState(self.setHelper.getChecked(SettingsValues.LoadTestTarget))
 		self.tblDeveloper.item(1, 1).setCheckState(self.setHelper.getChecked(SettingsValues.LoadTestBPs))
 		self.tblDeveloper.item(2, 1).setCheckState(self.setHelper.getChecked(SettingsValues.StopAtEntry))
 		self.tblDeveloper.item(3, 1).setCheckState(self.setHelper.getChecked(SettingsValues.BreakAtMainFunc))
 		self.tblDeveloper.item(3, 1).setText(self.setHelper.getValue(SettingsValues.MainFuncName))
+		self.browse_widget = BrowseWidget()
 		
+		# ...
+		# Create the delegate with desired margin
+		delegate = MarginDelegate(margin_size=0)
 		
-#		self.settings.setValue(SettingsValues.BreakAtMainFunc.value[0], True)
-#		self.settings.setValue(SettingsValues.MainFuncName.value[0], "main")
+#		# Set the delegate for the table or specific items
+#		table.setItemDelegate(delegate)  # Set for all items
+#		# OR
+#		some_item = QTableWidgetItem("Item Text")
+#		some_item.setData(Qt.ItemDataRole.UserRole, delegate)
+#		Set the table item widget (assuming you have a table created)
+		self.table_item = QTableWidgetItem()
+		self.table_item.setData(Qt.ItemDataRole.UserRole, delegate)
+#		self.table_item.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)  # Adjust size policy
+		self.tblDeveloper.setItem(0, 1, self.table_item)
+		self.tblDeveloper.setCellWidget(0, 1, self.browse_widget)
 		
 	def click_test(self):
 		print(f'{SettingsValues.CmdHistory.value[0]} => {self.settings.value(SettingsValues.CmdHistory.value[0], False)}')
@@ -174,7 +181,7 @@ class SettingsDialog(QDialog):
 		self.setHelper.setChecked(SettingsValues.UseNativeDialogs, self.tblGeneral.item(6, colCheckBox))
 		self.setHelper.setValue(SettingsValues.EventListenerTimestampFormat, self.tblGeneral.item(8, 1).text())
 		self.setHelper.setChecked(SettingsValues.KeepWatchpointsEnabled, self.tblGeneral.item(9, colCheckBox))
-		
+		self.setHelper.setValue(SettingsValues.HexGrouping, self.cmbGrouping.currentIndex())
 		
 		self.setHelper.setChecked(SettingsValues.LoadTestTarget, self.tblDeveloper.item(0, 1))
 		self.setHelper.setChecked(SettingsValues.LoadTestBPs, self.tblDeveloper.item(1, 1))
@@ -182,3 +189,24 @@ class SettingsDialog(QDialog):
 		self.setHelper.setChecked(SettingsValues.BreakAtMainFunc, self.tblDeveloper.item(3, 1))
 		self.setHelper.setValue(SettingsValues.MainFuncName, self.tblDeveloper.item(3, 1).text())
 		
+class MarginDelegate(QStyledItemDelegate):
+	def __init__(self, margin_size=5, parent=None):
+		super().__init__(parent)
+		self.margin_size = margin_size
+		
+	def paint(self, painter, option, index):
+		# Access and modify the QStyleOptionTableItem for custom drawing
+		modified_option = QStyleOptionTableItem(*option)
+		
+		# Adjust content rectangle based on desired margins
+		modified_option.rect.adjust(self.margin_size, self.margin_size, -self.margin_size, -self.margin_size)
+		
+		# Call the base class paint method with the modified option
+		super().paint(painter, modified_option, index)
+		
+	def sizeHint(self, option, index):
+		# Adjust size hint based on margins if necessary
+		size = super().sizeHint(option, index)
+		size.setWidth(size.width() + 2 * self.margin_size)
+		size.setHeight(size.height() + 2 * self.margin_size)
+		return size
