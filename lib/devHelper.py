@@ -13,16 +13,21 @@ from PyQt6.QtWidgets import *
 from PyQt6 import uic, QtWidgets
 
 from config import *
+from dbg.watchpointHelper import *
+from dbg.breakpointHelperNG import *
 
 class DevHelper(QObject):
 	
 	driver = None
+	wpHelper = None
+	bpHelper = None
 	
 	def __init__(self, driver):
 		super().__init__()
 		
 		self.driver = driver
-		
+		self.wpHelper = WatchpointHelper(self.driver)
+		self.bpHelper = BreakpointHelperNG(self.driver)
 	
 	def setDevWatchpoints(self):
 		print(f"==========>>>>>>>>> SETTING DEV-WATCHPOINT!!!")
@@ -31,7 +36,23 @@ class DevHelper(QObject):
 		if wp != None:
 			print(f"=========>>>>>> DEV-WATCHPOINT: {wp}")
 		pass
+	
+	def setDevBreakpoints(self):
+		print(f"==========>>>>>>>>> SETTING DEV-BREAKPOINTS-NG!!!")
+		self.bpHelper.enableBP("0x100003f6a")
+		pass
+	
+	def setDevWatchpointsNG(self):
+		print(f"==========>>>>>>>>> SETTING DEV-WATCHPOINTS-NG!!!")
+		self.wpHelper.setWatchpointForVariable("idx")
+		self.wpHelper.setWatchpointForExpression("0x0000000304112e80")
 		
+#		res = lldb.SBCommandReturnObject()
+#		ci = self.driver.debugger.GetCommandInterpreter()
+#		
+#		# settings
+#		ci.HandleCommand("w s v idx", res)
+	
 #		return _lldb.SBTarget_DeleteAllWatchpoints(self) 
 #	10056   
 #	10057 -    def WatchAddress(self, *args): 

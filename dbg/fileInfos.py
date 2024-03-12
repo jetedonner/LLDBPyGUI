@@ -661,6 +661,36 @@ def ThreadBroadcastBitString(broadcastBit):
 	else:
 		return "Unknown"
 	
+def BreakpointEventTypeString(breakpointEventType):
+	if breakpointEventType == lldb.eBreakpointEventTypeInvalidType:
+		return "eBreakpointEventTypeInvalidType"
+	elif breakpointEventType == lldb.eBreakpointEventTypeAdded:
+		return "eBreakpointEventTypeAdded"
+	elif breakpointEventType == lldb.eBreakpointEventTypeRemoved:
+		return "eBreakpointEventTypeRemoved"
+	elif breakpointEventType == lldb.eBreakpointEventTypeLocationsAdded:
+		return "eBreakpointEventTypeLocationsAdded"
+	elif breakpointEventType == lldb.eBreakpointEventTypeLocationsRemoved:
+		return "eBreakpointEventTypeLocationsRemoved"
+	elif breakpointEventType == lldb.eBreakpointEventTypeLocationsResolved:
+		return "eBreakpointEventTypeLocationsResolved"
+	elif breakpointEventType == lldb.eBreakpointEventTypeEnabled:
+		return "eBreakpointEventTypeEnabled"
+	elif breakpointEventType == lldb.eBreakpointEventTypeDisabled:
+		return "eBreakpointEventTypeDisabled"
+	elif breakpointEventType == lldb.eBreakpointEventTypeCommandChanged:
+		return "eBreakpointEventTypeCommandChanged"
+	elif breakpointEventType == lldb.eBreakpointEventTypeConditionChanged:
+		return "eBreakpointEventTypeConditionChanged"
+	elif breakpointEventType == lldb.eBreakpointEventTypeIgnoreChanged:
+		return "eBreakpointEventTypeIgnoreChanged"
+	elif breakpointEventType == lldb.eBreakpointEventTypeThreadChanged:
+		return "eBreakpointEventTypeThreadChanged"
+	elif breakpointEventType == lldb.eBreakpointEventTypeAutoContinueChanged:
+		return "eBreakpointEventTypeAutoContinueChanged"
+	else:
+		return "Unknown"
+
 #eBroadcastBitStackChanged = (1 << 0),
 #eBroadcastBitThreadSuspended = (1 << 1),
 #eBroadcastBitThreadResumed = (1 << 2),

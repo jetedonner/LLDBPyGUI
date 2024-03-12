@@ -80,6 +80,9 @@ class ListenerLogTreeWidget(QTreeWidget):
 		self.header().resizeSection(0, 312)
 		self.header().resizeSection(1, 1200)
 		
+#		self.verticalScrollBar().setPolicy(QScrollBar.Policy.ScrollBarAsNeeded)
+#		self.horizontalScrollBar().setPolicy(QScrollBar.Policy.ScrollBarAsNeeded)
+		
 	def clear_clicked(self):
 		self.clear()
 		
@@ -160,6 +163,9 @@ class ListenerLogTreeWidget(QTreeWidget):
 				
 		elif SBBreakpoint.EventIsBreakpointEvent(event):
 			sectionNode.setIcon(0, ConfigClass.iconBPEnabled)
+			eventType = SBBreakpoint.GetBreakpointEventTypeFromEvent(event)
+			print(eventType)
+			subSectionNode = QTreeWidgetItem(sectionNode, ["EventType: ", BreakpointEventTypeString(eventType) + " (" + str(eventType) + ")"])
 			bp = SBBreakpoint.GetBreakpointFromEvent(event)
 			print(f"EventIsBreakpointEvent => {bp}")
 			bp_id = bp.GetID()

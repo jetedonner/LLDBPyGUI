@@ -210,7 +210,7 @@ class DisassemblyTableWidget(QTableWidget):
 		self.setColumnWidth(0, 24)
 		self.setColumnWidth(1, 32)
 		self.setColumnWidth(2, 108)
-		self.setColumnWidth(3, 108)
+		self.setColumnWidth(3, 84)
 		self.setColumnWidth(4, 256)
 		self.setColumnWidth(5, 324)
 		self.setColumnWidth(6, 304)

@@ -13,12 +13,10 @@ from PyQt6 import uic, QtWidgets
 from config import *
 from lib.settings import *
 
-#from ui.customQt.QClickLabel import *
 from ui.assemblerTextEdit import *
 from ui.dialogs.dialogHelper import *
-#from dbg.helper.breakpointHelper import *
-#from ui.addBreakpointDialog import *
-#from ui.breakpointTreeView import *
+
+from dbg.watchpointHelper import *
 
 #def breakpointHandlerAuto(dummy, frame, bpno, err):
 #		print("breakpointHandlerAuto ...")
@@ -26,10 +24,14 @@ from ui.dialogs.dialogHelper import *
 
 class WatchpointsWidget(QWidget):
 	
+	wpHelper = None
+	forVariable = True
+	
 	def __init__(self, driver, workerManager):
 		super().__init__()
 		self.driver = driver
 		self.workerManager = workerManager
+		self.wpHelper = WatchpointHelper(self.driver)
 	
 		self.setLayout(QVBoxLayout())
 		self.tblWatchpoints = WatchpointsTableWidget(self.driver, self.workerManager)
@@ -58,14 +60,20 @@ class WatchpointsWidget(QWidget):
 	
 	def optvariable_clicked(self):
 #		self.lblAddrVar.setText("Variable:")
+		self.forVariable = True
 		self.txtMemoryAddress.setPlaceholderText("Variable name ...")
 		
 	def optaddress_clicked(self):
 #		self.lblAddrVar.setText("Address:")
+		self.forVariable = False
 		self.txtMemoryAddress.setPlaceholderText("Memory address ...")
 		
 	def addWatchpoint_clicked(self):
 		print(f"addWatchpoint_clicked")
+		if self.forVariable:
+			self.wpHelper.setWatchpointForVariable(self.txtMemoryAddress.text())
+		else:
+			self.wpHelper.setWatchpointForExpression(self.txtMemoryAddress.text())
 		
 	def reloadWatchpoints(self, initTable = True):
 		self.tblWatchpoints.reloadWatchpoints(initTable)

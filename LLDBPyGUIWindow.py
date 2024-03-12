@@ -40,6 +40,10 @@ from ui.watchpointWidget import *
 from ui.threadFrameTreeView import *
 from ui.sourceTextEdit import *
 from ui.listenerTreeView import *
+#from ui.customQt.QHEXTextEditSplitter import *
+from ui.customQt.QHexTableWidget import *
+from ui.customQt.QMemoryViewer import *
+
 
 from worker.workerManager import *
 
@@ -252,6 +256,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.tabWidgetMain = QTabWidget()
 		self.tabWidgetMain.setContentsMargins(0, 0, 0, 0)
 		self.tabWidgetMain.addTab(self.splitter, "Debugger")
+		self.tabWidgetMain.currentChanged.connect(self.handle_tabWidgetMainCurrentChanged)
 		
 		self.tblFileInfos = FileInfosTableWidget()
 		self.tabWidgetFileInfos = QWidget()
@@ -277,6 +282,14 @@ class LLDBPyGUIWindow(QMainWindow):
 		
 		self.wdtCommands = CommandsWidget(self.workerManager)
 		self.tabWidgetMain.addTab(self.wdtCommands, "Commands")
+		
+		self.tblHex = QMemoryViewer(self.driver)
+		
+		self.tabMemory = QWidget()
+		self.tabMemory.setLayout(QVBoxLayout())
+		self.tabMemory.layout().addWidget(self.tblHex)
+		
+		self.tabWidgetMain.addTab(self.tabMemory, "Memory")
 		
 		self.layout.addWidget(self.tabWidgetMain)
 		
@@ -306,6 +319,12 @@ class LLDBPyGUIWindow(QMainWindow):
 			print(f"Loading new target: '{filename}")
 			self.loadNewExecutableFile(filename)
 	
+	def handle_tabWidgetMainCurrentChanged(self, idx):
+		if idx == 2:
+			self.wdtCommands.txtCmd.setFocus(Qt.FocusReason.ActiveWindowFocusReason)
+			print(f"self.wdtCommands.txtCmd.setFocus(Qt.FocusReason.ActiveWindowFocusReason)")
+		pass
+		
 	isAttached = False
 	def attach_clicked(self):
 		if not self.isAttached:
@@ -522,7 +541,9 @@ class LLDBPyGUIWindow(QMainWindow):
 				
 				fileInfos = FileInfos()
 				fileInfos.loadFileInfo(target, self.tblFileInfos)
-#				self.devHelper.setDevWatchpoints()
+				self.devHelper.bpHelper = self.bpHelper
+				self.devHelper.setDevBreakpoints()
+				self.devHelper.setDevWatchpointsNG()
 				self.treStats.loadFileStats()
 #					
 				self.process = target.GetProcess()
@@ -675,6 +696,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.txtMultiline.setPC(self.driver.getPC(), True)
 		self.start_loadRegisterWorker()
 #		self.reloadBreakpoints(True)
+		self.wdtBPsWPs.treBPs.clear()
 		self.wdtBPsWPs.reloadBreakpoints(True)
 		self.tabWatchpoints.reloadWatchpoints(True)
 		self.loadStacktrace()
