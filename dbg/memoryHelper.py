@@ -3,6 +3,25 @@ import lldb
 from enum import Enum
 import re
 
+def write_memory(process, address, bytes):
+	error = lldb.SBError()
+	target = process.GetTarget()
+	
+	# Read memory using ReadMemory function
+#	data = target.ReadMemory(address, size, error)
+	
+	# Create a Python string from the byte array.
+	new_value = str(bytes)
+	result = process.WriteMemory(address, new_value, error)
+#	if not error.Success() or result != len(bytes):
+#		print('SBProcess.WriteMemory() failed!')
+	
+	if error.Success() and result == len(bytes):
+		return True
+	else:
+		print("Error writing memory:", error)
+		return False
+	
 def read_memory(process, address, size):
 	error = lldb.SBError()
 	target = process.GetTarget()

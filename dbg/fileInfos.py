@@ -690,12 +690,25 @@ def BreakpointEventTypeString(breakpointEventType):
 		return "eBreakpointEventTypeAutoContinueChanged"
 	else:
 		return "Unknown"
+	
+def WatchpointValueKindString(watchpointValueKind):
+	if watchpointValueKind == lldb.eWatchPointValueKindVariable:
+		return "Variable"
+	elif watchpointValueKind == lldb.eWatchPointValueKindExpression:
+		return "Expression"
+	elif watchpointValueKind == lldb.eWatchPointValueKindInvalid:
+		return "Invalid"
+	else:
+		return "Unknown"
 
-#eBroadcastBitStackChanged = (1 << 0),
-#eBroadcastBitThreadSuspended = (1 << 1),
-#eBroadcastBitThreadResumed = (1 << 2),
-#eBroadcastBitSelectedFrameChanged = (1 << 3),
-#eBroadcastBitThreadSelected = (1 << 4)
+#GetWatchValueKind(SBWatchpoint self) → lldb::WatchpointValueKind
+#Returns the kind of value that was watched when the watchpoint was created. Returns one of the following eWatchPointValueKindVariable, eWatchPointValueKindExpression, eWatchPointValueKindInvalid.
+#
+##eBroadcastBitStackChanged = (1 << 0),
+##eBroadcastBitThreadSuspended = (1 << 1),
+##eBroadcastBitThreadResumed = (1 << 2),
+##eBroadcastBitSelectedFrameChanged = (1 << 3),
+##eBroadcastBitThreadSelected = (1 << 4)
 	
 def convert_address(address):
 	# Convert the address to hex

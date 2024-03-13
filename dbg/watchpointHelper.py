@@ -14,6 +14,15 @@ from PyQt6 import uic, QtWidgets
 
 from config import *
 
+
+#read | write | modify | read_write
+
+class WatchpointAccessMod(Enum):
+	Read = ("read", "r")
+	Write = ("w", "w")
+	Modify = ("modify", "w")
+	Read_Write = ("read_write", "rw")
+
 class WatchpointHelper(QObject):
 	
 	driver = None
@@ -32,21 +41,26 @@ class WatchpointHelper(QObject):
 #			print(f"=========>>>>>> DEV-WATCHPOINT: {wp}")
 #		pass
 	
-	def setWatchpointForVariable(self, varName):
+	def setWatchpointForVariable(self, varName, type = WatchpointAccessMod.Write):
 		print(f"==========>>>>>>>>> SETTING WATCHPOINT For Variable {varName}!!!")
 		res = lldb.SBCommandReturnObject()
 		ci = self.driver.debugger.GetCommandInterpreter()
 		
+		ci.HandleCommand('command script import "/Volumes/Data/dev/_reversing/disassembler/LLDBPyGUI/LLDBPyGUI/LLDBPyGUIWindow.py"', res)
 		# settings
 		ci.HandleCommand(f"w s v {varName}", res)
-	
-	def setWatchpointForExpression(self, expression):
+		ci.HandleCommand("watchpoint command add -F LLDBPyGUIWindow.wpcallback 1", res)
+#	debugger.HandleCommand("watchpoint command add -F myfile.callback %s" % mywatchpoint.GetID())
+#	read | write | modify | read_write
+	def setWatchpointForExpression(self, expression, type = WatchpointAccessMod.Modify):
 		print(f"==========>>>>>>>>> SETTING WATCHPOINT For Expression {expression}!!!")
 		res = lldb.SBCommandReturnObject()
 		ci = self.driver.debugger.GetCommandInterpreter()
 		
 		# settings
+		ci.HandleCommand('command script import "/Volumes/Data/dev/_reversing/disassembler/LLDBPyGUI/LLDBPyGUI/LLDBPyGUIWindow.py"', res)
 		ci.HandleCommand(f"w s e {expression}", res)
+		ci.HandleCommand("watchpoint command add -F LLDBPyGUIWindow.wpcallback 1", res)
 	
 #		return _lldb.SBTarget_DeleteAllWatchpoints(self) 
 #	10056   

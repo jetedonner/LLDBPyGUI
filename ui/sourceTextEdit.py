@@ -38,12 +38,15 @@ class SourceTextEdit(QConsoleTextEdit):
 		start_pos = position + 3
 		
 #		print(f"Scroll To Line: {line_text} => {position} / {start_pos}")
-		
-		end_pos = self.getNextNBSpace(text, start_pos)
-		if text[start_pos:end_pos] == '':
-			return
-		
-		linePos = int(text[start_pos:end_pos])
+		linePos = 1
+		try:
+			end_pos = self.getNextNBSpace(text, start_pos)
+			if text[start_pos:end_pos] == '':
+				return
+			linePos = int(text[start_pos:end_pos])
+		except Exception as e:
+			print(f"Exception: {e}")
+			pass
 		
 		scroll_value = linePos * self.fontMetrics().height()
 		scroll_value -= self.viewport().height() / 2

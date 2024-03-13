@@ -13,18 +13,43 @@ from config import *
 
 #from ui.editVariableDialog import *
 from dbg.variableHelper import *
+from dbg.watchpointHelper import *
 
 class VariablesTableWidget(QTableWidget):
 	
+	driver = None
+	wpHelper = None
 	ommitCellChanged = False
 	
-	def __init__(self):
+	
+	def __init__(self, driver):
 		super().__init__()
+		self.driver = driver
+		self.wpHelper = WatchpointHelper(self.driver)
+		
 		self.context_menu = QMenu(self)
 		self.actionShowMemory = self.context_menu.addAction("Show Memory")
 		self.actionShowMemory.triggered.connect(self.handle_showMemory)
 		self.actionEditValue = self.context_menu.addAction("Edit variable value")
 		self.actionEditValue.triggered.connect(self.handle_editValue)
+		self.addWP_menu = QMenu("Add Watchpoint", self)
+#		self.submenu_action1 = QAction("Only Read", self)
+#		self.submenu_action2 = QAction("Only Write", self)
+#		self.submenu_action3 = QAction("Read / Write", self)
+		self.actionAddWpRead = self.addWP_menu.addAction("Read")
+		self.actionAddWpRead.triggered.connect(self.handle_addWpRead)
+		self.actionAddWpWrite = self.addWP_menu.addAction("Write")
+		self.actionAddWpWrite.triggered.connect(self.handle_addWpWrite)
+		self.actionAddWpModify = self.addWP_menu.addAction("Modify")
+		self.actionAddWpModify.triggered.connect(self.handle_addWpModify)
+		self.actionAddWpReadWrite = self.addWP_menu.addAction("Read / Write")
+		self.actionAddWpReadWrite.triggered.connect(self.handle_addWpReadWrite)
+		self.context_menu.addMenu(self.addWP_menu)
+#		self.actionAddWp = self.context_menu.addAction("Add Watchpoint")
+#		self.actionAddWp.triggered.connect(self.handle_addWatchpoint)
+		# Create a submenu
+#		submenu = QMenu("Read", self)
+		
 #		actionToggleBP = self.context_menu.addAction("Toggle Breakpoint")
 #		actionToggleBP.triggered.connect(self.handle_toggleBP)
 #		actionDisableBP = self.context_menu.addAction("Enable / Disable Breakpoint")
@@ -80,6 +105,31 @@ class VariablesTableWidget(QTableWidget):
 #		print(self.itemAt(event.pos().x(), event.pos().y()))
 #		print(self.selectedItems())
 		self.context_menu.exec(event.globalPos())
+	
+	def handle_addWpRead(self):
+		self.addWpForVar("r")
+		pass
+		
+	def handle_addWpWrite(self):
+		self.addWpForVar("w")
+		pass
+		
+	def handle_addWpModify(self):
+		self.addWpForVar("m")
+		pass
+		
+	def handle_addWpReadWrite(self):
+		self.addWpForVar("rw")
+		pass
+		
+#	def handle_addWatchpoint(self):
+#		pass
+	
+	def addWpForVar(self, type):
+		item = self.item(self.selectedItems()[0].row(), 0)
+		print(f'Adding WP For: {item.text()}, type = {type}')
+		
+		self.wpHelper.setWatchpointForVariable(item.text(), type)
 		
 	def handle_editValue(self):
 		item = self.item(self.selectedItems()[0].row(), 0)

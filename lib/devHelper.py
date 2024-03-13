@@ -39,13 +39,13 @@ class DevHelper(QObject):
 	
 	def setDevBreakpoints(self):
 		print(f"==========>>>>>>>>> SETTING DEV-BREAKPOINTS-NG!!!")
-		self.bpHelper.enableBP("0x100003f6a")
+		self.bpHelper.enableBP("0x100003f5d")
 		pass
 	
 	def setDevWatchpointsNG(self):
 		print(f"==========>>>>>>>>> SETTING DEV-WATCHPOINTS-NG!!!")
 		self.wpHelper.setWatchpointForVariable("idx")
-		self.wpHelper.setWatchpointForExpression("0x0000000304112e80")
+#		self.wpHelper.setWatchpointForExpression("0x304112ea4")#("0x0000000304112e80")
 		
 #		res = lldb.SBCommandReturnObject()
 #		ci = self.driver.debugger.GetCommandInterpreter()

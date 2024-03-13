@@ -133,8 +133,8 @@ class ListenerLogTreeWidget(QTreeWidget):
 			return
 		elif SBWatchpoint.EventIsWatchpointEvent(event):
 			sectionNode.setIcon(0, ConfigClass.iconGlasses)
-			self.window().tabWatchpoints.tblWatchpoints.resetContent()
-			self.window().tabWatchpoints.reloadWatchpoints(True)
+#			self.window().tabWatchpoints.tblWatchpoints.resetContent()
+			self.window().tabWatchpoints.reloadWatchpoints(False)
 		elif SBTarget.EventIsTargetEvent(event):
 			print(f"EventIsTargetEvent")
 		elif SBProcess.EventIsProcessEvent(event):
@@ -300,7 +300,21 @@ class ListenerLogTreeWidget(QTreeWidget):
 		
 			
 		QCoreApplication.processEvents()
+		currTabIdx = self.window().tabWidgetDbg.currentIndex()
+		self.window().tabWidgetDbg.setCurrentWidget(self.window().treListener)
 		self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
+#		self.txtSource.horizontalScrollBar().setValue(horizontal_value)
+#		if not autoScroll:
+#			self.txtSource.verticalScrollBar().setValue(vertical_value)
+#		else:
+			
+#				QApplication.processEvents()
+#				currTabIdx = self.tabWidgetDbg.currentIndex()
+#				self.tabWidgetDbg.setCurrentIndex(3)
+#			line_text = "=>"
+#			self.txtSource.scroll_to_line(line_text)
+		self.window().tabWidgetDbg.setCurrentIndex(currTabIdx)
+		
 		QCoreApplication.processEvents()
 		pass
 		

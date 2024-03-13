@@ -12,6 +12,7 @@ from PyQt6.QtWidgets import *
 from PyQt6 import uic, QtWidgets
 from config import *
 from lib.settings import *
+from dbg.fileInfos import *
 
 from ui.assemblerTextEdit import *
 from ui.dialogs.dialogHelper import *
@@ -43,13 +44,14 @@ class WatchpointsWidget(QWidget):
 		self.optVariable.setChecked(True)
 		self.optVariable.clicked.connect(self.optvariable_clicked)
 		self.layCtrls.addWidget(self.optVariable)
-		self.optAddress = QRadioButton("Address")
+		self.optAddress = QRadioButton("Expression")
 		self.optAddress.clicked.connect(self.optaddress_clicked)
 		self.layCtrls.addWidget(self.optAddress)
 #		self.lblAddrVar = QLabel("Variable:")
 #		self.layCtrls.addWidget(self.lblAddrVar)
 		self.txtMemoryAddress = QLineEdit()
 		self.txtMemoryAddress.setPlaceholderText("Variable name ...")
+		self.txtMemoryAddress.returnPressed.connect(self.addWatchpoint_clicked)
 		self.layCtrls.addWidget(self.txtMemoryAddress)
 		self.cmdAddWatchpoint = QPushButton("Add Watchpoint")
 		self.cmdAddWatchpoint.clicked.connect(self.addWatchpoint_clicked)
@@ -62,11 +64,13 @@ class WatchpointsWidget(QWidget):
 #		self.lblAddrVar.setText("Variable:")
 		self.forVariable = True
 		self.txtMemoryAddress.setPlaceholderText("Variable name ...")
+		self.txtMemoryAddress.setFocus(Qt.FocusReason.ActiveWindowFocusReason)
 		
 	def optaddress_clicked(self):
 #		self.lblAddrVar.setText("Address:")
 		self.forVariable = False
-		self.txtMemoryAddress.setPlaceholderText("Memory address ...")
+		self.txtMemoryAddress.setPlaceholderText("Enter Expression ...")
+		self.txtMemoryAddress.setFocus(Qt.FocusReason.ActiveWindowFocusReason)
 		
 	def addWatchpoint_clicked(self):
 		print(f"addWatchpoint_clicked")
@@ -122,22 +126,24 @@ class WatchpointsTableWidget(QTableWidget):
 #		
 		
 	def initTable(self):
-		self.setColumnCount(9)
+		self.setColumnCount(11)
 		self.setColumnWidth(0, 48)
 		self.setColumnWidth(1, 32)
 		self.setColumnWidth(2, 128)
-		self.setColumnWidth(3, 128)
-		self.setColumnWidth(4, 128)
-		self.setColumnWidth(5, 128)
-		self.setColumnWidth(6, 32)
-		self.setColumnWidth(7, 48)
-		self.setColumnWidth(8, 256)
+		self.setColumnWidth(3, 82)
+		self.setColumnWidth(4, 100)
+		self.setColumnWidth(5, 164)
+		self.setColumnWidth(6, 128)
+		self.setColumnWidth(7, 32)
+		self.setColumnWidth(8, 48)
+		self.setColumnWidth(9, 256)
+		self.setColumnWidth(10, 224)
 #		self.setColumnWidth(5, 324)
 #		self.setColumnWidth(6, 304)
 		self.verticalHeader().hide()
 		self.horizontalHeader().show()
 		self.horizontalHeader().setHighlightSections(False)
-		self.setHorizontalHeaderLabels(['State', '#', 'Address', 'Size', 'Spec', 'Type', 'Hit', 'Ignore', 'Condition'])#, 'Instruction', 'Hex', 'Comment'])
+		self.setHorizontalHeaderLabels(['State', '#', 'Address', 'Size', 'Kind', 'Spec', 'Type', 'Hit', 'Ignore', 'Condition', 'Value'])#, 'Instruction', 'Hex', 'Comment'])
 		self.horizontalHeaderItem(0).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
 		self.horizontalHeaderItem(1).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
 		self.horizontalHeaderItem(2).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
@@ -147,13 +153,15 @@ class WatchpointsTableWidget(QTableWidget):
 		self.horizontalHeaderItem(6).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
 		self.horizontalHeaderItem(7).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
 		self.horizontalHeaderItem(8).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
+		self.horizontalHeaderItem(9).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
+		self.horizontalHeaderItem(10).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
 #		self.horizontalHeaderItem(5).setTextAlignment(Qt.AlignmentFlag.AlignLeft)
 #		self.horizontalHeaderItem(6).setTextAlignment(Qt.AlignmentFlag.AlignLeft)
 		self.setFont(ConfigClass.font)
 #		
 		self.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
 		self.setShowGrid(False)
-#		self.cellDoubleClicked.connect(self.on_double_click)
+		self.cellDoubleClicked.connect(self.on_double_click)
 #		self.addRow(True, 1, "0x10000", "noname", 0, "nocond")
 		pass
 		
@@ -162,14 +170,20 @@ class WatchpointsTableWidget(QTableWidget):
 	def resetContent(self):
 		self.setRowCount(0)
 		
-#	def on_double_click(self, row, col):
-#		if col == 3:
-#			self.oldBPName = self.item(row, 3).text()
-#		elif col == 2:
-##			self.oldBPName = self.item(row, 3).text()
-#			self.window().txtMultiline.viewAddress(self.item(row, 2).text())
-#			pass
-#		pass
+	def on_double_click(self, row, col):
+		if col == 0:
+			self.handle_enableWP()
+		elif col == 2:
+			self.window().doReadMemory(int(self.item(row, 2).text(), 16))
+		elif col == 5:
+			try:
+				memAddr = int(self.item(row, 5).text(), 16)
+				self.window().doReadMemory(memAddr)
+				pass
+			except Exception as e:
+				pass
+			pass
+		pass
 		
 	def contextMenuEvent(self, event):
 		if self.item(self.selectedItems()[0].row(), 0).isBPEnabled:
@@ -206,21 +220,21 @@ class WatchpointsTableWidget(QTableWidget):
 		
 	def item_changed_handler(self, row, col):
 		if not self.ommitCellChanged:
-			if col == 7: # Name changed
+			if col == 8: # Name changed
 				target = self.driver.getTarget()
 				wpFound = False
 				for i in range(target.GetNumWatchpoints()):
 					wp_cur = target.GetWatchpointAtIndex(i)
 					if "#" + str(wp_cur.GetID()) == self.item(self.selectedItems()[0].row(), 1).text():
-						wp_cur.SetIgnoreCount(int(self.item(self.selectedItems()[0].row(), 7).text()))
+						wp_cur.SetIgnoreCount(int(self.item(self.selectedItems()[0].row(), col).text()))
 						break
-			elif col == 8: # Name changed
+			elif col == 9: # Name changed
 				target = self.driver.getTarget()
 				wpFound = False
 				for i in range(target.GetNumWatchpoints()):
 					wp_cur = target.GetWatchpointAtIndex(i)
 					if "#" + str(wp_cur.GetID()) == self.item(self.selectedItems()[0].row(), 1).text():
-						wp_cur.SetCondition(self.item(self.selectedItems()[0].row(), 8).text())
+						wp_cur.SetCondition(self.item(self.selectedItems()[0].row(), col).text())
 						break
 			pass
 	
@@ -235,7 +249,7 @@ class WatchpointsTableWidget(QTableWidget):
 #		if initTable:
 #			self.txtMultiline.table.setBPAtAddress(loadAddr, True, False)
 		self.wpsEnabled[wp.GetID()] = wp.IsEnabled()
-		self.addRow(wp.IsEnabled(), wp.GetID(), hex(wp.GetWatchAddress()), hex(wp.GetWatchSize()), wp.GetWatchSpec(), ("r" if wp.IsWatchingReads() else "") + ("" if wp.IsWatchingReads() and wp.IsWatchingWrites() else "") + ("w" if wp.IsWatchingWrites() else ""), wp.GetHitCount(), wp.GetIgnoreCount(), wp.GetCondition())
+		self.addRow(wp.IsEnabled(), wp.GetID(), hex(wp.GetWatchAddress()), hex(wp.GetWatchSize()), WatchpointValueKindString(wp.GetWatchValueKind()), wp.GetWatchSpec(), ("r" if wp.IsWatchingReads() else "") + ("" if wp.IsWatchingReads() and wp.IsWatchingWrites() else "") + ("w" if wp.IsWatchingWrites() else ""), wp.GetHitCount(), wp.GetIgnoreCount(), wp.GetCondition())
 		
 		
 	def handle_updateWatchpointValue(self, wp):
@@ -250,13 +264,25 @@ class WatchpointsTableWidget(QTableWidget):
 				self.wpsEnabled[wp.GetID()] = newEnabled
 				wp.SetEnabled(newEnabled)
 			
-		self.updateRow(newEnabled, wp.GetID(), hex(wp.GetWatchAddress()), hex(wp.GetWatchSize()), wp.GetWatchSpec(), ("r" if wp.IsWatchingReads() else "") + ("" if wp.IsWatchingReads() and wp.IsWatchingWrites() else "") + ("w" if wp.IsWatchingWrites() else ""), wp.GetHitCount(), wp.GetIgnoreCount(), wp.GetCondition())
+		self.updateRow(newEnabled, wp.GetID(), hex(wp.GetWatchAddress()), hex(wp.GetWatchSize()), WatchpointValueKindString(wp.GetWatchValueKind()), wp.GetWatchSpec(), ("r" if wp.IsWatchingReads() else "") + ("" if wp.IsWatchingReads() and wp.IsWatchingWrites() else "") + ("w" if wp.IsWatchingWrites() else ""), wp.GetHitCount(), wp.GetIgnoreCount(), wp.GetCondition())
 		
-	def updateRow(self, state, num, address, size, spec, name, hitcount, ignore, condition):
+	def updateRow(self, state, num, address, size, kind, spec, name, hitcount, ignore, condition):
 		self.ommitCellChanged = True
-		
+		value = ""
+		memory = self.getValue(int(address, 16), int(size, 16))
+		if memory != None:
+			try:
+#				condition = memory #.decode('utf-8')
+				# Interpret the byte array as an unsigned integer
+				value = str(int.from_bytes(memory, byteorder='little', signed=False))
+				
+			except Exception as e:
+				print(f"Exception while converting memory value {memory} to string! {e}")
+		rowFound = False
 		for i in range(self.rowCount()):
 			if self.item(i, 1).text() == "#" + str(num):
+				rowFound = True
+				self.item(i, 0).isBPEnabled = state
 				if not state:
 					self.item(i, 0).setIcon(ConfigClass.iconEyeGrey)
 				else:
@@ -264,16 +290,28 @@ class WatchpointsTableWidget(QTableWidget):
 #				self.item(i, 0).enableBP(state)
 				self.item(i, 2).setText(str(address))
 				self.item(i, 3).setText(str(size))
-				self.item(i, 4).setText(str(spec))
-				self.item(i, 5).setText(str(name))
-				self.item(i, 6).setText(str(hitcount))
-				self.item(i, 7).setText(str(ignore))
-				self.item(i, 8).setText("" if condition == None else str(condition))
+				self.item(i, 4).setText(str(kind))
+				self.item(i, 5).setText(str(spec))
+				self.item(i, 6).setText(str(name))
+				self.item(i, 7).setText(str(hitcount))
+				self.item(i, 8).setText(str(ignore))
+				self.item(i, 9).setText("" if condition == None else str(condition))
+				self.item(i, 10).setText(str(value))
 				break
+		if not rowFound:
+			self.addRow(state, num, address, size, kind, spec, name, hitcount, ignore, condition)
 		self.ommitCellChanged = False
 		
-	def addRow(self, state, num, address, size, spec, name, hitcount, ignore, condition):
+	def addRow(self, state, num, address, size, kind, spec, name, hitcount, ignore, condition):
 		self.ommitCellChanged = True
+		value = ""
+		memory = self.getValue(int(address, 16), int(size, 16))
+		if memory != None:
+			try:
+#				condition = memory.decode('utf-8')
+				value = str(int.from_bytes(memory, byteorder='little', signed=False))
+			except Exception as e:
+				print(f"Exception while converting memory value {memory} to string! {e}")
 		currRowCount = self.rowCount()
 		self.setRowCount(currRowCount + 1)
 		item = DisassemblyImageTableWidgetItem()
@@ -288,18 +326,37 @@ class WatchpointsTableWidget(QTableWidget):
 		self.addItem(currRowCount, 1, "#" + str(num))
 		self.addItem(currRowCount, 2, str(address))
 		self.addItem(currRowCount, 3, str(size))
-		self.addItem(currRowCount, 4, str(spec))
-		self.addItem(currRowCount, 5, str(name))
-		self.addItem(currRowCount, 6, str(hitcount))
-		self.addItem(currRowCount, 7, str(ignore))
-		self.addItem(currRowCount, 8, "" if condition == None else str(condition))
+		self.addItem(currRowCount, 4, str(kind))
+		self.addItem(currRowCount, 5, str(spec))
+		self.addItem(currRowCount, 6, str(name))
+		self.addItem(currRowCount, 7, str(hitcount))
+		self.addItem(currRowCount, 8, str(ignore))
+		self.addItem(currRowCount, 9, "" if condition == None else str(condition))
+		self.addItem(currRowCount, 10, str(value))
 		self.setRowHeight(currRowCount, 18)
 		self.ommitCellChanged = False
 		
 	def addItem(self, row, col, txt):
 		item = QTableWidgetItem(txt, QTableWidgetItem.ItemType.Type)
-		if col != 5 and col != 7 and col != 8:
+		if col != 6 and col != 8 and col != 9:
 			item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable) #Qt.ItemFlag.ItemIsSelectable)
 			
 		# Insert the items into the row
 		self.setItem(row, col, item)
+		
+	def getValue(self, address, size):
+		error_ref = lldb.SBError()
+		process = self.driver.debugger.GetSelectedTarget().GetProcess()
+		print(f"self.driver.debugger.GetSelectedTarget().GetProcess() => {self.driver.debugger.GetSelectedTarget().GetProcess()}")
+		memory = process.ReadMemory(address, size, error_ref)
+		if error_ref.Success():
+#			dataTillNull = self.extract_data_until_null(memory)
+			return self.extract_data_until_null(memory)
+		return None
+	
+	def extract_data_until_null(self, byte_data):
+		null_index = byte_data.find(b'\x00')
+		if null_index != -1:
+			return byte_data[:null_index + 1]
+		else:
+			return None

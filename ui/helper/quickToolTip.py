@@ -266,10 +266,10 @@ class QuickToolTip:
 			tooltip += f'OpStr:\t{operandsText}'
 			tooltip += f'\nAddr:\t{hex(address)}'
 			try:
-				print(f"debugger.GetSelectedTarget() => {debugger.GetSelectedTarget()}")
+#				print(f"debugger.GetSelectedTarget() => {debugger.GetSelectedTarget()}")
 				error_ref = lldb.SBError()
 				process = debugger.GetSelectedTarget().GetProcess()
-				print(f"debugger.GetSelectedTarget().GetProcess() => {debugger.GetSelectedTarget().GetProcess()}")
+#				print(f"debugger.GetSelectedTarget().GetProcess() => {debugger.GetSelectedTarget().GetProcess()}")
 				memory = process.ReadMemory(address, 0x20, error_ref)
 				if error_ref.Success():
 					dataTillNull = self.extract_data_until_null(memory)

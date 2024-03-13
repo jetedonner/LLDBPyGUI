@@ -15,6 +15,7 @@ from PyQt6 import uic, QtWidgets
 
 from config import *
 from ui.dialogs.settingsDialog import *
+from dbg.memoryHelper import *
 
 
 #class ByteGrouping(enum.Enum):
@@ -42,7 +43,7 @@ class ReadOnlySelectableTextEdit(QTextEdit):
 		cursor = self.textCursor()
 		
 		# Get the start and end positions of the edited text
-		start_pos = cursor.selectionStart()
+		start_pos = cursor.selectionStart() - 1
 		end_pos = cursor.selectionEnd()
 		
 		# Access and process the edited text (optional)
@@ -68,12 +69,16 @@ class ReadOnlySelectableTextEdit(QTextEdit):
 		
 	def handle_writeMemory(self):
 		# Target memory address to write to
-		memory_address = 0x100003f50  # Replace with the actual address
+		memory_address = 0x304113138 #0x304112ea8 # 0x100003f50  # Replace with the actual address
 		
 		# Data to write (as a byte string)
 #		data_to_write = b"NOP"
-		data_to_write = bytes.fromhex("90")
+#		data_to_write = b'\x05'# bytes.fromhex("05")
+		hex_value = "0x05"
+		data_to_write = bytes.fromhex(hex_value[2:])
 		
+#		result = write_memory(self.window().driver.getTarget().GetProcess(), memory_address, data_to_write)
+#		print(f"WRITE MEMORY: {result}")
 		# Write the data to memory
 		error = lldb.SBError()
 		bytes_written = self.window().driver.getTarget().GetProcess().WriteMemory(memory_address, data_to_write, error)
