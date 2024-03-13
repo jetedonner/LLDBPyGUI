@@ -72,7 +72,7 @@ def wpcallback(frame, wp, dict):
 	print(wp)
 	res = lldb.SBCommandReturnObject()
 	ci = frame.GetThread().GetProcess().GetTarget().GetDebugger().GetCommandInterpreter()
-	ci.HandleCommand('command script import "/Volumes/Data/dev/_reversing/disassembler/LLDBPyGUI/LLDBPyGUI/LLDBPyGUIWindow.py"', res)
+	ci.HandleCommand('command script import "./LLDBPyGUIWindow.py"', res)
 	# settings
 #	ci.HandleCommand(f"w s v {varName}", res)
 	ci.HandleCommand(f"watchpoint command add -F LLDBPyGUIWindow.wpcallback {wp.GetID()}", res)
@@ -430,7 +430,10 @@ class LLDBPyGUIWindow(QMainWindow):
 			# Find the QAction within the sender (e.g., QMenu or QToolBar)
 			action = sender.findChild(QAction)
 			
-		self.doReadMemory(self.quickToolTip.get_memory_address(self.driver.debugger, action.data()))
+		print(f"action ===============>>>>>>>>>>>> {action.data()}")
+		addr = self.quickToolTip.get_memory_address(self.driver.debugger, action.data())
+		print(f"GETTING MEMORY: {addr}")
+		self.doReadMemory(addr)
 #		print(f"Triggering QAction: {action.text()}")
 		
 	def doReadMemory(self, address, size = 0x100):
@@ -612,6 +615,7 @@ class LLDBPyGUIWindow(QMainWindow):
 #		self.dialog.show()
 		
 		if self.setHelper.getValue(SettingsValues.LoadTestTarget):
+			print(f"Loading target: {ConfigClass.testTarget}")
 			self.loadNewExecutableFile(ConfigClass.testTarget)
 			
 	def loadNewExecutableFile(self, filename):
@@ -647,7 +651,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.driver.createTarget(filename)
 		if self.driver.debugger.GetNumTargets() > 0:
 			target = self.driver.getTarget()
-			
+			print(target)
 			if self.setHelper.getValue(SettingsValues.BreakAtMainFunc):
 				main_bp = self.bpHelper.addBPByName(self.setHelper.getValue(SettingsValues.MainFuncName))
 				print(main_bp)

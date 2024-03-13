@@ -30,6 +30,7 @@ from lib.settings import *
 from dbg.fileInfos import *
 #from LLDBPyGUIWindow import SBStreamForwarder
 from worker.debugWorker import StepKind
+from ui.helper.listenerHelper import *
 from config import *
 	
 class SBStreamForwarder(io.StringIO):
@@ -132,9 +133,22 @@ class ListenerLogTreeWidget(QTreeWidget):
 			sectionNode.setIcon(0, ConfigClass.iconAnon)
 			return
 		elif SBWatchpoint.EventIsWatchpointEvent(event):
-			sectionNode.setIcon(0, ConfigClass.iconGlasses)
-#			self.window().tabWatchpoints.tblWatchpoints.resetContent()
 			self.window().tabWatchpoints.reloadWatchpoints(False)
+			addEventToListenerTreeItem(sectionNode, event)
+#			sectionNode.setIcon(0, ConfigClass.iconGlasses)
+##			self.window().tabWatchpoints.tblWatchpoints.resetContent()
+#			self.window().tabWatchpoints.reloadWatchpoints(False)
+#			wp = SBWatchpoint.GetWatchpointFromEvent(event)
+#			subSectionNode = QTreeWidgetItem(sectionNode, ["Watchpoint ID: ", str(wp.GetID())])
+#			subSectionNode = QTreeWidgetItem(sectionNode, ["Address: ", hex(wp.GetWatchAddress())])
+#			subSectionNode = QTreeWidgetItem(sectionNode, ["Size: ", hex(wp.GetWatchSize())])
+#			subSectionNode = QTreeWidgetItem(sectionNode, ["Condition: ", wp.GetCondition()])
+#			subSectionNode = QTreeWidgetItem(sectionNode, ["Hit count: ", str(wp.GetHitCount())])
+#			subSectionNode = QTreeWidgetItem(sectionNode, ["Ignore count: ", str(wp.GetIgnoreCount())])
+			
+#			GetWatchAddress
+#			GetCondition(SBWatchpoint self) -> char const *
+			
 		elif SBTarget.EventIsTargetEvent(event):
 			print(f"EventIsTargetEvent")
 		elif SBProcess.EventIsProcessEvent(event):
@@ -192,6 +206,17 @@ class ListenerLogTreeWidget(QTreeWidget):
 			if reason == lldb.eStopReasonWatchpoint:
 				print(f"WATCHPOINT HIT!!!")
 				sectionNode.setIcon(0, ConfigClass.iconGlasses)
+				
+				wp = SBWatchpoint.GetWatchpointFromEvent(event)
+				subSectionNode = QTreeWidgetItem(sectionNode, ["ID: ", str(wp.GetID())])
+				
+#				GetWatchpointEventTypeFromEvent(*args)
+#				GetWatchpointEventTypeFromEvent(SBEvent event) -> lldb::WatchpointEventType	source code
+#				
+#				GetWatchpointFromEvent(*args)
+#				GetWatchpointFromEvent(SBEvent event) -> SBWatchpoint
+				
+				
 #				self.driver.debugger.SetAsync(False)
 #				self.driver.getTarget().GetProcess().Stop() #GetThreadAtIndex(0).Suspend()
 			elif reason == lldb.eStopReasonBreakpoint:# or reason == lldb.eBroadcastBitBreakpointChanged:

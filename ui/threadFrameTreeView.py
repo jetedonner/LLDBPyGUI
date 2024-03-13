@@ -27,7 +27,26 @@ class ThreadFrameTreeWidget(QTreeWidget):
 		self.header().resizeSection(1, 128)
 		self.header().resizeSection(2, 512)
 		self.header().resizeSection(3, 128)
+#		self.doubleClicked.connect(self.handle_doubleClick)
 		
 	def contextMenuEvent(self, event):
 		# Show the context menu
 		self.context_menu.exec(event.globalPos())
+		
+#	def mouseDoubleClickEvent(self, event):
+#		daItem = self.itemAt(event.pos().x(), event.pos().y())
+#		
+#		if daItem.col
+	
+	def mouseDoubleClickEvent(self, event):
+		daItem = self.itemAt(event.pos().x(), event.pos().y())
+		if daItem == None:
+			return
+		col = self.columnAt(event.pos().x())
+		if col == 3:
+			self.window().doReadMemory(int(daItem.text(col), 16))
+			
+#	def handle_doubleClick(self, event):
+#		if event.column() == 3:
+#			self.selectedItems()[]
+#			print(f"event => {event.column()}")

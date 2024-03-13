@@ -116,7 +116,7 @@ class WatchpointsTableWidget(QTableWidget):
 #		actionCopyAddress.triggered.connect(self.handle_copyAddress)
 #		
 #		self.cellDoubleClicked.connect(self.on_double_click)
-#		self.cellChanged.connect(self.item_changed_handler)
+		self.cellChanged.connect(self.item_changed_handler)
 		
 #		actionCopyInstruction = self.context_menu.addAction("Copy instruction")
 #		actionCopyHex = self.context_menu.addAction("Copy hex value")
@@ -227,6 +227,7 @@ class WatchpointsTableWidget(QTableWidget):
 					wp_cur = target.GetWatchpointAtIndex(i)
 					if "#" + str(wp_cur.GetID()) == self.item(self.selectedItems()[0].row(), 1).text():
 						wp_cur.SetIgnoreCount(int(self.item(self.selectedItems()[0].row(), col).text()))
+						print(f"SETTING IGNORE-COUNT: {wp_cur}")
 						break
 			elif col == 9: # Name changed
 				target = self.driver.getTarget()

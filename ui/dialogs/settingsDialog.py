@@ -183,7 +183,7 @@ class SettingsDialog(QDialog):
 		self.setHelper.setChecked(SettingsValues.KeepWatchpointsEnabled, self.tblGeneral.item(9, colCheckBox))
 		self.setHelper.setValue(SettingsValues.HexGrouping, self.cmbGrouping.currentIndex())
 		
-		self.setHelper.setChecked(SettingsValues.LoadTestTarget, self.tblDeveloper.item(0, 1))
+		self.setHelper.setChecked(SettingsValues.LoadTestTarget, self.tblDeveloper.item(0, 0))
 		self.setHelper.setChecked(SettingsValues.LoadTestBPs, self.tblDeveloper.item(1, 1))
 		self.setHelper.setChecked(SettingsValues.StopAtEntry, self.tblDeveloper.item(2, 1))
 		self.setHelper.setChecked(SettingsValues.BreakAtMainFunc, self.tblDeveloper.item(3, 1))

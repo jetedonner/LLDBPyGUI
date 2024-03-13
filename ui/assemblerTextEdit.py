@@ -322,8 +322,10 @@ class DisassemblyTableWidget(QTableWidget):
 		else:
 			# Find the QAction within the sender (e.g., QMenu or QToolBar)
 			action = sender.findChild(QAction)
-			
-		self.doReadMemory(self.quickToolTip.get_memory_address(self.driver.debugger, action.data()))
+		print(f"action ===============>>>>>>>>>>>> {action.data()}")
+		addr = self.quickToolTip.get_memory_address(self.driver.debugger, action.data())
+		print(f"GETTING Memory for {addr}")
+		self.doReadMemory(addr)
 #		print(f"Triggering QAction: {action.text()}")
 			
 	def doReadMemory(self, address, size = 0x100):
