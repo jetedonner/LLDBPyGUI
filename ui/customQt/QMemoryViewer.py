@@ -78,6 +78,17 @@ class QMemoryViewer(QWidget):
 		self.tblHex = QHexTableWidget()
 		self.layMain.addWidget(self.tblHex)
 		self.setLayout(self.layMain)
+#		self.tblHex.txtHex.textChanged.connect(self.txtHex_textChanged)
+		
+	isUpdateing = False
+	
+#	def txtHex_textChanged(self):
+#		print(f"OUTER: txtHex_textChanged => {self.tblHex.txtHex.toPlainText()}")
+##		if not self.isUpdateing:
+##		self.isUpdateing = True
+##		self.formatGrouping()
+##		self.isUpdateing = False
+#		pass
 		
 	def resetContent(self):
 		self.tblHex.resetContent()
