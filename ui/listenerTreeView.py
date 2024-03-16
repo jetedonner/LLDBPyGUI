@@ -392,8 +392,10 @@ class ListenerTreeWidget(QTreeWidget):
 						if itemData != None:
 							if itemData[0] == lldb.SBTarget:
 								if parentItem.child(i).checkState(0) == Qt.CheckState.Checked:
+									print(f"ADD LISTENER")
 									self.driver.addListener(itemData[0], itemData[1])
 								else:
+									print(f"REMOVE LISTENER")
 									self.driver.removeListener(itemData[0], itemData[1])
 								
 						if i == 0:

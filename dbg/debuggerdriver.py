@@ -107,6 +107,11 @@ class DebuggerDriver(Thread):
   #		global lt
   #		self.listenerTarget = lt
       print("==============>>>>>>>>>>>>> ADDING LISTENER!!!!!!")
+      self.listener.StopListeningForEventClass(self.debugger,                                                  lldb.SBTarget.GetBroadcasterClassName(),
+        lldb.SBTarget.eBroadcastBitBreakpointChanged
+        #| lldb.SBTarget.eBroadcastBitModuleLoaded
+        #| lldb.SBTarget.eBroadcastBitModuleUnloaded
+        | lldb.SBTarget.eBroadcastBitBreakpointChanged)
 #     success = self.broadcasterTarget.AddListener(self.listenerTarget, bitMask)
   #		print(f"Added Listener with {success} / self.broadcasterTarget => {self.broadcasterTarget} / self.listenerTarget  => {self.listenerTarget} / self.maskTarget => {self.maskTarget}")
       pass
@@ -122,6 +127,12 @@ class DebuggerDriver(Thread):
   #		self.maskTarget = bitMask #SBTarget.eBroadcastBitBreakpointChanged # | SBTarget.eBroadcastBitWatchpointChanged | SBTarget.eBroadcastBitModulesLoaded | SBThread.eBroadcastBitThreadSuspended 
   #		global lt
   #		self.listenerTarget = lt
+      self.listener.StopListeningForEventClass(self.debugger,                                                  lldb.SBTarget.GetBroadcasterClassName(),
+        lldb.SBTarget.eBroadcastBitBreakpointChanged
+        #| lldb.SBTarget.eBroadcastBitModuleLoaded
+        #| lldb.SBTarget.eBroadcastBitModuleUnloaded
+        | lldb.SBTarget.eBroadcastBitBreakpointChanged)
+      
       success = self.debugger.GetSelectedTarget().GetBroadcaster().RemoveListener(self.listener, bitMask)
       print(f"Removed Listener with {success}")
       #.RemoveListener(self.listenerTarget, bitMask)

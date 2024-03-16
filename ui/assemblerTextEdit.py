@@ -251,11 +251,21 @@ class DisassemblyTableWidget(QTableWidget):
 	def mouseMoveEvent(self, event):	
 		pos = event.pos()
 		item = self.itemAt(pos)
+		
 		if item != None and self.itemOld != item:
 			row, col = item.row(), item.column()
 			if col == 4:
 #				print(f"Cell: ({row}, {col}), Mouse: ({pos.x()}, {pos.y()})")
 				item.setToolTip(self.quickToolTip.getQuickToolTip(item.text(), self.driver.debugger))
+				itemMnem = self.item(row, 3)
+				if itemMnem.text() in ("jmp", "jne", "jnz", "je", "jz", "call"):
+					self.window().updateStatusBar(f"DoubleClick to jump to {item.text()}", False)
+				else:
+					self.window().resetStatusBar()
+#				if len(self.selectedItems()) > 0 and self.item(self.selectedItems()[0].row(), 3) != None:
+#					if self.item(self.selectedItems()[0].row(), 3).text() == "jmp":
+#						self.window().updateStatusBar("Jump to ...")
+					
 			self.itemOld = item
 		
 		# Call the original method to ensure default behavior continues

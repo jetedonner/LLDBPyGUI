@@ -69,7 +69,7 @@ class ReadOnlySelectableTextEdit(QTextEdit):
 		
 	def handle_writeMemory(self):
 		# Target memory address to write to
-		memory_address = 0x304113138 #0x304112ea8 # 0x100003f50  # Replace with the actual address
+		memory_address = 0x304113148 #0x304112ea8 # 0x100003f50  # Replace with the actual address
 		
 		# Data to write (as a byte string)
 #		data_to_write = b"NOP"

@@ -77,8 +77,29 @@ class VariablesTableWidget(QTableWidget):
 		
 		self.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
 		self.setShowGrid(False)
+		self.setMouseTracking(True)
 		self.cellDoubleClicked.connect(self.on_double_click)
 		self.cellChanged.connect(self.item_changed_handler)
+		self.cellEntered.connect(self.cellEntered_handler)
+		self.installEventFilter(self)  # Install event filter on the widget itself
+		
+	def eventFilter(self, obj, event):
+		if obj is self and event.type() == QtCore.QEvent.Type.Enter:
+			self.is_entered = True
+			print(f"ENTERED")
+		elif obj is self and event.type() == QtCore.QEvent.Type.Leave:
+			if self.is_entered:
+#				self.cursorExited.emit()
+				print(f"EXITED")
+				self.is_entered = False
+		return super().eventFilter(obj, event)
+	
+	def cellEntered_handler(self, row, col):
+		if col == 3:
+			self.window().updateStatusBar(f"DoubleClick to view memory @ {self.item(row, col).text()}...", False)
+		else:
+			self.window().resetStatusBar()
+		pass
 		
 	def on_double_click(self, row, col):
 		if col == 3:

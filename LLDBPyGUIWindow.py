@@ -167,6 +167,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		print(f"================>>>>>>>>>>>>> YES WATCHPOINT HIT <<<<<<<<<<<=================")
 		pass
 		
+	tmrResetStatusBar = QtCore.QTimer()
 	bpHelper = None
 	
 	def __init__(self, driver = None):
@@ -410,6 +411,18 @@ class LLDBPyGUIWindow(QMainWindow):
 	
 		self.threadpool = QThreadPool()
 		
+	#	tmrResetStatusBarActive = False
+		
+#		def updateStatusBar(self, msg):
+#		self.statusBar.showMessage(msg)
+#		if self.tmrResetStatusBar.isActive():
+#			self.tmrResetStatusBar.stop()
+#		self.tmrResetStatusBar = QtCore.QTimer()
+		self.tmrResetStatusBar.setInterval(int(self.setHelper.getValue(SettingsValues.StatusBarMsgTimeout)))
+		self.tmrResetStatusBar.setSingleShot(True)
+		self.tmrResetStatusBar.timeout.connect(self.resetStatusBar)
+#		self.tmrResetStatusBar.start()
+			
 		# ======== DEV CMDs ##########
 		self.tabWidgetDbg.setCurrentIndex(2)
 
@@ -457,8 +470,24 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.progressbar.setValue(newValue)
 		QCoreApplication.processEvents()
 	
-	def updateStatusBar(self, msg):
+#	tmrResetStatusBar = QtCore.QTimer()
+#	tmrResetStatusBarActive = False
+	
+	def updateStatusBar(self, msg, autoTimeout = True):
 		self.statusBar.showMessage(msg)
+		if self.tmrResetStatusBar.isActive():
+			self.tmrResetStatusBar.stop()
+#		self.tmrResetStatusBar = QtCore.QTimer()
+#		self.tmrResetStatusBar.setInterval(1500)
+#		self.tmrResetStatusBar.setSingleShot(True)
+#		self.tmrResetStatusBar.timeout.connect(self.resetStatusBar)
+		if autoTimeout:
+			self.tmrResetStatusBar.start()
+	
+	def resetStatusBar(self):
+#		self.tmrResetStatusBarActive = False
+#		print(f"RESETING STATUSBAR MSG...")
+		self.statusBar.showMessage("")
 		
 	def load_clicked(self):
 		filename = showOpenFileDialog()
@@ -579,7 +608,8 @@ class LLDBPyGUIWindow(QMainWindow):
 		if settingsWindow.exec():
 			print(f'Settings saved')
 			self.tblHex.cmbGrouping.setCurrentIndex(self.setHelper.getValue(SettingsValues.HexGrouping))
-		
+			self.tmrResetStatusBar.setInterval(int(self.setHelper.getValue(SettingsValues.StatusBarMsgTimeout)))
+			
 	def help_clicked(self):
 		pass
 		
@@ -602,8 +632,8 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.tabWatchpoints.reloadWatchpoints(True)
 		pass
 		
-	def updateStatusBar(self, msg):
-		self.statusBar.showMessage(msg)
+#	def updateStatusBar(self, msg):
+#		self.statusBar.showMessage(msg)
 		
 	def setProgressValue(self, newValue):
 		self.progressbar.setValue(int(newValue))

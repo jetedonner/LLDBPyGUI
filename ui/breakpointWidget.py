@@ -197,9 +197,14 @@ class BreakpointTreeWidget(QTreeWidget):
 	def handle_itemEntered(self, item, col):
 		if col == 1:
 			item.setToolTip(col, "State: " + str(item.isBPEnabled))
-			
+		elif col == 2:
+			addrTxt = item.text(2)
+			if addrTxt != None and addrTxt != "":
+				self.window().updateStatusBar(f"Goto instruction @ address {addrTxt}")
+				
 		self.oldBPName = item.text(3)
 		item.setData(5, Qt.ItemDataRole.UserRole, item.text(5))
+		
 		pass
 		
 	def event(self, event):
