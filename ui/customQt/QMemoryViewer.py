@@ -13,6 +13,7 @@ from PyQt6.QtWidgets import *
 from PyQt6 import uic, QtWidgets
 
 from ui.customQt.QHexTableWidget import *
+from ui.customQt.QHexTextEdit import *
 
 class QMemoryViewer(QWidget):
 	
@@ -71,13 +72,23 @@ class QMemoryViewer(QWidget):
 		
 		self.layMemViewer.addWidget(self.cmbGrouping)
 		
+#		self.formattedTextEdit = FormattedTextEdit()
+#		self.layMemViewer.addWidget(self.formattedTextEdit)
+		
+		
+		
 		self.layMemViewer.addStretch(0)
 		
 		self.layMain.addWidget(self.gbpMemViewer)
 		
 		self.tblHex = QHexTableWidget()
+		self.tblHex.sigChanged.connect(self.handle_sigChanged)
 		self.layMain.addWidget(self.tblHex)
 		self.setLayout(self.layMain)
+		
+	def handle_sigChanged(self, start_pos, end_pos, edited_text):
+#		self.formatGrouping()
+		pass
 		
 	def resetContent(self):
 		self.tblHex.resetContent()

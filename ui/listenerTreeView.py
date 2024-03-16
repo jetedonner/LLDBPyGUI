@@ -391,20 +391,25 @@ class ListenerTreeWidget(QTreeWidget):
 						print(itemData)
 						if itemData != None:
 							if itemData[0] == lldb.SBTarget:
-								if parentItem.child(i).checkState(0) == Qt.CheckState.Checked:
-									print(f"ADD LISTENER")
-									self.driver.addListener(itemData[0], itemData[1])
-								else:
-									print(f"REMOVE LISTENER")
-									self.driver.removeListener(itemData[0], itemData[1])
+								if itemData[1] == item.data(0, Qt.ItemDataRole.UserRole)[1]:
+									if item.checkState(0) == Qt.CheckState.Checked: #parentItem.child(i).checkState(0) == Qt.CheckState.Checked:
+										print(f"ADD LISTENER")
+										self.driver.addListener(itemData[0], itemData[1])
+										print(f"ADD LISTENER ===>>> LISTENER")
+										self.window().listener._add_listener(itemData[0], itemData[1])
+									else:
+										print(f"REMOVE LISTENER")
+										self.driver.removeListener(itemData[0], itemData[1])
+										print(f"REMOVE LISTENER ===>>> LISTENER")
+										self.window().listener._remove_listener(itemData[0], itemData[1])
 								
 						if i == 0:
 							allState = (parentItem.child(i).checkState(0) == Qt.CheckState.Checked)
 						else:
-							if allState != (parentItem.child(i).checkState(0) == Qt.CheckState.Checked):
+							if allSame and allState != (parentItem.child(i).checkState(0) == Qt.CheckState.Checked):
 								allSame = False
-								break
-						break
+#								break
+#						break
 		#				item.child(i).setCheckState(0, item.checkState(0))
 						pass
 					if not allSame:

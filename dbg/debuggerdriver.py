@@ -59,12 +59,13 @@ class DebuggerDriver(Thread):
         if not self.listener.IsValid():
             raise "Invalid listener"
 
+        print(f"=====================>>>>>>>>> self.debugger (ADD): {self.debugger} / {self.listener}")
         self.listener.StartListeningForEventClass(self.debugger,
                                                   lldb.SBTarget.GetBroadcasterClassName(),
                                                   lldb.SBTarget.eBroadcastBitBreakpointChanged
                                                   #| lldb.SBTarget.eBroadcastBitModuleLoaded
                                                   #| lldb.SBTarget.eBroadcastBitModuleUnloaded
-                                                  | lldb.SBTarget.eBroadcastBitWatchpointChanged
+                                                  #| lldb.SBTarget.eBroadcastBitWatchpointChanged
                                                   #| lldb.SBTarget.eBroadcastBitSymbolLoaded
                                                   )
 
@@ -95,7 +96,7 @@ class DebuggerDriver(Thread):
                                                   | lldb.SBCommandInterpreter.eBroadcastBitAsynchronousErrorData
                                                 )
     
-    def addListener(self, type = lldb.SBTarget, bitMask = SBTarget.eBroadcastBitBreakpointChanged):
+    def addListener(self, type = lldb.SBTarget, bitMask = SBTarget.eBroadcastBitWatchpointChanged):
   #		self.target = self.debugger.GetSelectedTarget()
   #		self.process = self.target.GetProcess()
   #		print(f"self.target => {self.target}")
@@ -106,17 +107,17 @@ class DebuggerDriver(Thread):
   #		self.maskTarget = bitMask # SBTarget.eBroadcastBitBreakpointChanged # | SBTarget.eBroadcastBitWatchpointChanged | SBTarget.eBroadcastBitModulesLoaded | SBThread.eBroadcastBitThreadSuspended 
   #		global lt
   #		self.listenerTarget = lt
-      print("==============>>>>>>>>>>>>> ADDING LISTENER!!!!!!")
+      print(f"==============>>>>>>>>>>>>> ADDING LISTENER: {self.debugger} / {self.listener}")
       self.listener.StopListeningForEventClass(self.debugger,                                                  lldb.SBTarget.GetBroadcasterClassName(),
         lldb.SBTarget.eBroadcastBitBreakpointChanged
         #| lldb.SBTarget.eBroadcastBitModuleLoaded
         #| lldb.SBTarget.eBroadcastBitModuleUnloaded
-        | lldb.SBTarget.eBroadcastBitBreakpointChanged)
+        | lldb.SBTarget.eBroadcastBitWatchpointChanged)
 #     success = self.broadcasterTarget.AddListener(self.listenerTarget, bitMask)
   #		print(f"Added Listener with {success} / self.broadcasterTarget => {self.broadcasterTarget} / self.listenerTarget  => {self.listenerTarget} / self.maskTarget => {self.maskTarget}")
       pass
   
-    def removeListener(self, type = lldb.SBTarget, bitMask = SBTarget.eBroadcastBitBreakpointChanged):
+    def removeListener(self, type = lldb.SBTarget, bitMask = SBTarget.eBroadcastBitWatchpointChanged):
   #		self.target = self.debugger.GetSelectedTarget()
   #		self.process = self.target.GetProcess()
   #		print(f"self.target => {self.target}")
@@ -127,11 +128,13 @@ class DebuggerDriver(Thread):
   #		self.maskTarget = bitMask #SBTarget.eBroadcastBitBreakpointChanged # | SBTarget.eBroadcastBitWatchpointChanged | SBTarget.eBroadcastBitModulesLoaded | SBThread.eBroadcastBitThreadSuspended 
   #		global lt
   #		self.listenerTarget = lt
+      print(f"=====================>>>>>>>>> self.debugger (REMOVE): {self.debugger} / {self.listener}")
       self.listener.StopListeningForEventClass(self.debugger,                                                  lldb.SBTarget.GetBroadcasterClassName(),
         lldb.SBTarget.eBroadcastBitBreakpointChanged
         #| lldb.SBTarget.eBroadcastBitModuleLoaded
         #| lldb.SBTarget.eBroadcastBitModuleUnloaded
-        | lldb.SBTarget.eBroadcastBitBreakpointChanged)
+        #| lldb.SBTarget.eBroadcastBitWatchpointChanged)
+      )
       
       success = self.debugger.GetSelectedTarget().GetBroadcaster().RemoveListener(self.listener, bitMask)
       print(f"Removed Listener with {success}")

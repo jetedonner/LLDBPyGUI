@@ -183,6 +183,9 @@ class DisassemblyTableWidget(QTableWidget):
 		self.actionEditBP = self.context_menu.addAction("Edit Breakpoint")
 		self.actionEditBP.triggered.connect(self.handle_editBP)
 		self.context_menu.addSeparator()
+		self.actionEditHexValue = self.context_menu.addAction("Edit Hex Value")
+		self.actionEditHexValue.triggered.connect(self.handle_editHexValue)
+		self.context_menu.addSeparator()
 		actionEditCondition = self.context_menu.addAction("Edit condition")
 		actionEditCondition.triggered.connect(self.handle_editCondition)
 		
@@ -206,18 +209,19 @@ class DisassemblyTableWidget(QTableWidget):
 		self.actionGotoAddr = self.context_menu.addAction("Goto Address")
 		self.actionGotoAddr.triggered.connect(self.handle_gotoAddr)
 		
-		self.setColumnCount(7)
+		self.setColumnCount(8)
 		self.setColumnWidth(0, 24)
 		self.setColumnWidth(1, 32)
 		self.setColumnWidth(2, 108)
 		self.setColumnWidth(3, 84)
 		self.setColumnWidth(4, 256)
-		self.setColumnWidth(5, 324)
-		self.setColumnWidth(6, 304)
+		self.setColumnWidth(5, 240)
+		self.setColumnWidth(6, 180)
+		self.setColumnWidth(7, 300)
 		self.verticalHeader().hide()
 		self.horizontalHeader().show()
 		self.horizontalHeader().setHighlightSections(False)
-		self.setHorizontalHeaderLabels(['PC', 'BP', 'Address', 'Mnemonic', 'Operands', 'Hex', 'Comment']) # '#', 
+		self.setHorizontalHeaderLabels(['PC', 'BP', 'Address', 'Mnemonic', 'Operands', 'Hex', 'Data', 'Comment']) # '#', 
 		self.horizontalHeaderItem(0).setFont(ConfigClass.font)
 		self.horizontalHeaderItem(1).setFont(ConfigClass.font)
 		self.horizontalHeaderItem(2).setFont(ConfigClass.font)
@@ -225,6 +229,7 @@ class DisassemblyTableWidget(QTableWidget):
 		self.horizontalHeaderItem(4).setFont(ConfigClass.font)
 		self.horizontalHeaderItem(5).setFont(ConfigClass.font)
 		self.horizontalHeaderItem(6).setFont(ConfigClass.font)
+		self.horizontalHeaderItem(7).setFont(ConfigClass.font)
 		
 		self.horizontalHeaderItem(0).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
 		self.horizontalHeaderItem(1).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
@@ -233,6 +238,7 @@ class DisassemblyTableWidget(QTableWidget):
 		self.horizontalHeaderItem(4).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
 		self.horizontalHeaderItem(5).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
 		self.horizontalHeaderItem(6).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
+		self.horizontalHeaderItem(7).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
 
 		# Usage (assuming you have a created table widget named `table`):
 		self.delegate = CustomStyledItemDelegate()
@@ -303,6 +309,10 @@ class DisassemblyTableWidget(QTableWidget):
 			
 		self.context_menu.exec(event.globalPos())
 	
+	def handle_editHexValue(self):
+		print(f"handle_editHexValue => ")
+		pass
+		
 	def deleteBP_clicked(self):
 		self.bpHelper.deleteBP(self.item(self.selectedItems()[0].row(), 2).text())
 		pass
@@ -397,7 +407,7 @@ class DisassemblyTableWidget(QTableWidget):
 	def resetContent(self):
 		self.setRowCount(0)
 			
-	def addRow(self, lineNum, address, instr, args, comment, data, rip = ""):
+	def addRow(self, lineNum, address, instr, args, comment, data, dataNg, rip = ""):
 		currRowCount = self.rowCount()
 		self.setRowCount(currRowCount + 1)
 		
@@ -409,14 +419,17 @@ class DisassemblyTableWidget(QTableWidget):
 		self.addItem(currRowCount, 3, instr)
 		self.addItem(currRowCount, 4, args)
 		self.addItem(currRowCount, 5, data)
-		self.addItem(currRowCount, 6, comment)
+		self.addItem(currRowCount, 6, dataNg)
+		self.addItem(currRowCount, 7, comment)
 		
 		self.setRowHeight(currRowCount, 14)
 		
 		
 	def addItem(self, row, col, txt):
+		
 		item = QTableWidgetItem(txt, QTableWidgetItem.ItemType.Type)
-		item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable) #Qt.ItemFlag.ItemIsSelectable)
+		if col != 5:
+			item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable) #Qt.ItemFlag.ItemIsSelectable)
 		
 		# Insert the items into the row
 		self.setItem(row, col, item)
@@ -461,11 +474,11 @@ class AssemblerTextEdit(QWidget):
 		self.table.symbolCount += 1
 		pass
 		
-	def appendAsmText(self, addr, instr, args, comment, data, addLineNum = True, rip = ""):
+	def appendAsmText(self, addr, instr, args, comment, data, dataNg, addLineNum = True, rip = ""):
 #		if addLineNum:
 #			self.table.addRow(0, addr, instr, args, comment, data, rip)
 #		else:
-		self.table.addRow(0, addr, instr, args, comment, data, rip)
+		self.table.addRow(0, addr, instr, args, comment, data, dataNg, rip)
 			
 	def setTextColor(self, color = "black", lineNum = False):
 		pass

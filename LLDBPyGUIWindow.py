@@ -672,7 +672,7 @@ class LLDBPyGUIWindow(QMainWindow):
 #				
 #				#				global driver
 		self.inited = False
-		self.driver = dbg.debuggerdriver.createDriver(self.driver.debugger, event_queue)
+#		self.driver = dbg.debuggerdriver.createDriver(self.driver.debugger, event_queue)
 #			self.driver.aborted = False
 			
 #			self.driver.createTarget(filename)
@@ -749,7 +749,7 @@ class LLDBPyGUIWindow(QMainWindow):
 #						
 						for z in range(self.thread.GetNumFrames()):
 							frame = self.thread.GetFrameAtIndex(z)
-							self.tabWidgetStruct.cmbModules.addItem(frame.GetModule().GetFileSpec().GetFilename())
+							self.tabWidgetStruct.cmbModules.addItem(frame.GetModule().GetFileSpec().GetFilename() + " (" + str(frame.GetFrameID()) + ")")
 							if frame.GetModule().GetFileSpec().GetFilename() != target.GetExecutable().GetFilename():
 #								self.process.Continue()
 								continue
@@ -868,7 +868,23 @@ class LLDBPyGUIWindow(QMainWindow):
 			self.txtMultiline.appendAsmSymbol(str(instruction.GetAddress().GetLoadAddress(target)), self.symFuncName)
 			
 #		print(f'instruction.GetComment(target) => {instruction.GetComment(target)}')
-		self.txtMultiline.appendAsmText(hex(int(str(instruction.GetAddress().GetLoadAddress(target)), 10)), instruction.GetMnemonic(target),  instruction.GetOperands(target), instruction.GetComment(target), str(instruction.GetData(target)).replace("                             ", "\t\t").replace("		            ", "\t\t\t").replace("		         ", "\t\t").replace("		      ", "\t\t").replace("			   ", "\t\t\t"), True)
+			
+		daData = str(instruction.GetData(target))
+		idx = daData.find("                             ")
+		if idx == -1:
+			idx = daData.find("		            ")
+			if idx == -1:
+				idx = daData.find("		         ")
+				if idx == -1:
+					idx = daData.find("		      ")
+#					if idx == -1:
+#						idx = daData.find("		      ")
+		if  idx != -1:
+			daHex = daData[:idx]
+			daDataNg = daData[idx:]
+#		self.txtMultiline.appendAsmText(hex(int(str(instruction.GetAddress().GetLoadAddress(target)), 10)), instruction.GetMnemonic(target),  instruction.GetOperands(target), instruction.GetComment(target), str(instruction.GetData(target)).replace("                             ", "\t\t").replace("		            ", "\t\t\t").replace("		         ", "\t\t").replace("		      ", "\t\t").replace("			   ", "\t\t\t"), True)
+			
+			self.txtMultiline.appendAsmText(hex(int(str(instruction.GetAddress().GetLoadAddress(target)), 10)), instruction.GetMnemonic(target),  instruction.GetOperands(target), instruction.GetComment(target), daHex, "".join(str(daDataNg).split()), True)
 		pass
 		
 	def handle_workerFinished(self):

@@ -52,8 +52,35 @@ class LLDBListener(QtCore.QObject, Thread):
 		)
 		pass
 		
+	def _remove_listener(self, type, bitMask = lldb.SBTarget.eBroadcastBitWatchpointChanged):
+		print(f"=====================>>>>>>>>> self.debugger (REMOVE): {self.debugger} / {self.listener}")
+		self.listener.StopListeningForEventClass(self.debugger,                                                  lldb.SBTarget.GetBroadcasterClassName(),
+			lldb.SBTarget.eBroadcastBitWatchpointChanged
+			#| lldb.SBTarget.eBroadcastBitModuleLoaded
+			#| lldb.SBTarget.eBroadcastBitModuleUnloaded
+			#| lldb.SBTarget.eBroadcastBitWatchpointChanged)
+		)
+		
+		success = self.debugger.GetSelectedTarget().GetBroadcaster().RemoveListener(self.listener, bitMask)
+		print(f"Removed Listener with {success} (LISTENER)")
+		pass
+	
+	def _add_listener(self, type, bitMask = lldb.SBTarget.eBroadcastBitWatchpointChanged):
+		print(f"=====================>>>>>>>>> self.debugger (ADD): {self.debugger} / {self.listener}")
+		self.listener.StartListeningForEventClass(self.debugger,                                                  lldb.SBTarget.GetBroadcasterClassName(),
+			lldb.SBTarget.eBroadcastBitWatchpointChanged
+			#| lldb.SBTarget.eBroadcastBitModuleLoaded
+			#| lldb.SBTarget.eBroadcastBitModuleUnloaded
+			#| lldb.SBTarget.eBroadcastBitWatchpointChanged)
+		)
+#		bitMask = lldb.SBTarget.eBroadcastBitWatchpointChanged
+		success = self.debugger.GetSelectedTarget().GetBroadcaster().AddListener(self.listener, bitMask)
+		print(f"Added Listener with {success} (LISTENER)")
+		pass
+		
 	def _add_listener_to_target(self, target):
 		# Listen for breakpoint/watchpoint events (Added/Removed/Disabled/etc).
+		#  | SBTarget.eBroadcastBitWatchpointChanged
 		broadcaster = target.GetBroadcaster()
 		mask = SBTarget.eBroadcastBitBreakpointChanged | SBTarget.eBroadcastBitWatchpointChanged | SBTarget.eBroadcastBitModulesLoaded | SBThread.eBroadcastBitThreadSuspended 
 		broadcaster.AddListener(self.listener, mask)
