@@ -36,31 +36,43 @@ class WatchpointsWidget(QWidget):
 	
 		self.setLayout(QVBoxLayout())
 		self.tblWatchpoints = WatchpointsTableWidget(self.driver, self.workerManager)
+		self.tblWatchpoints.setContentsMargins(0, 0, 0, 0)
 		self.layout().addWidget(self.tblWatchpoints)
+		self.layout().setContentsMargins(0, 0, 0, 0)
+		self.setContentsMargins(0, 0, 0, 0)
 		self.layCtrls = QHBoxLayout()
+		self.layCtrls.setContentsMargins(0, 0, 0, 0)
 		self.lblType = QLabel("Type:")
+		self.lblType.setContentsMargins(0, 0, 0, 0)
 		self.layCtrls.addWidget(self.lblType)
 		self.optVariable = QRadioButton("Variable")
+		self.optVariable.setContentsMargins(0, 0, 0, 0)
 		self.optVariable.setChecked(True)
 		self.optVariable.clicked.connect(self.optvariable_clicked)
 		self.layCtrls.addWidget(self.optVariable)
 		self.optAddress = QRadioButton("Expression")
+		self.optAddress.setContentsMargins(0, 0, 0, 0)
 		self.optAddress.clicked.connect(self.optaddress_clicked)
 		self.layCtrls.addWidget(self.optAddress)
 #		self.lblAddrVar = QLabel("Variable:")
 #		self.layCtrls.addWidget(self.lblAddrVar)
 		self.txtMemoryAddress = QLineEdit()
+		self.txtMemoryAddress.setContentsMargins(0, 0, 0, 0)
 		self.txtMemoryAddress.setPlaceholderText("Variable name ...")
 		self.txtMemoryAddress.returnPressed.connect(self.addWatchpoint_clicked)
 		self.layCtrls.addWidget(self.txtMemoryAddress)
 		self.cmdAddWatchpoint = QPushButton("Add Watchpoint")
+		self.cmdAddWatchpoint.setContentsMargins(0, 0, 0, 0)
 		self.cmdAddWatchpoint.clicked.connect(self.addWatchpoint_clicked)
 #		self.layCtrls.addWidget(self.cmdAddWatchpoint)
 		self.cmbType = QComboBox()
 		self.cmbType.addItems(["read", "write", "read/write"])
+		self.cmbType.setContentsMargins(0, 0, 0, 0)
 		self.layCtrls.addWidget(self.cmbType)
 		self.layCtrls.addWidget(self.cmdAddWatchpoint)
+		self.layCtrls.setContentsMargins(0, 0, 0, 0)
 		self.wgtCtrls = QWidget()
+		self.wgtCtrls.setContentsMargins(0, 0, 0, 0)
 		self.wgtCtrls.setLayout(self.layCtrls)
 		self.layout().addWidget(self.wgtCtrls)
 	
@@ -96,6 +108,7 @@ class WatchpointsTableWidget(QTableWidget):
 		self.driver = driver
 		self.workerManager = workerManager
 		self.setHelper = SettingsHelper()
+		self.wpHelper = WatchpointHelper(self.driver)
 #		self.driver.handleCommand("command script add -h '(lldbinit) The breakpoint callback function (auto).' --function breakpointTableWidget.breakpointHandlerAuto bpcbauto")
 		
 		self.initTable()
@@ -105,6 +118,8 @@ class WatchpointsTableWidget(QTableWidget):
 		self.actionDeleteWP = self.context_menu.addAction("Delete Watchpoint")
 		self.actionDeleteWP.triggered.connect(self.handle_deleteWP)
 		self.context_menu.addSeparator()
+		
+		self.setContentsMargins(0, 0, 0, 0)
 #		actionDeleteBP = self.context_menu.addAction("Delete Breakpoint")
 #		actionDeleteBP.triggered.connect(self.handle_deleteBP)
 ##		actionToggleBP = self.context_menu.addAction("Toggle Breakpoint")
@@ -224,7 +239,19 @@ class WatchpointsTableWidget(QTableWidget):
 		
 	def item_changed_handler(self, row, col):
 		if not self.ommitCellChanged:
-			if col == 8: # Name changed
+			if col == 6: # Type changed
+				print(f"def item_changed_handler(self, row, col):")
+#				self.wpHelper.SetCondition
+				target = self.driver.getTarget()
+				wpFound = False
+				for i in range(target.GetNumWatchpoints()):
+					wp_cur = target.GetWatchpointAtIndex(i)
+					if "#" + str(wp_cur.GetID()) == self.item(self.selectedItems()[0].row(), 1).text():
+						wp_cur.SetCondition(self.item(self.selectedItems()[0].row(), col).text())
+						print(f"SETTING TYPE: {wp_cur}")
+						break
+				pass
+			elif col == 8: # Name changed
 				target = self.driver.getTarget()
 				wpFound = False
 				for i in range(target.GetNumWatchpoints()):

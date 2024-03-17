@@ -189,6 +189,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.toolbar = QToolBar('Main ToolBar')
 		self.addToolBar(Qt.ToolBarArea.LeftToolBarArea, self.toolbar)
 		self.toolbar.setIconSize(QSize(ConfigClass.toolbarIconSize, ConfigClass.toolbarIconSize))
+		self.toolbar.setContentsMargins(0, 0, 0, 0)
 		
 		# new menu item
 		self.load_action = QAction(ConfigClass.iconBug, '&Load Target', self)
@@ -310,6 +311,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.statusBar.addPermanentWidget(self.progressbar)
 		
 		self.layout = QVBoxLayout()
+		self.layout.setContentsMargins(0, 0, 0, 0)
 		
 		self.txtMultiline = AssemblerTextEdit(self.driver, self.bpHelper)
 #		self.txtMultiline.table.sigEnableBP.connect(self.handle_enableBP)
@@ -325,7 +327,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.splitter.addWidget(self.txtMultiline)
 		
 		self.tabWidgetDbg = QTabWidget()
-#		self.tabWidgetDbg.setContentsMargins(0, 0, 0, 0)
+		self.tabWidgetDbg.setContentsMargins(0, 0, 0, 0)
 		self.splitter.addWidget(self.tabWidgetDbg)
 		self.splitter.setStretchFactor(0, 60)
 		self.splitter.setStretchFactor(1, 40)
@@ -360,6 +362,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.tabWidgetMain = QTabWidget()
 		self.tabWidgetMain.setContentsMargins(0, 0, 0, 0)
 		self.tabWidgetMain.addTab(self.splitter, "Debugger")
+		self.tabWidgetMain.setContentsMargins(0, 0, 0, 0)
 		self.tabWidgetMain.currentChanged.connect(self.handle_tabWidgetMainCurrentChanged)
 		
 		self.tblFileInfos = FileInfosTableWidget()
@@ -473,7 +476,7 @@ class LLDBPyGUIWindow(QMainWindow):
 #	tmrResetStatusBar = QtCore.QTimer()
 #	tmrResetStatusBarActive = False
 	
-	def updateStatusBar(self, msg, autoTimeout = True):
+	def updateStatusBar(self, msg, autoTimeout = True, timeoutMs = -1):
 		self.statusBar.showMessage(msg)
 		if self.tmrResetStatusBar.isActive():
 			self.tmrResetStatusBar.stop()
@@ -482,7 +485,12 @@ class LLDBPyGUIWindow(QMainWindow):
 #		self.tmrResetStatusBar.setSingleShot(True)
 #		self.tmrResetStatusBar.timeout.connect(self.resetStatusBar)
 		if autoTimeout:
+			if timeoutMs == -1:
+				self.tmrResetStatusBar.setInterval(self.setHelper.getValue(SettingsValues.StatusBarMsgTimeout))
+			else:
+				self.tmrResetStatusBar.setInterval(timeoutMs)
 			self.tmrResetStatusBar.start()
+			
 	
 	def resetStatusBar(self):
 #		self.tmrResetStatusBarActive = False

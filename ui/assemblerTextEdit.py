@@ -507,8 +507,9 @@ class AssemblerTextEdit(QWidget):
 	
 	currentPCRow = -1
 	def clearPC(self):
-		self.table.item(self.currentPCRow, 0).setText('')
-		self.table.setBGColor(self.currentPCRow, False)
+		if self.table.item(self.currentPCRow, 0) != None:
+			self.table.item(self.currentPCRow, 0).setText('')
+			self.table.setBGColor(self.currentPCRow, False)
 		pass
 		
 	def setPC(self, pc, pushLocation = False):

@@ -208,8 +208,11 @@ class ListenerLogTreeWidget(QTreeWidget):
 				sectionNode.setIcon(0, ConfigClass.iconGlasses)
 				
 				wp = SBWatchpoint.GetWatchpointFromEvent(event)
-				subSectionNode = QTreeWidgetItem(sectionNode, ["ID: ", str(wp.GetID())])
+				subSectionNode = QTreeWidgetItem(sectionNode, ["Watchpoint ID: ", str(wp.GetID())])
 				
+				self.window().txtMultiline.setPC(self.driver.getPC(), True)
+				self.window().updateStatusBar("Watchpoint hit ...", True, 3000)
+				self.window().setResumeActionIcon(ConfigClass.iconResume)
 #				GetWatchpointEventTypeFromEvent(*args)
 #				GetWatchpointEventTypeFromEvent(SBEvent event) -> lldb::WatchpointEventType	source code
 #				
@@ -368,7 +371,24 @@ class ListenerTreeWidget(QTreeWidget):
 #		self.header().resizeSection(2, 128)
 #		self.header().resizeSection(3, 128)
 #		self.header().resizeSection(4, 256)
+		self.setMouseTracking(True)
 		self.itemChanged.connect(self.handle_itemChanged)
+		self.itemEntered.connect(self.handle_itemEntered)
+		
+	def handle_itemEntered(self, item, col):
+		if item.childCount() == 0 and col == 0:
+			if item.checkState(col) == Qt.CheckState.Checked:
+				self.window().updateStatusBar(f"Disable '{item.text(0)}' listener ...")
+			else:
+				self.window().updateStatusBar(f"Enable '{item.text(0)}' listener ...")
+		else:
+			if item.checkState(col) == Qt.CheckState.Checked:
+				self.window().updateStatusBar(f"Disable All '{item.text(0)}' listeners ...")
+			elif item.checkState(col) == Qt.CheckState.Unchecked:
+				self.window().updateStatusBar(f"Enable All '{item.text(0)}' listeners ...")
+			else:
+				self.window().updateStatusBar(f"Enable All '{item.text(0)}' listeners ...")
+		pass
 		
 	ommitChange = False
 	def handle_itemChanged(self, item, column):
@@ -390,7 +410,7 @@ class ListenerTreeWidget(QTreeWidget):
 						itemData = parentItem.child(i).data(0, Qt.ItemDataRole.UserRole)
 						print(itemData)
 						if itemData != None:
-							if itemData[0] == lldb.SBTarget:
+							if itemData[0] == lldb.SBTarget or itemData[0] == lldb.SBProcess:
 								if itemData[1] == item.data(0, Qt.ItemDataRole.UserRole)[1]:
 									if item.checkState(0) == Qt.CheckState.Checked: #parentItem.child(i).checkState(0) == Qt.CheckState.Checked:
 										print(f"ADD LISTENER")

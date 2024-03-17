@@ -19,7 +19,7 @@
 //time_t start_real_time;// = time(NULL); // Get starting real time
 
 void subfunc(int idx, int var) {
-  printf("\n%d => %d", idx, var);
+  printf("\n%d -> %d", idx, var);
   fflush(stdout);
 }
 
