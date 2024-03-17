@@ -14,6 +14,7 @@ from PyQt6 import uic, QtWidgets
 
 from ui.helper.quickToolTip import *
 from ui.helper.locationStack import *
+from ui.baseTableWidget import *
 
 from config import *
 	
@@ -69,7 +70,7 @@ class CustomStyledItemDelegate(QStyledItemDelegate):
 			
 			painter.drawImage(option.rect, image)#option.background())
 		
-class DisassemblyTableWidget(QTableWidget):
+class DisassemblyTableWidget(BaseTableWidget):
 	
 	sigEnableBP = pyqtSignal(str, bool)
 	sigBPOn = pyqtSignal(str, bool)
@@ -77,15 +78,32 @@ class DisassemblyTableWidget(QTableWidget):
 	actionShowMemory = None
 	quickToolTip = QuickToolTip()
 	
+#	def getSelectedRow(self):
+#		if self.selectedItems() != None and len(self.selectedItems()) > 0:
+#			return self.selectedItems()[0].row()
+#		return None
+#	
+#	def getSelectedItem(self, col):
+#		selRow = self.getSelectedRow()
+#		if selRow != None:
+#			return self.item(selRow, col)
+#		return None
+		
 	def handle_copyHexValue(self):
-		if self.item(self.selectedItems()[0].row(), 5) != None:
-			item = self.item(self.selectedItems()[0].row(), 5)
-			pyperclip.copy(item.text())
+#		selItem = self.getSelectedItem(5)
+		if (selItem := self.getSelectedItem(5)) != None:
+			pyperclip.copy(selItem.text())
+#		if self.item(self.selectedItems()[0].row(), 5) != None:
+#			item = self.item(self.selectedItems()[0].row(), 5)
+#			pyperclip.copy(item.text())
 		
 	def handle_copyInstruction(self):
-		if self.item(self.selectedItems()[0].row(), 3) != None:
-			item = self.item(self.selectedItems()[0].row(), 3)
-			pyperclip.copy(item.text())
+#		if self.item(self.selectedItems()[0].row(), 3) != None and self.item(self.selectedItems()[0].row(), 4) != None:
+#			itemMnem = self.item(self.selectedItems()[0].row(), 3)
+#			itemOps = self.item(self.selectedItems()[0].row(), 4)
+		if (itemMnem := self.getSelectedItem(3)) != None:
+			if (itemOps := self.getSelectedItem(4)) != None:
+				pyperclip.copy(itemMnem.text() + " " + itemOps.text())
 		
 	def handle_copyAddress(self):
 		if self.item(self.selectedItems()[0].row(), 2) != None:
@@ -117,8 +135,8 @@ class DisassemblyTableWidget(QTableWidget):
 #		self.sigEnableBP.emit(self.item(self.selectedItems()[0].row(), 3).text(), item.isBPEnabled)
 		if self.item(self.selectedItems()[0].row(), 2) != None:
 			self.window().tabWidgetDbg.setCurrentIndex(2)
-			self.window().wdtBPsWPs.tblBPs.setFocus()
-			self.window().wdtBPsWPs.tblBPs.selectBPRow(self.item(self.selectedItems()[0].row(), 2).text())
+			self.window().wdtBPsWPs.treBPs.setFocus()
+			self.window().wdtBPsWPs.treBPs.selectBPRow(self.item(self.selectedItems()[0].row(), 2).text())
 #		pass
 		
 	def handle_enableBP(self):

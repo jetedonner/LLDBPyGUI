@@ -680,7 +680,7 @@ class LLDBPyGUIWindow(QMainWindow):
 #				
 #				#				global driver
 		self.inited = False
-#		self.driver = dbg.debuggerdriver.createDriver(self.driver.debugger, event_queue)
+		self.driver = dbg.debuggerdriver.createDriver(self.driver.debugger, event_queue)
 #			self.driver.aborted = False
 			
 #			self.driver.createTarget(filename)
@@ -977,8 +977,16 @@ class LLDBPyGUIWindow(QMainWindow):
 #				QApplication.processEvents()
 #				currTabIdx = self.tabWidgetDbg.currentIndex()
 #				self.tabWidgetDbg.setCurrentIndex(3)
-				line_text = "=>"
-				self.txtSource.scroll_to_line(line_text)
+#				line_text = "=>"
+#				self.txtSource.scroll_to_line(line_text)
+#				self.tabWidgetDbg.setCurrentIndex(currTabIdx)
+				
+				frame = self.driver.getTarget().GetProcess().GetThreadAtIndex(0).GetFrameAtIndex(0)
+				line_entry = frame.GetLineEntry()
+				line_number = line_entry.GetLine()
+				print(f"line_entry: {line_entry} / line_number: {line_number}")
+				if line_number != 0xFFFFFFFF:
+					self.txtSource.scroll_to_lineNG(line_number)
 				self.tabWidgetDbg.setCurrentIndex(currTabIdx)
 		else:
 			self.txtSource.setText("<Source code NOT available>")

@@ -188,6 +188,38 @@ class BreakpointTreeWidget(QTreeWidget):
 			
 		pass
 		
+	def selectBPRow(self, address):
+		rootItem = self.invisibleRootItem()
+#		daItem = None
+		found = False
+		for childPar in range(rootItem.childCount()):
+			parentItem = rootItem.child(childPar)
+#			if parentItem.text(0) == str(bpId):
+#				daItem = parentItem
+#				found = True
+#				break
+#			else:
+			for childChild in range(parentItem.childCount()):
+				childItem = parentItem.child(childChild)
+				if childItem.text(2) == address:
+					daItem = childItem
+					self.setCurrentItem(daItem)
+					found = True
+					break
+			if found:
+				break
+#		if found:
+#			self.setCurrentItem(daItem)
+#			index = self.currentIndex()
+#			# Check if a valid item is selected
+#			if index.isValid():
+#				# Remove and delete the item
+#				removed_item = self.takeTopLevelItem(index.row())
+#				del removed_item  # Alternatively, you can use removed_item.delete()
+				
+		pass
+		
+	
 	def handle_gotoAddr(self):
 		newAddr = self.currentItem().text(2)
 		if newAddr != "":
