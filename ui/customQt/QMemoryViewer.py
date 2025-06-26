@@ -105,6 +105,17 @@ class QMemoryViewer(QWidget):
 		self.tblHex.sigChanged.connect(self.handle_sigChanged)
 		self.layMain.addWidget(self.tblHex)
 		self.setLayout(self.layMain)
+#		self.tblHex.txtHex.textChanged.connect(self.txtHex_textChanged)
+		
+	isUpdateing = False
+	
+#	def txtHex_textChanged(self):
+#		print(f"OUTER: txtHex_textChanged => {self.tblHex.txtHex.toPlainText()}")
+##		if not self.isUpdateing:
+##		self.isUpdateing = True
+##		self.formatGrouping()
+##		self.isUpdateing = False
+#		pass
 		
 	def handle_sigChanged(self, start_pos, end_pos, edited_text):
 #		self.formatGrouping()
