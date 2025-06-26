@@ -18,7 +18,7 @@ class SourceTextEdit(QConsoleTextEdit):
 		super().__init__()
 		
 		self.setReadOnly(True)
-		# self.setFont(ConfigClass.font)
+		self.setFont(ConfigClass.font)
 		
 		self.verticalScrollBar().valueChanged.connect(self.handle_valueChanged)
 		self.verticalScrollBar().rangeChanged.connect(self.handle_rangeChanged)

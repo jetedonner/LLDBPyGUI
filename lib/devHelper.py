@@ -33,7 +33,7 @@ class DevHelper(QObject):
 			self.bpHelper = bpHelper
 	
 	def setupDevHelper(self):
-		self.setDevBreakpoints()
+		# self.setDevBreakpoints()
 #		self.setDevWatchpointsNG()
 		pass
 		
