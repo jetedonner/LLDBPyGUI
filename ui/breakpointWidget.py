@@ -14,6 +14,7 @@ from PyQt6 import uic, QtWidgets
 from dbg.breakpointHelper import *
 from ui.customQt.QClickLabel import *
 from ui.dialogs.dialogHelper import *
+from ui.baseTreeWidget import *
 
 from config import *
 
@@ -26,6 +27,8 @@ class EditableTreeItem(QTreeWidgetItem):
 		super().__init__(parent, text)
 #		self.setText(0, text)
 #		self.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEditable | Qt.ItemFlag.ItemIsEnabled)  # Set flags for editing
+
+
 		
 	def toggleBP(self):
 		self.enableBP(not self.isBPEnabled)
@@ -43,12 +46,44 @@ class EditableTreeItem(QTreeWidgetItem):
 			else:
 				self.setIcon(1, ConfigClass.iconBPDisabled) 
 				
-class BreakpointTreeWidget(QTreeWidget):
+class BreakpointTreeWidget(BaseTreeWidget):
 	
 	def __init__(self, driver, bpHelper):
-		super().__init__()
-		
-		self.driver = driver
+		super().__init__(driver)
+
+		# self.setStyleSheet("""
+		# 	QTreeWidget {
+		# 		/* background-color: #f0f0f0;
+		# 		gridline-color: #ccc;
+		# 		font: 12px 'Courier New';*/
+		# 		background-color: #282c34; /* Dark background */
+		# 		color: #abb2bf; /* Light grey text */
+		# 		/*border: 1px solid #3e4452;*/
+		# 		border-radius: 5px;
+		# 		/*padding: 10px;*/
+		# 	}
+		# 	QTreeWidgetItem {
+		# 		/*padding: 5px;
+		# 		color: #333;
+		# 		background-color: #e6f2ff;*/
+		# 		background-color: #282c34; /* Dark background */
+		# 		color: #abb2bf; /* Light grey text */
+		# 		/*border: 1px solid #3e4452;
+		# 		border-radius: 5px;*/
+		# 		padding: 5px;
+		# 	}
+		# 	QTreeWidgetItem:selected {
+		# 		/*background-color: #3399ff;
+		# 		color: white;*/
+		# 		background-color: #282c34; /* Dark background */
+		# 		color: #abb2bf; /* Light grey text */
+		# 		/*border: 1px solid #3e4452;
+		# 		border-radius: 5px;
+		# 		padding: 10px;*/
+		# 	}
+		# """)
+		#
+		# self.driver = driver
 		self.bpHelper = bpHelper
 		
 #       self.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)

@@ -11,10 +11,11 @@ from PyQt6.QtWidgets import *
 from PyQt6 import uic, QtWidgets
 from ui.customQt.QSwitch import *
 #from QSwitch import *
+from ui.baseTableWidget import *
 
 from config import *
 
-class SearchTableWidget(QTableWidget):
+class SearchTableWidget(BaseTableWidget):
 		
 	def handle_showMemory(self):
 		if self.item(self.selectedItems()[0].row(), 1) != None:
@@ -26,6 +27,7 @@ class SearchTableWidget(QTableWidget):
 		self.context_menu = QMenu(self)
 		self.actionShowMemory = self.context_menu.addAction("Show Memory")
 		self.actionShowMemory.triggered.connect(self.handle_showMemory)
+
 #		actionDisableBP = self.context_menu.addAction("Enable / Disable Breakpoint")
 #		actionDisableBP.triggered.connect(self.handle_disableBP)
 #		
@@ -102,6 +104,16 @@ class SearchWidget(QWidget):
 		self.laySearchTop = QHBoxLayout()
 		self.laySearchTop.addWidget(QLabel("Term:"))
 		self.txtSearchTerm = QLineEdit()
+		self.txtSearchTerm.setStyleSheet("""
+			QLineEdit {
+				background-color: #282c34; /* Dark background */
+				color: #abb2bf; /* Light grey text */
+				border: 1px solid #3e4452;
+				border-radius: 5px;
+				padding: 5px;
+				font: 12px 'Courier New';
+			}
+		""")
 		self.txtSearchTerm.setFixedWidth(300)
 		self.txtSearchTerm.setText("Hello")
 		self.txtSearchTerm.returnPressed.connect(self.click_search)

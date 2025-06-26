@@ -34,6 +34,16 @@ class QConsoleTextEdit(QTextEdit):
 	def __init__(self):
 		super().__init__()
 		self.setAcceptRichText(True)
+		self.setStyleSheet("""
+			QTextEdit {
+				background-color: #282c34; /* Dark background */
+				color: #abb2bf; /* Light grey text */
+				border: 1px solid #3e4452;
+				border-radius: 5px;
+				padding: 5px;
+				font: 'Courier New';
+			}
+		""")
 
 	def setEscapedText(self, text):
 		formattedText = self.formatText(text)

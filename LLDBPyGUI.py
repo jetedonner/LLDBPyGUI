@@ -41,7 +41,7 @@ def __lldb_init_module(debugger, internal_dict):
 
 	# settings
 	ci.HandleCommand("settings set target.x86-disassembly-flavor " + CONFIG_FLAVOR, res)
-	ci.HandleCommand(f"settings set prompt \"({PROMPT_TEXT}) \"", res)
+	ci.HandleCommand(f'settings set prompt \"({PROMPT_TEXT}) \"', res)
 	ci.HandleCommand("settings set stop-disassembly-count 0", res)
 	# set the log level - must be done on startup?
 #   ci.HandleCommand("settings set target.process.extra-startup-command QSetLogging:bitmask=" + CONFIG_LOG_LEVEL + ";", res)
@@ -80,7 +80,7 @@ def close_application():
 	print("close_application()")
 #	Stop all running tasks in the thread pool
 	print("KILLING PROCESS")
-	os._exit(1)
+	# os._exit(1)
 	
 def StartLLDBPyGUI(debugger, command, result, dict):
 	
@@ -89,7 +89,8 @@ def StartLLDBPyGUI(debugger, command, result, dict):
 	debugger.SetAsync(False)
 	
 #		debugger.SetAsync(True)
-	pyGUIApp = QApplication([])
+	# pyGUIApp = QApplication([])
+	pyGUIApp = QApplication(sys.argv)  # Pass sys.argv explicitly!
 	pyGUIApp.aboutToQuit.connect(close_application)
 	
 	ConfigClass.initIcons()
@@ -110,5 +111,10 @@ def StartLLDBPyGUI(debugger, command, result, dict):
 	tmrAppStarted = QtCore.QTimer()
 	tmrAppStarted.singleShot(500, pyGUIWindow.onQApplicationStarted)
 	
-	sys.exit(pyGUIApp.exec())
+	# sys.exit(pyGUIApp.exec())
+	# pyGUIApp.exec()
+	try:
+		sys.exit(pyGUIApp.exec())
+	except SystemExit:
+		print("PyQt application exited cleanly.")
 	

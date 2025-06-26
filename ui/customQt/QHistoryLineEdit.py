@@ -17,6 +17,17 @@ class QHistoryLineEdit(QLineEdit):
 	
 	def __init__(self, doAddCmdToHist = True):
 		super().__init__()
+
+		self.setStyleSheet("""
+			QLineEdit {
+				background-color: #282c34; /* Dark background */
+				color: #abb2bf; /* Light grey text */
+				border: 1px solid #3e4452;
+				border-radius: 5px;
+				padding: 10px;
+				font: 12px 'Courier New';
+			}
+		""")
 		self.doAddCmdToHist = doAddCmdToHist
 		
 		self.installEventFilter(self)  # Install event filter on the line edit

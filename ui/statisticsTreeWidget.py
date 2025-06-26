@@ -7,14 +7,15 @@ from PyQt6.QtCore import *
 
 from PyQt6.QtWidgets import *
 from PyQt6 import uic, QtWidgets
+from ui.baseTreeWidget import *
 
 from config import *
 
-class StatisticsTreeWidget(QTreeWidget):
+class StatisticsTreeWidget(BaseTreeWidget):
 	
 	def __init__(self, driver):
-		super().__init__()
-		self.driver = driver
+		super().__init__(driver)
+		# self.driver = driver
 #       self.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
 		self.context_menu = QMenu(self)
 		actionShowInfos = self.context_menu.addAction("Show infos")

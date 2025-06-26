@@ -15,8 +15,9 @@ from PyQt6.QtWidgets import *
 from PyQt6 import uic, QtWidgets
 
 APP_NAME = "LLDBPyGUI"
-APP_VERSION = "0.0.1 - ALPHA PREVIEW"
-APP_BUILD = "689"
+APP_VERSION = "0.0.2 - DEV PREVIEW"
+APP_RELEASE_DATE = "2025-06-25 - 09:16:18"
+APP_BUILD = "002.01"
 PROMPT_TEXT = "LLDBPyGUI"
 #WINDOW_SIZE = 512
 WINDOW_SIZE = 680
@@ -146,8 +147,9 @@ class ConfigClass():
 	testBPsFilename = "/Volumes/Data/dev/_reversing/disassembler/LLDBPyGUI/pyLLDBGUI/LLDBPyGUI/testtarget/testbps_withSubFunc5.json"
 #	testTarget = "/Volumes/Data/dev/_reversing/disassembler/LLDBPyGUI/pyLLDBGUI/LLDBPyGUI/testtarget/hello_world_test"
 #	testTargetSource = "/Volumes/Data/dev/_reversing/disassembler/LLDBPyGUI/pyLLDBGUI/LLDBPyGUI/testtarget/hello_world_test.c"
-	testTarget = "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
-	testTargetSource = "./testtarget/hello_world_test.c"
+	testTarget =  "./testtarget/calc_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
+	testTargetSource = "./testtarget/calc_test.c"
+	settingsFilename = "./LLDBPyGUI_Settings.ini"
 	
 	toolbarIconSize = 24
 	currentDebuggerSubTab = 1
@@ -194,6 +196,7 @@ class ConfigClass():
 	iconProcess = None
 	iconAnon = None
 	iconGlasses = None
+	iconMarkdown = None
 	
 	iconStepOver = None
 	iconStepInto = None
@@ -230,6 +233,7 @@ class ConfigClass():
 #		ui->label->setStyleSheet("border-image:url(:/2.png);");
 #		ui->label->setPixmap(pix);
 		
+		ConfigClass.iconMarkdown = QIcon(os.path.join(resources_root, 'markdown.png'))
 		ConfigClass.iconGlasses = QIcon(os.path.join(resources_root, 'glasses.png'))
 		ConfigClass.iconAnon = QIcon(os.path.join(resources_root, 'hacker.png'))
 		ConfigClass.iconProcess = QIcon(os.path.join(resources_root, 'process.png'))
@@ -269,7 +273,7 @@ class ConfigClass():
 		ConfigClass.iconStepInto = QIcon(os.path.join(resources_root, 'stepInto.png'))
 		ConfigClass.iconStepOut = QIcon(os.path.join(resources_root, 'stepOut.png'))
 #		ConfigClass.iconRestart = QIcon(os.path.join(resources_root, 'Restart.png'))
-#		ConfigClass.iconStop = QIcon(os.path.join(resources_root, 'Stop.png'))
+		ConfigClass.iconStop = QIcon(os.path.join(resources_root, 'stop.png'))
 #		
 #		ConfigClass.iconGithub = QIcon(os.path.join(resources_root, 'github.png'))
 		

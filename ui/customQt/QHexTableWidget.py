@@ -17,7 +17,7 @@ from config import *
 from ui.dialogs.settingsDialog import *
 from dbg.memoryHelper import *
 from ui.customQt.QHexTextEdit import *
-
+from ui.baseTableWidget import *
 
 #class ByteGrouping(enum.Enum):
 #	NoGrouping = ("No Grouping", 1) #"No grouping"
@@ -30,6 +30,18 @@ class FormattedTextEdit(QTextEdit):
 	
 	def __init__(self, parent=None):
 		super().__init__(parent)
+
+		self.setStyleSheet("""
+			QTextEdit {
+				background-color: #282c34; /* Dark background */
+				color: #abb2bf; /* Light grey text */
+				border: 1px solid #3e4452;
+				border-radius: 5px;
+				padding: 5px;
+				font: 12px 'Courier New';
+			}
+		""")
+
 		self.textChanged.connect(self.format_text)
 		
 	def format_text(self):
@@ -59,6 +71,17 @@ class ReadOnlySelectableTextEdit(QTextEdit):
 	
 	def __init__(self, parent=None, hasContextMenu = False):
 		super().__init__(parent)
+
+		self.setStyleSheet("""
+			QTextEdit {
+				background-color: #282c34; /* Dark background */
+				color: #abb2bf; /* Light grey text */
+				border: 1px solid #3e4452;
+				border-radius: 5px;
+				padding: 5px;
+				font: 12px 'Courier New';
+			}
+		""")
 		
 		self.hasContextMenu = hasContextMenu
 		if self.hasContextMenu:
@@ -131,14 +154,15 @@ class ReadOnlySelectableTextEdit(QTextEdit):
 		else:
 			event.ignore()  # Ignore any editing-related key presses
 		
-class QHexTableWidget(QTableWidget):
+class QHexTableWidget(BaseTableWidget):
 	
 	startAddr = ""
 #	txtHex = None
 	sigChanged = pyqtSignal(int, int, str)
 	
 	def __init__(self, parent=None):
-		QTableWidget.__init__(self, parent=parent)
+		# QTableWidget.__init__(self, parent=parent)
+		super().__init__()
 		
 #		self.context_menu = QMenu(self)
 #		self.actionEditMemory = self.context_menu.addAction("Edit memory")
@@ -297,6 +321,17 @@ class QHexTableWidget(QTableWidget):
 			
 			blockFmt = QTextBlockFormat()
 			blockFmt.setLineHeight(self.line_height, 2)
+			# blockFmt.setStyleSheet("""
+			# 	QTextBlockFormat {
+			# 		background-color: #282c34; /* Dark background */
+			# 		color: #abb2bf; /* Light grey text */
+			# 		border: 1px solid #3e4452;
+			# 		border-radius: 5px;
+			# 		padding: 5px;
+			# 		font: 12px 'Courier New';
+			# 	}
+			# """)
+
 			
 			theCursor = self.txtAddr.textCursor()
 			theCursor.clearSelection()
@@ -309,7 +344,19 @@ class QHexTableWidget(QTableWidget):
 			self.txtHex.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 			self.txtHex.setText(value)
 			self.txtHex.setFont(ConfigClass.font)
-			self.txtHex.setStyleSheet("selection-background-color: #ff0000;")
+			# self.txtHex.setStyleSheet("selection-background-color: #ff0000;")
+
+			self.txtHex.setStyleSheet("""
+				QTextEdit {
+					background-color: #282c34; /* Dark background */
+					color: #abb2bf; /* Light grey text */
+					border: 1px solid #3e4452;
+					border-radius: 5px;
+					padding: 5px;
+					font: 12px 'Courier New';
+					selection-background-color: #ff0000;
+				}
+			""")
 #			self.txtHex.textChanged.connect(self.handle_text_changed)
 #			self.txtHex.sigEdit.connect(self.handle_editMemory)
 #			self.txtHex.sigWrite.connect(self.handle_writeMemory)
@@ -326,7 +373,18 @@ class QHexTableWidget(QTableWidget):
 			self.txtData.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 			self.txtData.insertHtml(raw) # + "<br>")
 			self.txtData.setFont(ConfigClass.font)
-			self.txtData.setStyleSheet("selection-background-color: #ff0000;")
+			# self.txtData.setStyleSheet("selection-background-color: #ff0000;")
+			self.txtData.setStyleSheet("""
+				QTextEdit {
+					background-color: #282c34; /* Dark background */
+					color: #abb2bf; /* Light grey text */
+					border: 1px solid #3e4452;
+					border-radius: 5px;
+					padding: 5px;
+					font: 12px 'Courier New';
+					selection-background-color: #ff0000;
+				}
+			""")
 			
 #			theCursor3 = self.txtData.textCursor()
 #			theCursor3.clearSelection()

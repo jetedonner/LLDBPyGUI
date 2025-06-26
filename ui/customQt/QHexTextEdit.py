@@ -23,7 +23,9 @@ class IntHexValidator(QValidator):
 		super().__init__(parent)
 #		self.int_regex = QtCore.QRegExp(r"^-?\d+$")  # Allows signed integers
 #		self.hex_regex = QtCore.QRegExp(r"^0x[0-9a-fA-F]+$")  # Allows hex values with 0x prefix
-	
+
+
+
 		self.int_regex = r"^-?\d+$"  # Match anything within square brackets, excluding the brackets themselves
 		self.hex_regex = r"^(0[xX])?[A-Fa-f0-9]+$" #"^(0x|0X)?[a-fA-F0-9]+$" # ^0x[0-9a-fA-F]+$"
 	
@@ -96,6 +98,17 @@ class QHexTextEdit(QTextEdit):
 			
 	def __init__(self, parent=None):
 		super().__init__(parent)
+
+		self.setStyleSheet("""
+			QTextEdit {
+				background-color: #282c34; /* Dark background */
+				color: #abb2bf; /* Light grey text */
+				border: 1px solid #3e4452;
+				border-radius: 5px;
+				padding: 5px;
+				font: 12px 'Courier New';
+			}
+		""")
 #		if self.hasContextMenu:
 		self.context_menu = QMenu(self)
 		self.actionEditMemory = self.context_menu.addAction("Edit memory")

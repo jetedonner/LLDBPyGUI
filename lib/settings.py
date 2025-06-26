@@ -30,13 +30,17 @@ class SettingsValues(Enum):
 	StopAtEntry = ("Stop at entry", False, bool)
 	BreakAtMainFunc = ("Break at main function", True, bool)
 	MainFuncName = ("Main function name", "main", str)
+
+	WindowSize = ("Window Size", QSize(1024, 800), QSize)
 	
 class SettingsHelper(QObject):
 	
-	settings = QSettings(ConfigClass.companyName, ConfigClass.appName)
+#	settings = QSettings(ConfigClass.companyName, ConfigClass.appName)
+	settings = QSettings(ConfigClass.settingsFilename, QSettings.Format.IniFormat)
 	
 	def __init__(self):
 		super().__init__()
+		self.settings.setDefaultFormat(QSettings.Format.IniFormat)
 		
 	@staticmethod
 	def getSettings():
@@ -69,6 +73,34 @@ class SettingsHelper(QObject):
 		self.settings.setValue(SettingsValues.StopAtEntry.value[0], False)
 		self.settings.setValue(SettingsValues.BreakAtMainFunc.value[0], True)
 		self.settings.setValue(SettingsValues.MainFuncName.value[0], "main")
+	
+#	arrayIdx = 0
+	def beginWriteArray(self, prefix):
+		self.settings.beginWriteArray(prefix)
+#		self.arrayIdx = 0
+		
+	def beginReadArray(self, prefix):
+		self.settings.beginReadArray(prefix)
+#		self.arrayIdx = 0
+	
+	def setArrayValue(self, setting, value):
+#		self.settings.setArrayIndex(self.arrayIdx)
+		self.settings.setValue(setting, value)
+#		self.arrayIdx += 1
+	
+	def getArrayValue(self, setting):
+#		self.settings.setArrayIndex(self.arrayIdx)
+		return self.settings.value(setting)
+#		self.arrayIdx += 1
+	
+	def getArrayChecked(self, setting):
+#		self.settings.setArrayIndex(self.arrayIdx)
+		return Qt.CheckState.Checked if self.settings.value(setting) == "true" else Qt.CheckState.Unchecked
+#		self.arrayIdx += 1
+		
+	def endArray(self):
+		self.settings.endArray()
+#		self.arrayIdx = 0
 		
 	def setValue(self, setting, value):
 		self.settings.setValue(setting.value[0], value)

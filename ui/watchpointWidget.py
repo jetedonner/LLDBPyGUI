@@ -18,7 +18,7 @@ from ui.assemblerTextEdit import *
 from ui.dialogs.dialogHelper import *
 
 from dbg.watchpointHelper import *
-
+from ui.baseTableWidget import *
 #def breakpointHandlerAuto(dummy, frame, bpno, err):
 #		print("breakpointHandlerAuto ...")
 #		print("YESSSSSSS GETTTTTTTIIIIINNNNNNNGGGGG THERE!!!!!!")
@@ -57,6 +57,16 @@ class WatchpointsWidget(QWidget):
 #		self.lblAddrVar = QLabel("Variable:")
 #		self.layCtrls.addWidget(self.lblAddrVar)
 		self.txtMemoryAddress = QLineEdit()
+		self.txtMemoryAddress.setStyleSheet("""
+			QLineEdit {
+				background-color: #282c34; /* Dark background */
+				color: #abb2bf; /* Light grey text */
+				border: 1px solid #3e4452;
+				border-radius: 5px;
+				padding: 5px;
+				font: 12px 'Courier New';
+			}
+		""")
 		self.txtMemoryAddress.setContentsMargins(0, 0, 0, 0)
 		self.txtMemoryAddress.setPlaceholderText("Variable name ...")
 		self.txtMemoryAddress.returnPressed.connect(self.addWatchpoint_clicked)
@@ -98,7 +108,7 @@ class WatchpointsWidget(QWidget):
 	def reloadWatchpoints(self, initTable = True):
 		self.tblWatchpoints.reloadWatchpoints(initTable)
 		
-class WatchpointsTableWidget(QTableWidget):
+class WatchpointsTableWidget(BaseTableWidget):
 	
 	wpsEnabled = {}
 	ommitCellChanged = False
