@@ -5,17 +5,17 @@ from PyQt6.QtCore import *
 
 from PyQt6.QtWidgets import *
 from PyQt6 import uic, QtWidgets
-
+from ui.baseTreeWidget import *
 from dbg.fileInfos import *
 
 from config import *
 
-class FileStructureTreeWidget(QTreeWidget):
+class FileStructureTreeWidget(BaseTreeWidget):
 	
 #	actionShowMemory = None
 	
 	def __init__(self):
-		super().__init__()
+		super().__init__(None)
 #       self.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
 		self.context_menu = QMenu(self)
 		actionShowInfos = self.context_menu.addAction("Show infos")

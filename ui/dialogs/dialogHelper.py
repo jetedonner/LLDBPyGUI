@@ -207,11 +207,14 @@ class ConfirmDialog(QDialog):
 ##	else:
 ##		print("No!")
 #		
-def showSaveFileDialog():
+def showSaveFileDialog(app=None):
 	dialog = QFileDialog(None, "Select file to save", "", "JSON (*.json)")
 	dialog.setFileMode(QFileDialog.FileMode.AnyFile)
 	dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
 	dialog.setNameFilter("JSON (*.json)")
+	dialog.setAttribute(Qt.WidgetAttribute.WA_NativeWindow, True)
+#	if app != None:
+#		app.setAttribute(Qt.ApplicationAttribute.AA_DontUseNativeDialogs, True)
 	
 	if dialog.exec():
 		filename = dialog.selectedFiles()[0]

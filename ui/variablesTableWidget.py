@@ -14,8 +14,9 @@ from config import *
 #from ui.editVariableDialog import *
 from dbg.variableHelper import *
 from dbg.watchpointHelper import *
+from ui.baseTableWidget import *
 
-class VariablesTableWidget(QTableWidget):
+class VariablesTableWidget(BaseTableWidget):
 	
 	driver = None
 	wpHelper = None
@@ -195,6 +196,7 @@ class VariablesTableWidget(QTableWidget):
 		pass
 		
 	def resetContent(self):
+		print("INNNNNNNNNNNN REEEEEEESSSSSSSSSEEEEEEEETTTTTTT Content....")
 		self.setRowCount(0)
 #		for row in range(self.rowCount(), 0):
 #			self.removeRow(row)

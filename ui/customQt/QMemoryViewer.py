@@ -13,6 +13,7 @@ from PyQt6.QtWidgets import *
 from PyQt6 import uic, QtWidgets
 
 from ui.customQt.QHexTableWidget import *
+from ui.customQt.QHexTextEdit import *
 
 class QMemoryViewer(QWidget):
 	
@@ -36,6 +37,16 @@ class QMemoryViewer(QWidget):
 		self.layMemViewer.addWidget(self.lblMemAddr)
 		
 		self.txtMemAddr = QLineEdit()
+		self.txtMemAddr.setStyleSheet("""
+			QLineEdit {
+				background-color: #282c34; /* Dark background */
+				color: #abb2bf; /* Light grey text */
+				border: 1px solid #3e4452;
+				border-radius: 5px;
+				padding: 5px;
+				font: 12px 'Courier New';
+			}
+		""")
 		self.txtMemAddr.setText("0x100003f50")
 		self.txtMemAddr.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
 		self.txtMemAddr.returnPressed.connect(self.click_ReadMemory)
@@ -46,6 +57,16 @@ class QMemoryViewer(QWidget):
 		self.layMemViewer.addWidget(self.lblMemSize)
 		
 		self.txtMemSize = QLineEdit()
+		self.txtMemSize.setStyleSheet("""
+			QLineEdit {
+				background-color: #282c34; /* Dark background */
+				color: #abb2bf; /* Light grey text */
+				border: 1px solid #3e4452;
+				border-radius: 5px;
+				padding: 5px;
+				font: 12px 'Courier New';
+			}
+		""")
 		self.txtMemSize.setText("0x100")
 		self.txtMemSize.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
 		self.txtMemSize.returnPressed.connect(self.click_ReadMemory)
@@ -71,11 +92,17 @@ class QMemoryViewer(QWidget):
 		
 		self.layMemViewer.addWidget(self.cmbGrouping)
 		
+#		self.formattedTextEdit = FormattedTextEdit()
+#		self.layMemViewer.addWidget(self.formattedTextEdit)
+		
+		
+		
 		self.layMemViewer.addStretch(0)
 		
 		self.layMain.addWidget(self.gbpMemViewer)
 		
 		self.tblHex = QHexTableWidget()
+		self.tblHex.sigChanged.connect(self.handle_sigChanged)
 		self.layMain.addWidget(self.tblHex)
 		self.setLayout(self.layMain)
 #		self.tblHex.txtHex.textChanged.connect(self.txtHex_textChanged)
@@ -89,6 +116,10 @@ class QMemoryViewer(QWidget):
 ##		self.formatGrouping()
 ##		self.isUpdateing = False
 #		pass
+		
+	def handle_sigChanged(self, start_pos, end_pos, edited_text):
+#		self.formatGrouping()
+		pass
 		
 	def resetContent(self):
 		self.tblHex.resetContent()

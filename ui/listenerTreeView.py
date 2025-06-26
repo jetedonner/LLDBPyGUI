@@ -32,7 +32,8 @@ from dbg.fileInfos import *
 from worker.debugWorker import StepKind
 from ui.helper.listenerHelper import *
 from config import *
-	
+from ui.baseTreeWidget import *
+
 class SBStreamForwarder(io.StringIO):
 	def __init__(self):
 		super().__init__()
@@ -45,10 +46,12 @@ class SBStreamForwarder(io.StringIO):
 			self.sb_stream.write(self.getvalue())
 #			self.truncate(0)  # Clear the buffer for subsequent writes
 			
-class ListenerLogTreeWidget(QTreeWidget):
+class ListenerLogTreeWidget(BaseTreeWidget):
 #	self.lblModule.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
 #		
 #	self.lblModule.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
+	sigSTDOUT = pyqtSignal(str)
+
 	def getTimestamp(self):
 		now = datetime.datetime.now()
 		# self.setHelper.getValue(SettingsValues.EventListenerTimestampFormat)
@@ -57,10 +60,12 @@ class ListenerLogTreeWidget(QTreeWidget):
 #		print(formatted_date)
 	
 	def __init__(self, driver):
-		super().__init__()
-		self.driver = driver
+		super().__init__(driver)
+		# self.driver = driver
 		
 		self.setHelper = SettingsHelper()
+
+		self.setContentsMargins(0, 0, 0, 0)
 		
 #       self.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
 		self.context_menu = QMenu(self)
@@ -103,6 +108,7 @@ class ListenerLogTreeWidget(QTreeWidget):
 			byte_values = bytes.fromhex("".join(["%02x" % ord(i) for i in stdout]))
 			result_string = byte_values.decode('utf-8')
 			print(result_string)
+			self.sigSTDOUT.emit(result_string)
 		else:
 			print(f"stdout IS NONE or LEN == 0")
 			
@@ -208,8 +214,11 @@ class ListenerLogTreeWidget(QTreeWidget):
 				sectionNode.setIcon(0, ConfigClass.iconGlasses)
 				
 				wp = SBWatchpoint.GetWatchpointFromEvent(event)
-				subSectionNode = QTreeWidgetItem(sectionNode, ["ID: ", str(wp.GetID())])
+				subSectionNode = QTreeWidgetItem(sectionNode, ["Watchpoint ID: ", str(wp.GetID())])
 				
+				self.window().txtMultiline.setPC(self.driver.getPC(), True)
+				self.window().updateStatusBar("Watchpoint hit ...", True, 3000)
+				self.window().setResumeActionIcon(ConfigClass.iconResume)
 #				GetWatchpointEventTypeFromEvent(*args)
 #				GetWatchpointEventTypeFromEvent(SBEvent event) -> lldb::WatchpointEventType	source code
 #				
@@ -347,13 +356,18 @@ class ListenerLogTreeWidget(QTreeWidget):
 		# Show the context menu
 		self.context_menu.exec(event.globalPos())
 		
-class ListenerTreeWidget(QTreeWidget):
+class ListenerTreeWidget(BaseTreeWidget):
 	
-#	actionShowMemory = None
+	setHelper = None
+	ommitChange = False
 	
-	def __init__(self, driver):
-		super().__init__()
-		self.driver = driver
+	def __init__(self, driver, setHelper):
+		super().__init__(driver)
+		#self.driver = driver
+		self.setHelper = setHelper
+
+		self.setContentsMargins(0, 0, 0, 0)
+		
 #       self.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
 		self.context_menu = QMenu(self)
 		actionShowInfos = self.context_menu.addAction("Show infos")
@@ -368,17 +382,57 @@ class ListenerTreeWidget(QTreeWidget):
 #		self.header().resizeSection(2, 128)
 #		self.header().resizeSection(3, 128)
 #		self.header().resizeSection(4, 256)
+		self.setMouseTracking(True)
 		self.itemChanged.connect(self.handle_itemChanged)
+		self.itemEntered.connect(self.handle_itemEntered)
 		
-	ommitChange = False
+	def handle_itemEntered(self, item, col):
+		if item.childCount() == 0 and col == 0:
+			if item.checkState(col) == Qt.CheckState.Checked:
+				self.window().updateStatusBar(f"Disable '{item.text(0)}' listener ...")
+			else:
+				self.window().updateStatusBar(f"Enable '{item.text(0)}' listener ...")
+		else:
+			if item.checkState(col) == Qt.CheckState.Checked:
+				self.window().updateStatusBar(f"Disable All '{item.text(0)}' listeners ...")
+			elif item.checkState(col) == Qt.CheckState.Unchecked:
+				self.window().updateStatusBar(f"Enable All '{item.text(0)}' listeners ...")
+			else:
+				self.window().updateStatusBar(f"Enable All '{item.text(0)}' listeners ...")
+		pass
+		
+	def getKeyForBroadcastBitData(self, daData):
+		setKey = ""
+		if daData != None:
+			if isinstance(daData[0], str):
+				setKey = str(daData[0]) + "_" + str(BroadcastBitString(daData[0], daData[1]))
+			elif daData[0] == lldb.SBCommandInterpreter:
+				setKey = str("lldb.commandinterpreter") + "_" + str(BroadcastBitString(daData[0], daData[1]))
+			else:
+				setKey = str(daData[0].GetBroadcasterClassName()) + "_" + str(BroadcastBitString(daData[0], daData[1]))
+		return setKey
+	
 	def handle_itemChanged(self, item, column):
-		print(f"Item changed: {item} => col: {column}")
+#		print(f"Item changed: {item} => col: {column}")
 		if not self.ommitChange:
 			self.ommitChange = True
 			if item.childCount() > 0:
+				self.setHelper.beginWriteArray("listener_" + item.text(0))
+#				print(item.text(0))
 				for i in range(item.childCount()):
 					item.child(i).setCheckState(0, item.checkState(0))
-					pass
+					daData = item.child(i).data(0, Qt.ItemDataRole.UserRole)
+					if daData != None:
+#						if isinstance(daData[0], str):
+#							setKey = str(daData[0]) + "_" + str(BroadcastBitString(daData[0], daData[1]))
+#						else:
+#							setKey = str(daData[0].GetBroadcasterClassName()) + "_" + str(BroadcastBitString(daData[0], daData[1]))
+						setKey = self.getKeyForBroadcastBitData(daData)
+#						print(dir(daData[0]))
+#						print(str(daData[0].GetBroadcasterClassName()) + "_" + str(BroadcastBitString(daData[0], daData[1])))
+						self.setHelper.setArrayValue(setKey, (True if item.checkState(0) == Qt.CheckState.Checked else False))
+#					pass
+				self.setHelper.endArray()
 			else:
 				parentItem = item.parent()
 				if parentItem != None:
@@ -390,21 +444,31 @@ class ListenerTreeWidget(QTreeWidget):
 						itemData = parentItem.child(i).data(0, Qt.ItemDataRole.UserRole)
 						print(itemData)
 						if itemData != None:
-							if itemData[0] == lldb.SBTarget:
-								if parentItem.child(i).checkState(0) == Qt.CheckState.Checked:
-									print(f"ADD LISTENER")
-									self.driver.addListener(itemData[0], itemData[1])
-								else:
-									print(f"REMOVE LISTENER")
-									self.driver.removeListener(itemData[0], itemData[1])
+							self.setHelper.beginWriteArray("listener_" + parentItem.text(0))
+							setKey = self.getKeyForBroadcastBitData(itemData)
+							self.setHelper.setArrayValue(setKey, (True if parentItem.child(i).checkState(0) == Qt.CheckState.Checked else False))
+							self.setHelper.endArray()
+							
+							if itemData[0] == lldb.SBTarget or itemData[0] == lldb.SBProcess:
+								if itemData[1] == item.data(0, Qt.ItemDataRole.UserRole)[1]:
+									if item.checkState(0) == Qt.CheckState.Checked: #parentItem.child(i).checkState(0) == Qt.CheckState.Checked:
+										print(f"ADD LISTENER")
+										self.driver.addListener(itemData[0], itemData[1])
+										print(f"ADD LISTENER ===>>> LISTENER")
+										self.window().listener._add_listener(itemData[0], itemData[1])
+									else:
+										print(f"REMOVE LISTENER")
+										self.driver.removeListener(itemData[0], itemData[1])
+										print(f"REMOVE LISTENER ===>>> LISTENER")
+										self.window().listener._remove_listener(itemData[0], itemData[1])
 								
 						if i == 0:
 							allState = (parentItem.child(i).checkState(0) == Qt.CheckState.Checked)
 						else:
-							if allState != (parentItem.child(i).checkState(0) == Qt.CheckState.Checked):
+							if allSame and allState != (parentItem.child(i).checkState(0) == Qt.CheckState.Checked):
 								allSame = False
-								break
-						break
+#								break
+#						break
 		#				item.child(i).setCheckState(0, item.checkState(0))
 						pass
 					if not allSame:
@@ -432,40 +496,28 @@ class ListenerWidget(QWidget):
 		self.treEventLog.addNewEvent(event, extObj)
 		pass
 		
-#	def worker(self):
-#		while True:
-##			global event_queue
-##			global event_queue
-##			item = event_queue.get()
-#			print(f"INSIDE WORKER => {self.driver.event_queue}")
-#			event = self.driver.event_queue.get()
-#			print(f'Working on {event}')
-#			#		print(f'Finished {item}')
-#			self.handle_gotNewEvent(event, self.driver.getTarget().GetProcess())
-#			self.driver.event_queue.task_done()
-			
-#			self.treEventLog.addNewEvent(event, extObj)
-			
-			# Turn-on the worker thread.
+	setHelper = None
 	
-	def __init__(self, driver):
+	def __init__(self, driver, setHelper):
 		super().__init__()
 		self.driver = driver
+		self.setHelper = setHelper
 #		self.wdtFile = QWidget()
 #		self.layFile = QHBoxLayout()
 #		self.wdtFile.setLayout(self.layFile)
 		self.splitter = QSplitter()
+		self.setContentsMargins(0, 0, 0, 0)
 		self.splitter.setContentsMargins(0, 0, 0, 0)
 		self.splitter.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
 		self.splitter.setOrientation(Qt.Orientation.Horizontal)
 		
 		self.grpSelection = QGroupBox("Listener Selection:")
 		self.grpSelection.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
-		self.treListener = ListenerTreeWidget(self.driver)
+		self.treListener = ListenerTreeWidget(self.driver, self.setHelper)
 		self.treListener.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
 		self.grpSelection.setLayout(QVBoxLayout())
 		self.grpSelection.layout().addWidget(self.treListener)
-		self.splitter.addWidget(self.grpSelection)
+		self.splitter.addWidget(self.treListener)
 #		self.treFile.actionShowMemoryFrom.triggered.connect(self.handle_showMemoryFileStructureFrom)
 #		self.lblModule.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
 #		self.cmbModules.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
@@ -476,71 +528,145 @@ class ListenerWidget(QWidget):
 		self.grpLog = QGroupBox("Event Log:")
 		self.grpLog.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
 		self.grpLog.setLayout(QVBoxLayout())
-		self.grpLog.layout().addWidget(self.treEventLog)
-		self.splitter.addWidget(self.grpLog)
+
+		self.wdtLog = QWidget()
+		self.wdtLog.setLayout(QVBoxLayout())
+		self.wdtLog.layout().addWidget(self.treEventLog)
+		self.wdtLog.layout().addWidget(QLabel("HELLO"))
+		self.grpLog.setLayout(QVBoxLayout())
+		self.grpLog.layout().addWidget(self.wdtLog)
+		self.splitter.addWidget(self.treEventLog)
 		self.layout().addWidget(self.splitter)
+		self.layout().setContentsMargins(0, 0, 0, 0)
+		self.setContentsMargins(0, 0, 0, 0)
 		self.splitter.setStretchFactor(0, 35)
 		self.splitter.setStretchFactor(1, 65)
+		self.splitter.setContentsMargins(0, 0, 0, 0)
 		self.loadListener()
-		
 	
 	def addBroadcastBitItem(self, parent, type, bit, checked=True):
 		subSectionNode = QTreeWidgetItem(parent, [BroadcastBitString(type, bit)])
 		subSectionNode.setData(0, Qt.ItemDataRole.UserRole, [type, bit])
-		subSectionNode.setCheckState(0, Qt.CheckState.Checked if checked else Qt.CheckState.Unchecked)
+		
+		
+#		if parent != self.treListener:
+		self.setHelper.beginReadArray("listener_" + parent.text(0))
+		setKey = self.treListener.getKeyForBroadcastBitData([type, bit])
+		print(f"Listener-Config (listener_{parent.text(0)}) => Key: {setKey} is: {self.setHelper.getArrayValue(setKey)}")
+		subSectionNode.setCheckState(0, Qt.CheckState.Checked if self.setHelper.getArrayValue(setKey) == "true" else Qt.CheckState.Unchecked)
+		self.setHelper.endArray()
+#		subSectionNode.setCheckState(0, Qt.CheckState.Unchecked)
 		return subSectionNode
+		
+	def addBroadcastBitGroup(self, groupName, broadcastClass, bits):
+		
+		sectionNode = QTreeWidgetItem(self.treListener, [groupName])
+#		sectionNode.setCheckState(0, Qt.CheckState.Unchecked)
+		allSame = True
+		allCheckState = Qt.CheckState.Unchecked
+		i = 0
+		for bit in bits:
+			subSectionNode = self.addBroadcastBitItem(sectionNode, broadcastClass, bit, True)
+			if i == 0:
+				allCheckState = subSectionNode.checkState(0)
+			else:
+				if allSame and allCheckState != subSectionNode.checkState(0):
+					allSame = False
+			i += 1
+				
+		if not allSame:
+			sectionNode.setCheckState(0, Qt.CheckState.PartiallyChecked)
+		else:
+			sectionNode.setCheckState(0, allCheckState)
+		sectionNode.setExpanded(True)
+		
+		return sectionNode
 		pass
+		
+#			if i == 0:
+#				allState = (parentItem.child(i).checkState(0) == Qt.CheckState.Checked)
+#			else:
+#				if allSame and allState != (parentItem.child(i).checkState(0) == Qt.CheckState.Checked):
+#					allSame = False
+#	#								break
+#	#						break
+#	#				item.child(i).setCheckState(0, item.checkState(0))
+#			pass
+#		if not allSame:
+#			parentItem.setCheckState(0, Qt.CheckState.PartiallyChecked)
+#		else:
+#			parentItem.setCheckState(0, Qt.CheckState.Checked if allState else Qt.CheckState.Unchecked)
 		
 	def loadListener(self):
 		
 		self.treListener.ommitChange = True
 		
+#		sectionNode = QTreeWidgetItem(self.treListener, ["Misc"])
+##		sectionNode.setCheckState(0, Qt.CheckState.Checked)
+#		subSectionNode = self.addBroadcastBitItem(sectionNode, "lldb.anonymous", 0, True)
+#		sectionNode.setExpanded(True)
+#		sectionNode.setCheckState(0, subSectionNode.checkState(0))
 		
-		sectionNode = QTreeWidgetItem(self.treListener, ["Target"])
-#		sectionNode.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEditable | Qt.ItemFlag.ItemIsEnabled| Qt.ItemFlag.ItemIsUserCheckable)  # Set flags for editing
-		sectionNode.setCheckState(0, Qt.CheckState.Checked)
-		
-		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBTarget, lldb.SBTarget.eBroadcastBitBreakpointChanged, True)
-		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBTarget, lldb.SBTarget.eBroadcastBitModulesLoaded, True)
-		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBTarget, lldb.SBTarget.eBroadcastBitModulesUnloaded, True)
-		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBTarget, lldb.SBTarget.eBroadcastBitWatchpointChanged, True)
-		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBTarget, lldb.SBTarget.eBroadcastBitSymbolsLoaded, True)
-
-		sectionNode.setExpanded(True)
+		self.addBroadcastBitGroup("Misc", "lldb.anonymous", [0])
 		
 		
-		sectionNode = QTreeWidgetItem(self.treListener, ["Process"])
-		sectionNode.setCheckState(0, Qt.CheckState.Checked)
 		
-		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBProcess, lldb.SBProcess.eBroadcastBitStateChanged, True)
-		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBProcess, lldb.SBProcess.eBroadcastBitInterrupt, True)
-		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBProcess, lldb.SBProcess.eBroadcastBitSTDOUT, True)
-		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBProcess, lldb.SBProcess.eBroadcastBitSTDERR, True)
-		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBProcess, lldb.SBProcess.eBroadcastBitProfileData, True)
-		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBProcess, lldb.SBProcess.eBroadcastBitStructuredData, True)
-
-		sectionNode.setExpanded(True)
+#		sectionNode = QTreeWidgetItem(self.treListener, ["Target"])
+##		sectionNode.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEditable | Qt.ItemFlag.ItemIsEnabled| Qt.ItemFlag.ItemIsUserCheckable)  # Set flags for editing
+##		sectionNode.setCheckState(0, Qt.CheckState.Checked)
+#		
+#		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBTarget, lldb.SBTarget.eBroadcastBitBreakpointChanged, True)
+#		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBTarget, lldb.SBTarget.eBroadcastBitModulesLoaded, True)
+#		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBTarget, lldb.SBTarget.eBroadcastBitModulesUnloaded, True)
+#		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBTarget, lldb.SBTarget.eBroadcastBitWatchpointChanged, True)
+#		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBTarget, lldb.SBTarget.eBroadcastBitSymbolsLoaded, True)
+#
+#		sectionNode.setExpanded(True)
 		
-		sectionNode = QTreeWidgetItem(self.treListener, ["Thread"])
-		sectionNode.setCheckState(0, Qt.CheckState.Checked)
+		self.addBroadcastBitGroup("Target", lldb.SBTarget, [lldb.SBTarget.eBroadcastBitBreakpointChanged, lldb.SBTarget.eBroadcastBitModulesLoaded, lldb.SBTarget.eBroadcastBitModulesUnloaded, lldb.SBTarget.eBroadcastBitWatchpointChanged, lldb.SBTarget.eBroadcastBitSymbolsLoaded])
 		
-		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBThread, lldb.SBThread.eBroadcastBitStackChanged, True)
-		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBThread, lldb.SBThread.eBroadcastBitThreadSuspended, True)
-		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBThread, lldb.SBThread.eBroadcastBitThreadResumed, True)
-		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBThread, lldb.SBThread.eBroadcastBitSelectedFrameChanged, True)
-		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBThread, lldb.SBThread.eBroadcastBitThreadSelected, True)
-
-		sectionNode.setExpanded(True)
 		
-		sectionNode = QTreeWidgetItem(self.treListener, ["CommandInterpreter"])
-		sectionNode.setCheckState(0, Qt.CheckState.Checked)
+#		sectionNode = QTreeWidgetItem(self.treListener, ["Process"])
+##		sectionNode.setCheckState(0, Qt.CheckState.Checked)
+#		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBProcess, lldb.SBProcess.eBroadcastBitStateChanged, True)
+#		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBProcess, lldb.SBProcess.eBroadcastBitInterrupt, True)
+#		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBProcess, lldb.SBProcess.eBroadcastBitSTDOUT, True)
+#		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBProcess, lldb.SBProcess.eBroadcastBitSTDERR, True)
+#		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBProcess, lldb.SBProcess.eBroadcastBitProfileData, True)
+#		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBProcess, lldb.SBProcess.eBroadcastBitStructuredData, True)
+#
+#		sectionNode.setExpanded(True)
 		
-		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBCommandInterpreter, lldb.SBCommandInterpreter.eBroadcastBitThreadShouldExit, True)
-		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBCommandInterpreter, lldb.SBCommandInterpreter.eBroadcastBitResetPrompt, True)
-		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBCommandInterpreter, lldb.SBCommandInterpreter.eBroadcastBitQuitCommandReceived, True)
-		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBCommandInterpreter, lldb.SBCommandInterpreter.eBroadcastBitAsynchronousOutputData, True)
-		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBCommandInterpreter, lldb.SBCommandInterpreter.eBroadcastBitAsynchronousErrorData, True)
+		self.addBroadcastBitGroup("Process", lldb.SBProcess, [lldb.SBProcess.eBroadcastBitStateChanged, lldb.SBProcess.eBroadcastBitInterrupt, lldb.SBProcess.eBroadcastBitSTDOUT, lldb.SBProcess.eBroadcastBitSTDERR, lldb.SBProcess.eBroadcastBitProfileData, lldb.SBProcess.eBroadcastBitStructuredData])
 		
-		sectionNode.setExpanded(True)
+		
+		
+#		sectionNode = QTreeWidgetItem(self.treListener, ["Thread"])
+##		sectionNode.setCheckState(0, Qt.CheckState.Checked)
+#		
+#		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBThread, lldb.SBThread.eBroadcastBitStackChanged, True)
+#		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBThread, lldb.SBThread.eBroadcastBitThreadSuspended, True)
+#		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBThread, lldb.SBThread.eBroadcastBitThreadResumed, True)
+#		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBThread, lldb.SBThread.eBroadcastBitSelectedFrameChanged, True)
+#		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBThread, lldb.SBThread.eBroadcastBitThreadSelected, True)
+#
+#		sectionNode.setExpanded(True)
+		
+		self.addBroadcastBitGroup("Thread", lldb.SBThread, [lldb.SBThread.eBroadcastBitStackChanged, lldb.SBThread.eBroadcastBitThreadSuspended, lldb.SBThread.eBroadcastBitThreadResumed, lldb.SBThread.eBroadcastBitSelectedFrameChanged, lldb.SBThread.eBroadcastBitThreadSelected])
+		
+		
+		
+#		sectionNode = QTreeWidgetItem(self.treListener, ["CommandInterpreter"])
+##		sectionNode.setCheckState(0, Qt.CheckState.Checked)
+#		
+#		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBCommandInterpreter, lldb.SBCommandInterpreter.eBroadcastBitThreadShouldExit, True)
+#		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBCommandInterpreter, lldb.SBCommandInterpreter.eBroadcastBitResetPrompt, True)
+#		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBCommandInterpreter, lldb.SBCommandInterpreter.eBroadcastBitQuitCommandReceived, True)
+#		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBCommandInterpreter, lldb.SBCommandInterpreter.eBroadcastBitAsynchronousOutputData, True)
+#		subSectionNode = self.addBroadcastBitItem(sectionNode, lldb.SBCommandInterpreter, lldb.SBCommandInterpreter.eBroadcastBitAsynchronousErrorData, True)
+#		
+#		sectionNode.setExpanded(True)
+		
+		self.addBroadcastBitGroup("CommandInterpreter", lldb.SBCommandInterpreter, [lldb.SBCommandInterpreter.eBroadcastBitThreadShouldExit, lldb.SBCommandInterpreter.eBroadcastBitResetPrompt, lldb.SBCommandInterpreter.eBroadcastBitQuitCommandReceived, lldb.SBCommandInterpreter.eBroadcastBitAsynchronousOutputData, lldb.SBCommandInterpreter.eBroadcastBitAsynchronousErrorData])
 		
 		self.treListener.ommitChange = False

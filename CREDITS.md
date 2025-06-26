@@ -8,6 +8,7 @@
 - https://github.com/pycontribs/ansi2html
 
 ## Images and Icons
+### Flaticon Images and Icons
 
 - <a href="https://www.flaticon.com/free-icons/debug" title="debug icons">Debug icons created by Freepik - Flaticon</a>
 - <a href="https://www.flaticon.com/free-icons/video-player" title="video player icons">Video player icons created by judanna - Flaticon</a>
@@ -26,10 +27,11 @@
 - <a href="https://www.flaticon.com/free-icons/ui" title="ui icons">Ui icons created by khulqi Rosyid - Flaticon</a>
 - <a href="https://www.flaticon.com/free-icons/process" title="process icons">Process icons created by Freepik - Flaticon</a>
 - <a href="https://www.flaticon.com/free-icons/flask" title="flask icons">Flask icons created by Freepik - Flaticon</a>
-
-
-### Event-Listener
+- <a href="https://www.flaticon.com/free-icons/markdown" title="markdown icons">Markdown icons created by kemal-gokbas - Flaticon</a>
 - <a href="https://www.flaticon.com/free-icons/terminal" title="terminal icons">Terminal icons created by Smashicons - Flaticon</a>
 - <a href="https://www.flaticon.com/free-icons/process" title="process icons">Process icons created by Freepik - Flaticon</a>
 - <a href="https://www.flaticon.com/free-icons/hacker" title="hacker icons">Hacker icons created by Freepik - Flaticon</a>
 - <a href="https://www.flaticon.com/free-icons/glasses" title="glasses icons">Glasses icons created by Freepik - Flaticon</a>
+- <a href="https://www.flaticon.com/free-icons/ui" title="ui icons">Ui icons created by alfanz - Flaticon</a>
+
+### Event-Listener

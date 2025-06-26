@@ -22,13 +22,21 @@ class DevHelper(QObject):
 	wpHelper = None
 	bpHelper = None
 	
-	def __init__(self, driver):
+	def __init__(self, driver, bpHelper = None):
 		super().__init__()
 		
 		self.driver = driver
 		self.wpHelper = WatchpointHelper(self.driver)
-		self.bpHelper = BreakpointHelperNG(self.driver)
+		if bpHelper is None:
+			self.bpHelper = BreakpointHelperNG(self.driver)
+		else:
+			self.bpHelper = bpHelper
 	
+	def setupDevHelper(self):
+		self.setDevBreakpoints()
+#		self.setDevWatchpointsNG()
+		pass
+		
 	def setDevWatchpoints(self):
 		print(f"==========>>>>>>>>> SETTING DEV-WATCHPOINT!!!")
 		error = lldb.SBError()
@@ -54,6 +62,7 @@ class DevHelper(QObject):
 #		ci.HandleCommand("w s v idx", res)
 	
 #		return _lldb.SBTarget_DeleteAllWatchpoints(self) 
+		pass
 #	10056   
 #	10057 -    def WatchAddress(self, *args): 
 #	10058          """WatchAddress(SBTarget self, lldb::addr_t addr, size_t size, bool read, bool write, SBError error) -> SBWatchpoint""" 

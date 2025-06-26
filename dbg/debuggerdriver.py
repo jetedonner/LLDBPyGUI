@@ -59,12 +59,13 @@ class DebuggerDriver(Thread):
         if not self.listener.IsValid():
             raise "Invalid listener"
 
+        print(f"=====================>>>>>>>>> self.debugger (ADD): {self.debugger} / {self.listener}")
         self.listener.StartListeningForEventClass(self.debugger,
                                                   lldb.SBTarget.GetBroadcasterClassName(),
                                                   lldb.SBTarget.eBroadcastBitBreakpointChanged
                                                   #| lldb.SBTarget.eBroadcastBitModuleLoaded
                                                   #| lldb.SBTarget.eBroadcastBitModuleUnloaded
-                                                  | lldb.SBTarget.eBroadcastBitWatchpointChanged
+                                                  #| lldb.SBTarget.eBroadcastBitWatchpointChanged
                                                   #| lldb.SBTarget.eBroadcastBitSymbolLoaded
                                                   )
 
@@ -95,7 +96,7 @@ class DebuggerDriver(Thread):
                                                   | lldb.SBCommandInterpreter.eBroadcastBitAsynchronousErrorData
                                                 )
     
-    def addListener(self, type = lldb.SBTarget, bitMask = SBTarget.eBroadcastBitBreakpointChanged):
+    def addListener(self, type = lldb.SBTarget, bitMask = SBTarget.eBroadcastBitWatchpointChanged):
   #		self.target = self.debugger.GetSelectedTarget()
   #		self.process = self.target.GetProcess()
   #		print(f"self.target => {self.target}")
@@ -106,17 +107,17 @@ class DebuggerDriver(Thread):
   #		self.maskTarget = bitMask # SBTarget.eBroadcastBitBreakpointChanged # | SBTarget.eBroadcastBitWatchpointChanged | SBTarget.eBroadcastBitModulesLoaded | SBThread.eBroadcastBitThreadSuspended 
   #		global lt
   #		self.listenerTarget = lt
-      print("==============>>>>>>>>>>>>> ADDING LISTENER!!!!!!")
+      print(f"==============>>>>>>>>>>>>> ADDING LISTENER: {self.debugger} / {self.listener}")
       self.listener.StopListeningForEventClass(self.debugger,                                                  lldb.SBTarget.GetBroadcasterClassName(),
         lldb.SBTarget.eBroadcastBitBreakpointChanged
         #| lldb.SBTarget.eBroadcastBitModuleLoaded
         #| lldb.SBTarget.eBroadcastBitModuleUnloaded
-        | lldb.SBTarget.eBroadcastBitBreakpointChanged)
+        | lldb.SBTarget.eBroadcastBitWatchpointChanged)
 #     success = self.broadcasterTarget.AddListener(self.listenerTarget, bitMask)
   #		print(f"Added Listener with {success} / self.broadcasterTarget => {self.broadcasterTarget} / self.listenerTarget  => {self.listenerTarget} / self.maskTarget => {self.maskTarget}")
       pass
   
-    def removeListener(self, type = lldb.SBTarget, bitMask = SBTarget.eBroadcastBitBreakpointChanged):
+    def removeListener(self, type = lldb.SBTarget, bitMask = SBTarget.eBroadcastBitWatchpointChanged):
   #		self.target = self.debugger.GetSelectedTarget()
   #		self.process = self.target.GetProcess()
   #		print(f"self.target => {self.target}")
@@ -127,11 +128,13 @@ class DebuggerDriver(Thread):
   #		self.maskTarget = bitMask #SBTarget.eBroadcastBitBreakpointChanged # | SBTarget.eBroadcastBitWatchpointChanged | SBTarget.eBroadcastBitModulesLoaded | SBThread.eBroadcastBitThreadSuspended 
   #		global lt
   #		self.listenerTarget = lt
+      print(f"=====================>>>>>>>>> self.debugger (REMOVE): {self.debugger} / {self.listener}")
       self.listener.StopListeningForEventClass(self.debugger,                                                  lldb.SBTarget.GetBroadcasterClassName(),
         lldb.SBTarget.eBroadcastBitBreakpointChanged
         #| lldb.SBTarget.eBroadcastBitModuleLoaded
         #| lldb.SBTarget.eBroadcastBitModuleUnloaded
-        | lldb.SBTarget.eBroadcastBitBreakpointChanged)
+        #| lldb.SBTarget.eBroadcastBitWatchpointChanged)
+      )
       
       success = self.debugger.GetSelectedTarget().GetBroadcaster().RemoveListener(self.listener, bitMask)
       print(f"Removed Listener with {success}")
@@ -142,6 +145,16 @@ class DebuggerDriver(Thread):
         self.handleCommand("target create %s" % target_image)
         if args is not None:
             self.handleCommand("settings set target.run-args %s" % args)
+
+        # Define paths for stdout and stderr redirection
+        stdout_path = "/tmp/console_app_stdout.log"
+        stderr_path = "/tmp/console_app_stderr.log"
+
+        # Set the standard output and error paths for the target
+        self.handleCommand(f"settings set target.standard-output-path {stdout_path}")
+        self.handleCommand(f"settings set target.standard-error-path {stderr_path}")
+        print(f"Stdout redirected to: {stdout_path}")
+        print(f"Stderr redirected to: {stderr_path}")
 
     def attachProcess(self, pid):
         self.handleCommand("process attach -p %d" % pid)
@@ -184,56 +197,58 @@ class DebuggerDriver(Thread):
             event = lldb.SBEvent()
             got_event = self.listener.WaitForEvent(lldb.UINT32_MAX, event)
             print(f'GOT-EVENT: {event} / {event.GetType()} ====>>> THATS DA ONE')
-            desc = get_description(event)
-            print('Event description:', desc)
-            print('Event data flavor:', event.GetDataFlavor())
-            if str(event.GetDataFlavor()) == "ProgressEventData":
-              self.event_queue.put(event)
-              pass
-##           if event.GetDataFlavor() == "Breakpoint::BreakpointEventData":
-##             print("GOT BREAKPOINT CHANGE!!!")
-##           global process
-##           print('Process state:', lldbutil.state_type_to_str(process.GetState()))
-#           print()
-            
-            # eBroadcastBitSTDOUT
-            if SBProcess.EventIsProcessEvent(event):
-            #             self._broadcast_process_state(SBProcess.GetProcessFromEvent(event), event)
-            #             self.processEvent.emit(event)
-            #             QCoreApplication.processEvents()
-              print("PROCESS EVENT!!!")
-#           elif event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
-#             print(">>>>> WE GOT STDOUT")
-#             stdout = self.getTarget().GetProcess().GetSTDOUT(256)
-#             if stdout is not None and len(stdout) > 0:
-#               message = {"status":"event", "type":"stdout", "output": "".join(["%02x" % ord(i) for i in stdout])}
-#               print(message)
-#               self.signals.event_output.emit("".join(["%02x" % ord(i) for i in stdout]))
-#               QCoreApplication.processEvents()
-##                 continue
-#             else:
-#               continue
-#             while stdout:
-#               stdout = self.getTarget().GetProcess().GetSTDOUT(256)
-#               if stdout is not None and len(stdout) > 0:
-#                 message = {"status":"event", "type":"stdout", "output": "".join(["%02x" % ord(i) for i in stdout])}
-#                 print(message)
-#                 self.signals.event_output.emit("".join(["%02x" % ord(i) for i in stdout]))
-#                 QCoreApplication.processEvents()
-##                 continue
-#               else:
-#                 break
-#             continue
-  #           if got_event and not event.IsValid():
-  ##               self.winAddStr("Warning: Invalid or no event...")
-  #               continue
-  ##             elif not event.GetBroadcaster().IsValid():
-  ##                 continue
-            
-            self.event_queue.put(event)
-            self.signals.event_queued.emit(event)
+#           desc = get_description(event)
+#           print('Event description:', desc)
+#           print('Event data flavor:', event.GetDataFlavor())
+#           if str(event.GetDataFlavor()) == "ProgressEventData":
+#             self.event_queue.put(event)
+#             pass
+###           if event.GetDataFlavor() == "Breakpoint::BreakpointEventData":
+###             print("GOT BREAKPOINT CHANGE!!!")
+###           global process
+###           print('Process state:', lldbutil.state_type_to_str(process.GetState()))
+##           print()
+#           
+#           # eBroadcastBitSTDOUT
+#           if SBProcess.EventIsProcessEvent(event):
+#           #             self._broadcast_process_state(SBProcess.GetProcessFromEvent(event), event)
+#           #             self.processEvent.emit(event)
+#           #             QCoreApplication.processEvents()
+#             print("PROCESS EVENT!!!")
+##           elif event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
+##             print(">>>>> WE GOT STDOUT")
+##             stdout = self.getTarget().GetProcess().GetSTDOUT(256)
+##             if stdout is not None and len(stdout) > 0:
+##               message = {"status":"event", "type":"stdout", "output": "".join(["%02x" % ord(i) for i in stdout])}
+##               print(message)
+##               self.signals.event_output.emit("".join(["%02x" % ord(i) for i in stdout]))
+##               QCoreApplication.processEvents()
+###                 continue
+##             else:
+##               continue
+##             while stdout:
+##               stdout = self.getTarget().GetProcess().GetSTDOUT(256)
+##               if stdout is not None and len(stdout) > 0:
+##                 message = {"status":"event", "type":"stdout", "output": "".join(["%02x" % ord(i) for i in stdout])}
+##                 print(message)
+##                 self.signals.event_output.emit("".join(["%02x" % ord(i) for i in stdout]))
+##                 QCoreApplication.processEvents()
+###                 continue
+##               else:
+##                 break
+##             continue
+# #           if got_event and not event.IsValid():
+# ##               self.winAddStr("Warning: Invalid or no event...")
+# #               continue
+# ##             elif not event.GetBroadcaster().IsValid():
+# ##                 continue
+#           
+#           self.event_queue.put(event)
+#           self.signals.event_queued.emit(event)
 #           QCoreApplication.processEvents()
+        print(f"TERMINATING DRIVER EVENT-LOOP ===>>> TERMINATE")
         self.terminate()
+        print(f"TERMINATING DRIVER EVENT-LOOP ===>>> EXITED")
         
     def run(self):
         self.eventLoop()

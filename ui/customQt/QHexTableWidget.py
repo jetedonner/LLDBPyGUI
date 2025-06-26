@@ -16,7 +16,8 @@ from PyQt6 import uic, QtWidgets
 from config import *
 from ui.dialogs.settingsDialog import *
 from dbg.memoryHelper import *
-
+from ui.customQt.QHexTextEdit import *
+from ui.baseTableWidget import *
 
 #class ByteGrouping(enum.Enum):
 #	NoGrouping = ("No Grouping", 1) #"No grouping"
@@ -24,15 +25,95 @@ from dbg.memoryHelper import *
 #	FourChars = ("Four", 4) #"Four characters"
 #	EightChars = ("Eight", 8) #"Four characters"
 	
+<<<<<<< recoveryCheckOut
+class FormattedTextEdit(QTextEdit):
+	ommitEvent = False
+=======
 class ReadOnlySelectableTextEdit(QTextEdit):
 	
 	isReadOnly = True
 	editMode = False
 	changedText = []
+>>>>>>> main
 	
 	def __init__(self, parent=None):
 		super().__init__(parent)
+
+		self.setStyleSheet("""
+			QTextEdit {
+				background-color: #282c34; /* Dark background */
+				color: #abb2bf; /* Light grey text */
+				border: 1px solid #3e4452;
+				border-radius: 5px;
+				padding: 5px;
+				font: 12px 'Courier New';
+			}
+		""")
+
+		self.textChanged.connect(self.format_text)
 		
+<<<<<<< recoveryCheckOut
+	def format_text(self):
+		if not self.ommitEvent:
+			self.ommitEvent = True
+			text = self.toPlainText()
+			# Limit text length to 8 characters (4 digits, 3 spaces)
+			text = text[:8]
+			formatted_text = ""
+			for i in range(0, len(text), 2):
+				if i > 0:
+					formatted_text += " "
+				formatted_text += text[i:i+2]
+			self.setPlainText(formatted_text)
+#		self.set # .setCursorPosition(len(formatted_text))  # Set cursor to the end
+			self.ommitEvent = False
+		
+class ReadOnlySelectableTextEdit(QTextEdit):
+	
+	context_menu = None
+	isReadOnly = True
+	
+	sigEdit = pyqtSignal()
+	sigWrite = pyqtSignal()
+	sigCancel = pyqtSignal()
+	
+	
+	def __init__(self, parent=None, hasContextMenu = False):
+		super().__init__(parent)
+
+		self.setStyleSheet("""
+			QTextEdit {
+				background-color: #282c34; /* Dark background */
+				color: #abb2bf; /* Light grey text */
+				border: 1px solid #3e4452;
+				border-radius: 5px;
+				padding: 5px;
+				font: 12px 'Courier New';
+			}
+		""")
+		
+		self.hasContextMenu = hasContextMenu
+		if self.hasContextMenu:
+			self.context_menu = QMenu(self)
+			self.actionEditMemory = self.context_menu.addAction("Edit memory")
+			self.actionEditMemory.triggered.connect(self.handle_editMemory)
+			self.actionWriteMemory = self.context_menu.addAction("Write memory")
+			self.actionWriteMemory.triggered.connect(self.handle_writeMemory)
+#		self.textChanged.connect(self.handle_text_changed)
+#		
+#	def handle_text_changed(self):
+#		# Get the current cursor position
+#		cursor = self.textCursor()
+#		
+#		# Get the start and end positions of the edited text
+#		start_pos = cursor.selectionStart() - 1
+#		end_pos = cursor.selectionEnd()
+#		
+#		# Access and process the edited text (optional)
+#		edited_text = self.toPlainText()[start_pos:end_pos]
+#		
+#		print(f"Text changed! Start: {start_pos}, End: {end_pos}, Edited Text: {edited_text}")
+=======
 		self.context_menu = QMenu(self)
 		self.actionEditMemory = self.context_menu.addAction("Edit memory")
 		self.actionEditMemory.triggered.connect(self.handle_editMemory)
@@ -55,11 +136,28 @@ class ReadOnlySelectableTextEdit(QTextEdit):
 #		self.changedText.append((start_pos, end_pos, edited_text))
 #		print(f"Text changed! Start: {start_pos}, End: {end_pos}, Edited Text: {edited_text}")
 		
+>>>>>>> main
 		
 	def contextMenuEvent(self, event):
-		self.context_menu.exec(event.globalPos())
+		if self.context_menu != None:
+			self.context_menu.exec(event.globalPos())
 		
 	def handle_editMemory(self):
+<<<<<<< recoveryCheckOut
+		self.sigEdit.emit()
+		pass
+#		self.isReadOnly = not self.isReadOnly
+##		self.setTextBackgroundColor(QColor.green())
+##		self.setStyleSheet("background-color: rgba(0, 255, 0, 48);")
+#		if not self.isReadOnly:
+#			p = self.viewport().palette()
+#			p.setColor(self.viewport().backgroundRole(), QtGui.QColor(0, 255, 0, 24))
+#			self.viewport().setPalette(p)
+#		else:
+#			p = self.viewport().palette()
+#			p.setColor(self.viewport().backgroundRole(), QtGui.QColor(0, 255, 0, 0))
+#			self.viewport().setPalette(p)
+=======
 		print(f"handle_editMemory....")
 		self.isReadOnly = not self.isReadOnly
 #		self.setTextBackgroundColor(QColor.green())
@@ -104,7 +202,181 @@ class ReadOnlySelectableTextEdit(QTextEdit):
 #			else:
 #				self.actionEditMemory.setText("Edit memory")
 #			pass
+>>>>>>> main
 		
+	def handle_writeMemory(self):
+		self.sigWrite.emit()
+		pass
+#		# Target memory address to write to
+#		memory_address = 0x304113148 #0x304112ea8 # 0x100003f50  # Replace with the actual address
+#		
+#		# Data to write (as a byte string)
+##		data_to_write = b"NOP"
+##		data_to_write = b'\x05'# bytes.fromhex("05")
+#		hex_value = "0x05"
+#		data_to_write = bytes.fromhex(hex_value[2:])
+#		
+##		result = write_memory(self.window().driver.getTarget().GetProcess(), memory_address, data_to_write)
+##		print(f"WRITE MEMORY: {result}")
+#		# Write the data to memory
+#		error = lldb.SBError()
+#		bytes_written = self.window().driver.getTarget().GetProcess().WriteMemory(memory_address, data_to_write, error)
+#		
+#		if error.Success():
+#			print(f"Wrote {bytes_written} bytes to memory address 0x{memory_address:x}")
+#		else:
+#			print(f"Error writing memory: {error}")
+		
+	def keyPressEvent(self, event):
+		if (self.isReadOnly and event.key() in (Qt.Key.Key_Left, Qt.Key.Key_Right, Qt.Key.Key_Up, Qt.Key.Key_Down)) or not self.isReadOnly:
+			# Only allow arrow key selection
+			super().keyPressEvent(event)
+		else:
+			event.ignore()  # Ignore any editing-related key presses
+		
+class QHexTableWidget(BaseTableWidget):
+	
+	startAddr = ""
+<<<<<<< recoveryCheckOut
+#	txtHex = None
+	sigChanged = pyqtSignal(int, int, str)
+=======
+	txtHex = None #ReadOnlySelectableTextEdit()
+	txtData = None 
+#	editMode = False
+>>>>>>> main
+	
+	def __init__(self, parent=None):
+		# QTableWidget.__init__(self, parent=parent)
+		super().__init__()
+		
+<<<<<<< recoveryCheckOut
+#		self.context_menu = QMenu(self)
+#		self.actionEditMemory = self.context_menu.addAction("Edit memory")
+#		self.actionEditMemory.triggered.connect(self.handle_editMemory)
+#		self.actionWriteMemory = self.context_menu.addAction("Write memory")
+#		self.actionWriteMemory.triggered.connect(self.handle_writeMemory)
+#		actionEditMemory = self.context_menu.addAction("Edit memory")
+#		actionEditMemory.triggered.connect(self.handle_editMemory)
+=======
+		self.txtHex = ReadOnlySelectableTextEdit()
+		
+		self.context_menu = QMenu(self)
+		self.actionEditMemory = self.context_menu.addAction("Edit memory")
+		self.actionEditMemory.triggered.connect(self.handle_editMemory)
+>>>>>>> main
+#		actionDisableBP = self.context_menu.addAction("Enable / Disable Breakpoint")
+#		actionDisableBP.triggered.connect(self.handle_disableBP)
+#		
+#		self.context_menu.addSeparator()
+#		self.txtHex = ReadOnlySelectableTextEdit()
+		
+		self.setColumnCount(3)
+		self.setColumnWidth(0, 128)
+		self.setColumnWidth(1, 512)
+		self.setColumnWidth(2, 512)
+		self.verticalHeader().hide()
+		self.horizontalHeader().show()
+		self.horizontalHeader().setHighlightSections(False)
+		self.setHorizontalHeaderLabels(['Address', 'Hex-Value', 'Raw-Data'])
+		self.horizontalHeaderItem(0).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
+		self.horizontalHeaderItem(1).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
+		self.horizontalHeaderItem(2).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
+		self.setFont(ConfigClass.font)
+		
+		self.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectItems)
+		self.setShowGrid(False)
+		
+#		self.txtHex.textChanged.connect(self.handle_text_changed)
+		
+#	def handle_text_changed(self):
+#		# Get the current cursor position
+#		cursor = self.txtHex.textCursor()
+#		
+#		# Get the start and end positions of the edited text
+#		start_pos = cursor.selectionStart() - 1
+#		end_pos = cursor.selectionEnd()
+#		
+#		# Access and process the edited text (optional)
+#		edited_text = self.txtHex.toPlainText()[start_pos:end_pos]
+#		
+#		print(f"Text changed! Start: {start_pos}, End: {end_pos}, Edited Text: {edited_text}")
+		
+	#		self.textChanged.connect(self.handle_text_changed)
+	
+	changedText = []
+	def handle_text_changed(self):
+		if self.txtHex.isReadOnly:
+			return
+		# Get the current cursor position
+		cursor = self.txtHex.textCursor()
+		
+		# Get the start and end positions of the edited text
+		start_pos = cursor.selectionStart() - 1
+		end_pos = cursor.selectionEnd()
+		
+		# Access and process the edited text (optional)
+		edited_text = self.txtHex.toPlainText()[start_pos:end_pos]
+		self.changedText.append((start_pos, end_pos, edited_text))
+		print(f"Text changed! Start: {start_pos}, End: {end_pos}, Edited Text: {edited_text}")
+		self.sigChanged.emit(start_pos, end_pos, edited_text)
+
+	def contextMenuEvent(self, event):
+		self.context_menu.exec(event.globalPos())
+		
+#	def handle_editMemory(self):
+#		self.txtHex.isReadOnly = not self.txtHex.isReadOnly
+#		pass
+	
+	def handle_editMemory(self):
+<<<<<<< recoveryCheckOut
+#		self.txtHex.isReadOnly = not self.txtHex.isReadOnly
+##		self.setTextBackgroundColor(QColor.green())
+##		self.setStyleSheet("background-color: rgba(0, 255, 0, 48);")
+#		if not self.txtHex.isReadOnly:
+#			p = self.txtHex.viewport().palette()
+#			p.setColor(self.txtHex.viewport().backgroundRole(), QtGui.QColor(0, 255, 0, 24))
+#			self.txtHex.viewport().setPalette(p)
+#		else:
+#			p = self.txtHex.viewport().palette()
+#			p.setColor(self.txtHex.viewport().backgroundRole(), QtGui.QColor(0, 255, 0, 0))
+#			self.txtHex.viewport().setPalette(p)
+		print(f"handle_editMemory....")
+		self.txtHex.isReadOnly = not self.txtHex.isReadOnly
+#		self.setTextBackgroundColor(QColor.green())
+#		self.setStyleSheet("background-color: rgba(0, 255, 0, 48);")
+		if not self.txtHex.isReadOnly:
+			p = self.txtHex.viewport().palette()
+			p.setColor(self.txtHex.viewport().backgroundRole(), QtGui.QColor(0, 255, 0, 24))
+			self.txtHex.viewport().setPalette(p)
+			self.txtHex.actionEditMemory.setText("Save memory")
+		else:
+			p = self.txtHex.viewport().palette()
+			p.setColor(self.txtHex.viewport().backgroundRole(), QtGui.QColor(0, 255, 0, 0))
+			self.txtHex.viewport().setPalette(p)
+			self.txtHex.actionEditMemory.setText("Edit memory")
+			print(f"self.changedText => {self.changedText}")
+			start_addr = 0x304113138
+			idx = 0
+			data_to_write = b''
+			startOffset = 0
+			for change in self.changedText:
+				if idx % 2 == 0:
+					startOffset = int(change[0])
+					hex_value = "0x" + str(change[2]).upper()
+				else:
+					hex_value += str(change[2]).upper()
+					hex_str = hex_value[2:]
+					print(f"hex_str => {hex_str}")
+					data_to_write = bytes.fromhex(hex_str)
+					print(f"data_to_write => {data_to_write}")
+					error = lldb.SBError()
+					
+					bytes_written = self.window().driver.getTarget().GetProcess().WriteMemory(start_addr + int((startOffset - (startOffset / 3)) / 2), data_to_write, error)
+				idx += 1
+				
+			self.changedText.clear()
+			
 	def handle_writeMemory(self):
 		# Target memory address to write to
 		memory_address = 0x304113148 #0x304112ea8 # 0x100003f50  # Replace with the actual address
@@ -125,54 +397,7 @@ class ReadOnlySelectableTextEdit(QTextEdit):
 			print(f"Wrote {bytes_written} bytes to memory address 0x{memory_address:x}")
 		else:
 			print(f"Error writing memory: {error}")
-		
-	def keyPressEvent(self, event):
-		if (self.isReadOnly and event.key() in (Qt.Key.Key_Left, Qt.Key.Key_Right, Qt.Key.Key_Up, Qt.Key.Key_Down)) or not self.isReadOnly:
-			# Only allow arrow key selection
-			super().keyPressEvent(event)
-		else:
-			event.ignore()  # Ignore any editing-related key presses
-		
-class QHexTableWidget(QTableWidget):
-	
-	startAddr = ""
-	txtHex = None #ReadOnlySelectableTextEdit()
-	txtData = None 
-#	editMode = False
-	
-	def __init__(self, parent=None):
-		QTableWidget.__init__(self, parent=parent)
-		
-		self.txtHex = ReadOnlySelectableTextEdit()
-		
-		self.context_menu = QMenu(self)
-		self.actionEditMemory = self.context_menu.addAction("Edit memory")
-		self.actionEditMemory.triggered.connect(self.handle_editMemory)
-#		actionDisableBP = self.context_menu.addAction("Enable / Disable Breakpoint")
-#		actionDisableBP.triggered.connect(self.handle_disableBP)
-#		
-#		self.context_menu.addSeparator()
-		
-		self.setColumnCount(3)
-		self.setColumnWidth(0, 128)
-		self.setColumnWidth(1, 512)
-		self.setColumnWidth(2, 512)
-		self.verticalHeader().hide()
-		self.horizontalHeader().show()
-		self.horizontalHeader().setHighlightSections(False)
-		self.setHorizontalHeaderLabels(['Address', 'Hex-Value', 'Raw-Data'])
-		self.horizontalHeaderItem(0).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
-		self.horizontalHeaderItem(1).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
-		self.horizontalHeaderItem(2).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
-		self.setFont(ConfigClass.font)
-		
-		self.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectItems)
-		self.setShowGrid(False)
-
-	def contextMenuEvent(self, event):
-		self.context_menu.exec(event.globalPos())
-		
-	def handle_editMemory(self):
+=======
 		self.editMode = not self.editMode
 		self.txtHex.isReadOnly = not self.txtHex.isReadOnly
 		if self.editMode:
@@ -180,6 +405,7 @@ class QHexTableWidget(QTableWidget):
 		else:
 			self.actionEditMemory.setText("Edit memory")
 		pass
+>>>>>>> main
 		
 	def resetContent(self):
 		self.setRowCount(0)
@@ -199,6 +425,17 @@ class QHexTableWidget(QTableWidget):
 			
 			blockFmt = QTextBlockFormat()
 			blockFmt.setLineHeight(self.line_height, 2)
+			# blockFmt.setStyleSheet("""
+			# 	QTextBlockFormat {
+			# 		background-color: #282c34; /* Dark background */
+			# 		color: #abb2bf; /* Light grey text */
+			# 		border: 1px solid #3e4452;
+			# 		border-radius: 5px;
+			# 		padding: 5px;
+			# 		font: 12px 'Courier New';
+			# 	}
+			# """)
+
 			
 			theCursor = self.txtAddr.textCursor()
 			theCursor.clearSelection()
@@ -207,12 +444,35 @@ class QHexTableWidget(QTableWidget):
 			
 			self.setCellWidget(currRowCount, 0, self.txtAddr)
 			
+<<<<<<< recoveryCheckOut
+			self.txtHex = QHexTextEdit() # ReadOnlySelectableTextEdit(None, True) # 
+			self.txtHex.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+			self.txtHex.setText(value)
+			self.txtHex.setFont(ConfigClass.font)
+			# self.txtHex.setStyleSheet("selection-background-color: #ff0000;")
+
+			self.txtHex.setStyleSheet("""
+				QTextEdit {
+					background-color: #282c34; /* Dark background */
+					color: #abb2bf; /* Light grey text */
+					border: 1px solid #3e4452;
+					border-radius: 5px;
+					padding: 5px;
+					font: 12px 'Courier New';
+					selection-background-color: #ff0000;
+				}
+			""")
+#			self.txtHex.textChanged.connect(self.handle_text_changed)
+#			self.txtHex.sigEdit.connect(self.handle_editMemory)
+#			self.txtHex.sigWrite.connect(self.handle_writeMemory)
+=======
 #			self.txtHex = ReadOnlySelectableTextEdit()
 			self.txtHex.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 			self.txtHex.setText(value)
 			self.txtHex.setFont(ConfigClass.font)
 			self.txtHex.setStyleSheet("selection-background-color: #ff0000;")
 #			self.txtHex.textChanged.connect(self.txtHex_textChanged)
+>>>>>>> main
 			
 			theCursor2 = self.txtHex.textCursor()
 			theCursor2.clearSelection()
@@ -226,7 +486,18 @@ class QHexTableWidget(QTableWidget):
 			self.txtData.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 			self.txtData.insertHtml(raw) # + "<br>")
 			self.txtData.setFont(ConfigClass.font)
-			self.txtData.setStyleSheet("selection-background-color: #ff0000;")
+			# self.txtData.setStyleSheet("selection-background-color: #ff0000;")
+			self.txtData.setStyleSheet("""
+				QTextEdit {
+					background-color: #282c34; /* Dark background */
+					color: #abb2bf; /* Light grey text */
+					border: 1px solid #3e4452;
+					border-radius: 5px;
+					padding: 5px;
+					font: 12px 'Courier New';
+					selection-background-color: #ff0000;
+				}
+			""")
 			
 #			theCursor3 = self.txtData.textCursor()
 #			theCursor3.clearSelection()

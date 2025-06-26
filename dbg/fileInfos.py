@@ -248,6 +248,8 @@ class MachoCPUType(enum.Enum):
 	CPU_TYPE_ALPHA = 16
 	CPU_TYPE_POWERPC = 18
 	CPU_TYPE_POWERPC64 = CPU_TYPE_POWERPC | CPU_ARCH_ABI64
+	CPU_TYPE_UNKNOWN = 0x100000C
+	CPU_TYPE_UNKNOWN2 = 0x2000000
 	
 	def create_cputype_value(value):
 		# Create an enum value from an integer
@@ -289,6 +291,10 @@ class MachoCPUType(enum.Enum):
 			return "CPU_TYPE_POWERPC"
 		elif magic == cls.CPU_TYPE_POWERPC64:
 			return "CPU_TYPE_POWERPC64"
+		elif magic == cls.CPU_TYPE_UNKNOWN:
+			return "CPU_TYPE_UNKNOWN"
+		elif magic == cls.CPU_TYPE_UNKNOWN2:
+			return "CPU_TYPE_UNKNOWN2"
 		else:
 			return "UNKNOWN"
 		
@@ -305,6 +311,7 @@ class MachoFileType(enum.Enum):
 	MH_DYLIB_STUB = 0x00000009
 	MH_DSYM = 0x0000000A
 	MH_KEXT_BUNDLE = 0x0000000B
+	MH_UNKNOWN = 0x3000000
 	
 	def create_filetype_value(value):
 		# Create an enum value from an integer
@@ -334,6 +341,8 @@ class MachoFileType(enum.Enum):
 			return "MH_DSYM"
 		elif magic == cls.MH_KEXT_BUNDLE:
 			return "MH_KEXT_BUNDLE"
+		elif magic == cls.MH_UNKNOWN:
+			return "MH_UNKNOWN"
 		else:
 			return "UNKNOWN"
 		

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+from pprint import pprint
 from lldb import *
 
 from worker.baseWorker import *
@@ -35,6 +37,7 @@ class LoadDisassemblyWorker(BaseWorker):
 #		print(f'thread.GetFrameAtIndex(0) => {thread.GetFrameAtIndex(0)}')
 		
 		idxOuter = 0
+		# import pdb; pdb.set_trace()
 		for module in self.target.module_iter():
 			if idxOuter != 0:
 				idxOuter += 1

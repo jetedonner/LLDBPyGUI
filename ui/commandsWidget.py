@@ -35,13 +35,31 @@ class CommandsWidget(QWidget):
 		
 		self.lblCmd = QLabel("Command: ")
 		self.lblCmd.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
-		
+		self.lblCmd.setStyleSheet("""
+			QLabel {
+				color: #abb2bf;
+				padding: 5px;
+			}
+		""")
+
 		self.txtCmd = QHistoryLineEdit(self.setHelper.getValue(SettingsValues.CmdHistory))
 		self.txtCmd.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
 		self.txtCmd.setText(ConfigClass.initialCommand)
 		self.txtCmd.returnPressed.connect(self.execCommand_clicked)
 		self.txtCmd.availCompletitions.connect(self.handle_availCompletitions)
 		self.txtCmd.setFocus(Qt.FocusReason.NoFocusReason)
+		self.txtCmd.setStyleSheet("""
+			QLineEdit {
+				background-color: #3e4452; /* Slightly lighter dark */
+				color: #abb2bf;
+				border: 1px solid #5c6370;
+				border-radius: 5px;
+				padding: 5px;
+			}
+			QLineEdit:focus {
+				border: 1px solid #61afef; /* Highlight on focus */
+			}
+		""")
 		
 		self.swtAutoscroll = QSwitch("Autoscroll")
 		self.swtAutoscroll.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
@@ -70,6 +88,18 @@ class CommandsWidget(QWidget):
 		self.txtCommands.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
 		self.txtCommands.setFont(ConfigClass.font)
 		self.txtCommands.setText("Here you can run LLDB commands. Type 'help' for a list of available commands.\n")
+		self.setStyleSheet("""
+				    QConsoleTextEdit {
+				        /* background-color: #f0f0f0;
+				        gridline-color: #ccc;
+				        font: 12px 'Courier New';*/
+				        background-color: #282c34; /* Dark background */
+		                color: #abb2bf; /* Light grey text */
+		                /*border: 1px solid #3e4452;*/
+		                border-radius: 5px;
+		                /*padding: 10px;*/
+				    }
+				""")
 		self.layCmdParent.addWidget(self.txtCommands)
 		self.layCmdParent.addWidget(self.wdgCmd)
 		

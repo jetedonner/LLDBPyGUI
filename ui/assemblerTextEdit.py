@@ -14,6 +14,7 @@ from PyQt6 import uic, QtWidgets
 
 from ui.helper.quickToolTip import *
 from ui.helper.locationStack import *
+from ui.baseTableWidget import *
 
 from config import *
 	
@@ -69,7 +70,7 @@ class CustomStyledItemDelegate(QStyledItemDelegate):
 			
 			painter.drawImage(option.rect, image)#option.background())
 		
-class DisassemblyTableWidget(QTableWidget):
+class DisassemblyTableWidget(BaseTableWidget):
 	
 	sigEnableBP = pyqtSignal(str, bool)
 	sigBPOn = pyqtSignal(str, bool)
@@ -77,15 +78,32 @@ class DisassemblyTableWidget(QTableWidget):
 	actionShowMemory = None
 	quickToolTip = QuickToolTip()
 	
+#	def getSelectedRow(self):
+#		if self.selectedItems() != None and len(self.selectedItems()) > 0:
+#			return self.selectedItems()[0].row()
+#		return None
+#	
+#	def getSelectedItem(self, col):
+#		selRow = self.getSelectedRow()
+#		if selRow != None:
+#			return self.item(selRow, col)
+#		return None
+		
 	def handle_copyHexValue(self):
-		if self.item(self.selectedItems()[0].row(), 5) != None:
-			item = self.item(self.selectedItems()[0].row(), 5)
-			pyperclip.copy(item.text())
+#		selItem = self.getSelectedItem(5)
+		if (selItem := self.getSelectedItem(5)) != None:
+			pyperclip.copy(selItem.text())
+#		if self.item(self.selectedItems()[0].row(), 5) != None:
+#			item = self.item(self.selectedItems()[0].row(), 5)
+#			pyperclip.copy(item.text())
 		
 	def handle_copyInstruction(self):
-		if self.item(self.selectedItems()[0].row(), 3) != None:
-			item = self.item(self.selectedItems()[0].row(), 3)
-			pyperclip.copy(item.text())
+#		if self.item(self.selectedItems()[0].row(), 3) != None and self.item(self.selectedItems()[0].row(), 4) != None:
+#			itemMnem = self.item(self.selectedItems()[0].row(), 3)
+#			itemOps = self.item(self.selectedItems()[0].row(), 4)
+		if (itemMnem := self.getSelectedItem(3)) != None:
+			if (itemOps := self.getSelectedItem(4)) != None:
+				pyperclip.copy(itemMnem.text() + " " + itemOps.text())
 		
 	def handle_copyAddress(self):
 		if self.item(self.selectedItems()[0].row(), 2) != None:
@@ -117,8 +135,8 @@ class DisassemblyTableWidget(QTableWidget):
 #		self.sigEnableBP.emit(self.item(self.selectedItems()[0].row(), 3).text(), item.isBPEnabled)
 		if self.item(self.selectedItems()[0].row(), 2) != None:
 			self.window().tabWidgetDbg.setCurrentIndex(2)
-			self.window().wdtBPsWPs.tblBPs.setFocus()
-			self.window().wdtBPsWPs.tblBPs.selectBPRow(self.item(self.selectedItems()[0].row(), 2).text())
+			self.window().wdtBPsWPs.treBPs.setFocus()
+			self.window().wdtBPsWPs.treBPs.selectBPRow(self.item(self.selectedItems()[0].row(), 2).text())
 #		pass
 		
 	def handle_enableBP(self):
@@ -183,6 +201,9 @@ class DisassemblyTableWidget(QTableWidget):
 		self.actionEditBP = self.context_menu.addAction("Edit Breakpoint")
 		self.actionEditBP.triggered.connect(self.handle_editBP)
 		self.context_menu.addSeparator()
+		self.actionEditHexValue = self.context_menu.addAction("Edit Hex Value")
+		self.actionEditHexValue.triggered.connect(self.handle_editHexValue)
+		self.context_menu.addSeparator()
 		actionEditCondition = self.context_menu.addAction("Edit condition")
 		actionEditCondition.triggered.connect(self.handle_editCondition)
 		
@@ -206,18 +227,19 @@ class DisassemblyTableWidget(QTableWidget):
 		self.actionGotoAddr = self.context_menu.addAction("Goto Address")
 		self.actionGotoAddr.triggered.connect(self.handle_gotoAddr)
 		
-		self.setColumnCount(7)
+		self.setColumnCount(8)
 		self.setColumnWidth(0, 24)
 		self.setColumnWidth(1, 32)
 		self.setColumnWidth(2, 108)
 		self.setColumnWidth(3, 84)
 		self.setColumnWidth(4, 256)
-		self.setColumnWidth(5, 324)
-		self.setColumnWidth(6, 304)
+		self.setColumnWidth(5, 240)
+		self.setColumnWidth(6, 180)
+		self.setColumnWidth(7, 300)
 		self.verticalHeader().hide()
 		self.horizontalHeader().show()
 		self.horizontalHeader().setHighlightSections(False)
-		self.setHorizontalHeaderLabels(['PC', 'BP', 'Address', 'Mnemonic', 'Operands', 'Hex', 'Comment']) # '#', 
+		self.setHorizontalHeaderLabels(['PC', 'BP', 'Address', 'Mnemonic', 'Operands', 'Hex', 'Data', 'Comment']) # '#', 
 		self.horizontalHeaderItem(0).setFont(ConfigClass.font)
 		self.horizontalHeaderItem(1).setFont(ConfigClass.font)
 		self.horizontalHeaderItem(2).setFont(ConfigClass.font)
@@ -225,6 +247,7 @@ class DisassemblyTableWidget(QTableWidget):
 		self.horizontalHeaderItem(4).setFont(ConfigClass.font)
 		self.horizontalHeaderItem(5).setFont(ConfigClass.font)
 		self.horizontalHeaderItem(6).setFont(ConfigClass.font)
+		self.horizontalHeaderItem(7).setFont(ConfigClass.font)
 		
 		self.horizontalHeaderItem(0).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
 		self.horizontalHeaderItem(1).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
@@ -233,6 +256,7 @@ class DisassemblyTableWidget(QTableWidget):
 		self.horizontalHeaderItem(4).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
 		self.horizontalHeaderItem(5).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
 		self.horizontalHeaderItem(6).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
+		self.horizontalHeaderItem(7).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
 
 		# Usage (assuming you have a created table widget named `table`):
 		self.delegate = CustomStyledItemDelegate()
@@ -303,6 +327,10 @@ class DisassemblyTableWidget(QTableWidget):
 			
 		self.context_menu.exec(event.globalPos())
 	
+	def handle_editHexValue(self):
+		print(f"handle_editHexValue => ")
+		pass
+		
 	def deleteBP_clicked(self):
 		self.bpHelper.deleteBP(self.item(self.selectedItems()[0].row(), 2).text())
 		pass
@@ -397,7 +425,7 @@ class DisassemblyTableWidget(QTableWidget):
 	def resetContent(self):
 		self.setRowCount(0)
 			
-	def addRow(self, lineNum, address, instr, args, comment, data, rip = ""):
+	def addRow(self, lineNum, address, instr, args, comment, data, dataNg, rip = ""):
 		currRowCount = self.rowCount()
 		self.setRowCount(currRowCount + 1)
 		
@@ -409,14 +437,17 @@ class DisassemblyTableWidget(QTableWidget):
 		self.addItem(currRowCount, 3, instr)
 		self.addItem(currRowCount, 4, args)
 		self.addItem(currRowCount, 5, data)
-		self.addItem(currRowCount, 6, comment)
+		self.addItem(currRowCount, 6, dataNg)
+		self.addItem(currRowCount, 7, comment)
 		
 		self.setRowHeight(currRowCount, 14)
 		
 		
 	def addItem(self, row, col, txt):
+		
 		item = QTableWidgetItem(txt, QTableWidgetItem.ItemType.Type)
-		item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable) #Qt.ItemFlag.ItemIsSelectable)
+		if col != 5:
+			item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable) #Qt.ItemFlag.ItemIsSelectable)
 		
 		# Insert the items into the row
 		self.setItem(row, col, item)
@@ -461,11 +492,11 @@ class AssemblerTextEdit(QWidget):
 		self.table.symbolCount += 1
 		pass
 		
-	def appendAsmText(self, addr, instr, args, comment, data, addLineNum = True, rip = ""):
+	def appendAsmText(self, addr, instr, args, comment, data, dataNg, addLineNum = True, rip = ""):
 #		if addLineNum:
 #			self.table.addRow(0, addr, instr, args, comment, data, rip)
 #		else:
-		self.table.addRow(0, addr, instr, args, comment, data, rip)
+		self.table.addRow(0, addr, instr, args, comment, data, dataNg, rip)
 			
 	def setTextColor(self, color = "black", lineNum = False):
 		pass
@@ -494,8 +525,9 @@ class AssemblerTextEdit(QWidget):
 	
 	currentPCRow = -1
 	def clearPC(self):
-		self.table.item(self.currentPCRow, 0).setText('')
-		self.table.setBGColor(self.currentPCRow, False)
+		if self.table.item(self.currentPCRow, 0) != None:
+			self.table.item(self.currentPCRow, 0).setText('')
+			self.table.setBGColor(self.currentPCRow, False)
 		pass
 		
 	def setPC(self, pc, pushLocation = False):

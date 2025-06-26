@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+from pprint import pprint
 from worker.baseWorker import *
 #from helper.dbgHelper import *
 
@@ -96,11 +98,13 @@ class DebugWorker(BaseWorker):
 				
 				
 				frame = thread.GetFrameAtIndex(0)
+				pprint(frame)
 				if frame:
 					registerList = frame.GetRegisters()
 					numRegisters = registerList.GetSize()
 					if numRegisters > 0:
 #						print(f'GetPCAddress => {hex(frame.GetPCAddress().GetFileAddress())}')
+						# import pdb; pdb.set_trace()
 						self.signals.debugStepCompleted.emit(self.kind, True, frame.register["rip"].value, frame)
 						self.isRunning = False
 #						pass

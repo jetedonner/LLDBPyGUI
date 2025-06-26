@@ -6,6 +6,8 @@ import contextlib
 
 from threading import Thread
 
+from ui.consoleWidget import ConsoleWidget
+
 try:
 	import queue
 except ImportError:
@@ -28,6 +30,7 @@ from dbg.fileInfos import *
 
 from ui.dialogs.settingsDialog import *
 from ui.dialogs.processesDialog import *
+from ui.dialogs.creditsDialog import *
 from ui.dialogs.spinnerDialog import *
 from ui.dialogs.dialogHelper import *
 from ui.assemblerTextEdit import *
@@ -37,12 +40,14 @@ from ui.fileInfoTableWidget import *
 from ui.statisticsTreeWidget import *
 from ui.fileStructureTreeView import *
 from ui.commandsWidget import *
+from ui.consoleWidget import *
 from ui.breakpointWidget import *
 from ui.watchpointWidget import *
 from ui.threadFrameTreeView import *
 from ui.sourceTextEdit import *
 from ui.listenerTreeView import *
 from ui.searchTableWidget import *
+from ui.consoleTextEdit import *
 from ui.customQt.QHexTableWidget import *
 from ui.customQt.QMemoryViewer import *
 
@@ -166,20 +171,48 @@ class LLDBPyGUIWindow(QMainWindow):
 	def wpcallback(self, frame, wp, dict):
 		print(f"================>>>>>>>>>>>>> YES WATCHPOINT HIT <<<<<<<<<<<=================")
 		pass
+	
+	def my_custom_log_callback(self, log_level, message):
+		"""Custom callback function for LLDB logging.
+	
+		Args:
+				log_level: Integer representing the log level (e.g., lldb.eLevelDebug).
+				message: String containing the actual log message.
+		"""
+#		level_name = lldb.SBDebugger.GetLogMessageLevelName(log_level)
+		print(f"=========================>>>>>>>>>>>>>>>>>>>> [{log_level}] => {message}")
 		
 	tmrResetStatusBar = QtCore.QTimer()
 	bpHelper = None
-	
+
+	# def __init__(self):
+	# 	super().__init__()
+	# 	self.settings = QSettings("MyCompany", "MyApp")  # Use your org/app name
+	# 	self._restore_size()
+
+	def _restore_size(self):
+		size = self.setHelper.getValue(SettingsValues.WindowSize) # , QSize(800, 600)
+		if isinstance(size, QSize):
+			self.resize(size)
+
+	def resizeEvent(self, event):
+		self.setHelper.setValue(SettingsValues.WindowSize, self.size())
+		# self.settings.setValue("window_size", self.size())
+		super().resizeEvent(event)
+
 	def __init__(self, driver = None):
 		super().__init__()
 		
 		self.driver = driver
+		# Set the custom logging callback
+		self.driver.debugger.SetLoggingCallback(self.my_custom_log_callback)
+		
 		self.targetBasename = "NG"
 		
 		self.setHelper = SettingsHelper()
 		self.workerManager = WorkerManager(self.driver)
 		self.bpHelper = BreakpointHelperNG(self.driver)
-		self.devHelper = DevHelper(self.driver)
+		self.devHelper = DevHelper(self.driver, self.bpHelper)
 		
 		self.setWinTitleWithState("GUI Started")
 		self.setBaseSize(WINDOW_SIZE * 2, WINDOW_SIZE)
@@ -189,6 +222,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.toolbar = QToolBar('Main ToolBar')
 		self.addToolBar(Qt.ToolBarArea.LeftToolBarArea, self.toolbar)
 		self.toolbar.setIconSize(QSize(ConfigClass.toolbarIconSize, ConfigClass.toolbarIconSize))
+		self.toolbar.setContentsMargins(0, 0, 0, 0)
 		
 		# new menu item
 		self.load_action = QAction(ConfigClass.iconBug, '&Load Target', self)
@@ -210,6 +244,12 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.load_resume.setShortcut('Ctrl+I')
 		self.load_resume.triggered.connect(self.resume_clicked)
 		self.toolbar.addAction(self.load_resume)
+
+		self.stop = QAction(ConfigClass.iconStop, 'S&top', self)
+		self.stop.setStatusTip('Stop')
+		#		self.load_resume.setShortcut('Ctrl+L')
+		self.stop.triggered.connect(self.stop_clicked)
+		self.toolbar.addAction(self.stop)
 		
 		self.step_over = QAction(ConfigClass.iconStepOver, '&Step Over', self)
 		self.step_over.setStatusTip('Step Over')
@@ -265,11 +305,17 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.toolbar.addAction(self.settings_action)
 #		self.toolbar.addAction(self.settings_action)
 		
-		self.help_action = QAction(ConfigClass.iconInfo, '&Show Help', self)
+		self.help_action = QAction(ConfigClass.iconInfo, '&Show Help (DaVe)', self)
 		self.help_action.setStatusTip('Show Help')
 		self.help_action.setShortcut('Ctrl+H')
 		self.help_action.triggered.connect(self.help_clicked)
 		self.toolbar.addAction(self.help_action)
+
+		self.credits_action = QAction(ConfigClass.iconMarkdown, 'Show C&REDITS', self)
+		self.credits_action.setStatusTip('Show Credits')
+		self.credits_action.setShortcut('Ctrl+R')
+		self.credits_action.triggered.connect(self.credits_clicked)
+		self.toolbar.addAction(self.credits_action)
 		
 		self.toolbar.addSeparator()
 		
@@ -310,6 +356,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.statusBar.addPermanentWidget(self.progressbar)
 		
 		self.layout = QVBoxLayout()
+		self.layout.setContentsMargins(0, 0, 0, 0)
 		
 		self.txtMultiline = AssemblerTextEdit(self.driver, self.bpHelper)
 #		self.txtMultiline.table.sigEnableBP.connect(self.handle_enableBP)
@@ -325,7 +372,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.splitter.addWidget(self.txtMultiline)
 		
 		self.tabWidgetDbg = QTabWidget()
-#		self.tabWidgetDbg.setContentsMargins(0, 0, 0, 0)
+		self.tabWidgetDbg.setContentsMargins(0, 0, 0, 0)
 		self.splitter.addWidget(self.tabWidgetDbg)
 		self.splitter.setStretchFactor(0, 60)
 		self.splitter.setStretchFactor(1, 40)
@@ -352,14 +399,77 @@ class LLDBPyGUIWindow(QMainWindow):
 		
 		self.tabWidgetDbg.addTab(self.treThreads, "Threads/Frames")
 		
-		self.treListener = ListenerWidget(self.driver)
+		self.treListener = ListenerWidget(self.driver, self.setHelper)
+		self.treListener.treEventLog.sigSTDOUT.connect(self.testSTDOUT)
+		self.treListener.setContentsMargins(0, 0, 0, 0)
 #		self.treListener.listener.signals.processEvent.connect(self.handle_processEvent)
 		
 		self.tabWidgetDbg.addTab(self.treListener, "Listeners")
+
+		self.tabWidgetMain = QTabWidget()
+
+		self.tabWidgetConsoles = QTabWidget()
+		self.tabWidgetConsole = QTabWidget()
+		self.tabWidgetConsole.setContentsMargins(0, 0, 0, 0)
+		self.tabWidgetConsole.setLayout(QVBoxLayout())
+		# self.consoleWidget = ConsoleWidget(self.workerManager)
+		# self.consoleWidget.setContentsMargins(0, 0, 0, 0)
+		self.tabWidgetConsole.layout().setContentsMargins(0, 0, 0, 0)
+		# self.tabWidgetConsoles.addTab(self.tabWidgetConsole, "Python Console")
+		# self.tabWidgetConsole.layout().addWidget(self.consoleWidget)
+		# --- IMPORTANT: Expose application variables/objects to the console ---
+		# Create a dictionary to pass as the interpreter's local namespace.
+		# This makes 'app_object' available in the console's scope.
+		# You can add any variables or objects you want to expose.
+		exposed_variables = {
+			'app_object': self,  # Expose the MainWindow instance itself
+			'QApplication': QApplication,  # Expose QApplication if needed
+			'os': __import__('os'),  # Example: expose a module
+			'my_data': "This is a string from the main app."
+		}
+		self.tabWidgetConsolePrompt = QTabWidget()
+		self.tabWidgetConsolePrompt.setContentsMargins(0, 0, 0, 0)
+		"""
+		        Sets up the graphical user interface for the console.
+		        """
+		self.main_layout = QVBoxLayout(self)
+		self.main_layout.setContentsMargins(10, 10, 10, 10)
+		self.main_layout.setSpacing(5)
+
+		# Output TextEdit
+		# self.output_text_edit = QTextEdit()
+		# ConsoleWidget()
+		self.output_text_edit = ConsoleWidget() #.setReadOnly(True)
+		# self.output_text_edit.setFontPointSize(12)
+		# self.output_text_edit.setLineWrapMode(QTextEdit.LineWrapMode.WidgetWidth)
+		# self.output_text_edit.setStyleSheet("""
+		#             QTextEdit {
+		#                 background-color: #282c34; /* Dark background */
+		#                 color: #abb2bf; /* Light grey text */
+		#                 border: 1px solid #3e4452;
+		#                 border-radius: 5px;
+		#                 padding: 10px;
+		#             }
+		#         """)
+		# self.output_text_edit.setText("dave@Mia /:")
+		# self.main_layout.addWidget(self.output_text_edit)
+		self.tabWidgetConsoles.addTab(self.output_text_edit, "Prompt")
+
+		self.tabWidgetConsoles.addTab(self.tabWidgetConsole, "Python Console")
+
+		# self.tabWidgetConsolePrompt.setLayout(QVBoxLayout())
+		# self.tabWidgetConsoles.addTab(self.tabWidgetConsolePrompt, "Prompt")
+
+		# Create and add the console widget
+		self.console_widget = PyQtConsoleWidget(locals_dict=exposed_variables)
+		self.tabWidgetConsole.layout().addWidget(self.console_widget)
+		self.tabWidgetDbg.addTab(self.tabWidgetConsoles, "Console")
+
 		
 		self.tabWidgetMain = QTabWidget()
 		self.tabWidgetMain.setContentsMargins(0, 0, 0, 0)
 		self.tabWidgetMain.addTab(self.splitter, "Debugger")
+		self.tabWidgetMain.setContentsMargins(0, 0, 0, 0)
 		self.tabWidgetMain.currentChanged.connect(self.handle_tabWidgetMainCurrentChanged)
 		
 		self.tblFileInfos = FileInfosTableWidget()
@@ -427,13 +537,26 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.tabWidgetDbg.setCurrentIndex(2)
 
 		self.updateStatusBar("LLDBPyGUI loaded successfully!")
-		
+
+		self._restore_size()
+
+		# import pdb; pdb.set_trace()
+
+	def clearCompleteUI(self):
+		self.tblVariables.resetContent()
+		pass
+
+	def testSTDOUT(self, strOut):
+		print(f'HEEEEEELLLLLLLOOOOOO FROM STDOUT => {strOut}')
+		self.output_text_edit.append(f'{strOut}\n')
+
+
 	def cmbModules_changed(self, index):
 		print(f"cmbModules_changed => {index}")
 		self.loadFileStruct(index)
 		
 	def setWinTitleWithState(self, state):
-		self.setWindowTitle(APP_NAME + " " + APP_VERSION + " - " + self.targetBasename + " - " + state)
+		self.setWindowTitle(APP_NAME + " " + APP_VERSION + " - " + APP_RELEASE_DATE + " - " + self.targetBasename + " - " + state)
 		
 	def handle_showMemoryFor(self):
 		sender = self.sender()  # get the sender object
@@ -473,7 +596,7 @@ class LLDBPyGUIWindow(QMainWindow):
 #	tmrResetStatusBar = QtCore.QTimer()
 #	tmrResetStatusBarActive = False
 	
-	def updateStatusBar(self, msg, autoTimeout = True):
+	def updateStatusBar(self, msg, autoTimeout = True, timeoutMs = -1):
 		self.statusBar.showMessage(msg)
 		if self.tmrResetStatusBar.isActive():
 			self.tmrResetStatusBar.stop()
@@ -482,7 +605,12 @@ class LLDBPyGUIWindow(QMainWindow):
 #		self.tmrResetStatusBar.setSingleShot(True)
 #		self.tmrResetStatusBar.timeout.connect(self.resetStatusBar)
 		if autoTimeout:
+			if timeoutMs == -1:
+				self.tmrResetStatusBar.setInterval(self.setHelper.getValue(SettingsValues.StatusBarMsgTimeout))
+			else:
+				self.tmrResetStatusBar.setInterval(timeoutMs)
 			self.tmrResetStatusBar.start()
+			
 	
 	def resetStatusBar(self):
 #		self.tmrResetStatusBarActive = False
@@ -542,7 +670,23 @@ class LLDBPyGUIWindow(QMainWindow):
 		
 	def clear_clicked(self):
 		pass
-		
+
+	def stop_clicked(self):
+		target = self.driver.getTarget()
+		if target:
+			process = target.GetProcess()
+			if process:
+				errKill = process.Kill()
+				if errKill:
+					print(f'{errKill}')
+				else:
+					self.clearCompleteUI()
+
+
+		# if self.isProcessRunning:
+		# 	print(f"self.isProcessRunning => Trying to Suspend()")
+		# 	thread = self.driver.getThread()
+
 	def resume_clicked(self):
 		if self.isProcessRunning:
 			print(f"self.isProcessRunning => Trying to Suspend()")
@@ -612,6 +756,40 @@ class LLDBPyGUIWindow(QMainWindow):
 			
 	def help_clicked(self):
 		pass
+
+	def credits_clicked(self):
+		print(f'Credits clicked ...')
+		if not self.isAttached:
+#			print(f"Attaching to process ...")
+			pd = CreditsDialog("Credits for LLDBPyGUI", "This are the Credits with the resourses used for the realisation of LLDBPyGUI")
+			pd.exec()
+			# pd.txtPID.setText(str(self.setHelper.getValue(SettingsValues.TestAttachPID)))
+			# if pd.exec():
+			# 	self.resetGUI()
+			# 	try:
+			# 		proc = pd.getSelectedProcess()
+			# 		print(proc)
+			# 		print(f"Process Idx: '{pd.cmbPID.currentIndex()}' / PID: '{proc.pid}' / Name: '{proc.name()}' selected")
+			# 		self.setWinTitleWithState(f"PID: {proc.pid} ({proc.name()})")
+			# 		self.driver.attachProcess(proc.pid)
+			# 		self.loadTarget()
+			# 		self.attach_action.setIcon(ConfigClass.iconGearsGrey)
+			# 		self.attach_action.setToolTip("Detach from process: {proc.pid} ({proc.name()})")
+			# 		self.setHelper.setValue(SettingsValues.TestAttachPID, int(proc.pid))
+			# 		self.isAttached = True	
+			# 	except Exception as e:
+			# 		sError = f"Error while attaching to process: {e}"
+			# 		self.updateStatusBar(sError)
+			# 		print(sError)
+		# else:
+		# 	error = self.driver.getTarget().GetProcess().Detach()
+		# 	if error.Success():
+		# 		self.resetGUI()
+		# 		print(f"Detached from process returned with result: {error}")
+		# 		self.attach_action.setIcon(ConfigClass.iconGears)
+		# 		self.attach_action.setToolTip("Attach to process")
+		# 		self.isAttached = False
+		pass
 		
 	def test_clicked(self):
 #		self.resetGUI()
@@ -628,8 +806,34 @@ class LLDBPyGUIWindow(QMainWindow):
 #		self.dialog = SpinnerDialog()
 #		self.dialog.show()
 #		self.driver.removeListener(lldb.SBTarget, SBTarget.eBroadcastBitBreakpointChanged)
-		self.tabWatchpoints.tblWatchpoints.resetContent()
-		self.tabWatchpoints.reloadWatchpoints(True)
+		
+		
+#		self.tabWatchpoints.tblWatchpoints.resetContent()
+#		self.tabWatchpoints.reloadWatchpoints(True)
+#		self.stopTarget()
+		self.loadNewExecutableFile(ConfigClass.testTarget)
+		pass
+		
+	def stopTarget(self):
+		if self.driver.getTarget().GetProcess(): #pymobiledevice3GUIWindow.process:
+			print("KILLING PROCESS")
+		
+			self.driver.aborted = True
+			self.driver.setDone()
+			self.listener.should_quit = True
+			print("Aborted sent")
+			#					os._exit(1)
+			#       sys.exit(0)
+			#       pymobiledevice3GUIWindow.process.Kill()
+			#       global driver
+			#       driver.terminate()
+			#       pymobiledevice3GUIWindow.driver.getTarget().GetProcess().Stop()
+			#       print("Process stopped")        
+			self.driver.getTarget().GetProcess().Kill()
+#			self.driver.debugger.DeleteTarget(self.driver.getTarget())
+			print("Process killed")
+			self.resetGUI()
+		
 		pass
 		
 #	def updateStatusBar(self, msg):
@@ -651,28 +855,32 @@ class LLDBPyGUIWindow(QMainWindow):
 	def loadNewExecutableFile(self, filename):
 #		self.resetGUI()
 		self.targetBasename = os.path.basename(filename)
-		if self.driver.getTarget().GetProcess(): #pymobiledevice3GUIWindow.process:
-			print("KILLING PROCESS")
-	
-			self.driver.aborted = True
-			print("Aborted sent")
-			#					os._exit(1)
-			#       sys.exit(0)
-			#       pymobiledevice3GUIWindow.process.Kill()
-			#       global driver
-			#       driver.terminate()
-			#       pymobiledevice3GUIWindow.driver.getTarget().GetProcess().Stop()
-			#       print("Process stopped")        
-			self.driver.getTarget().GetProcess().Kill()
-			print("Process killed")
-			self.resetGUI()
-	
+		# import pdb; pdb.set_trace()
+#		if self.driver.getTarget().GetProcess(): #pymobiledevice3GUIWindow.process:
+#			print("KILLING PROCESS")
+#	
+#			self.driver.aborted = True
+#			print("Aborted sent")
+#			#					os._exit(1)
+#			#       sys.exit(0)
+#			#       pymobiledevice3GUIWindow.process.Kill()
+#			#       global driver
+#			#       driver.terminate()
+#			#       pymobiledevice3GUIWindow.driver.getTarget().GetProcess().Stop()
+#			#       print("Process stopped")        
+#			self.driver.getTarget().GetProcess().Kill()
+#			print("Process killed")
+#			self.resetGUI()
+		self.stopTarget()
+		
 		global event_queue
 		event_queue = queue.Queue()
 #				
 #				#				global driver
 		self.inited = False
 		self.driver = dbg.debuggerdriver.createDriver(self.driver.debugger, event_queue)
+#		self.driver.debugger.SetLoggingCallback(self.my_custom_log_callback)
+		self.driver.debugger.SetAsync(False)
 #			self.driver.aborted = False
 			
 #			self.driver.createTarget(filename)
@@ -687,12 +895,46 @@ class LLDBPyGUIWindow(QMainWindow):
 				print(main_bp)
 
 			launch_info = target.GetLaunchInfo()
+
+			#########
+			# print("AFTER GETLAUNCHINFO!!!!")
+			# Create a temporary file to capture output
+			# output_path = "/tmp/lldb_output.txt"
+			# output_file = open(output_path, "w")
+			# output_fd = output_file.fileno()
+
+			# stdout_action = lldb.SBFileAction()
+			# stdout_action.Open(output_path, True, False)  # append=False, read=False
+			# launch_info.SetFileAction(lldb.eLaunchFlagStdout, stdout_action)
+			#########
+			# Create a pipe to capture the output
+			# read_fd, write_fd = os.pipe()
+			# launch_info.SetStandardOutput(write_fd)  # Redirect stdout
+			# launch_info.SetStandardError(write_fd)  # (optional) Redirect stderr too
+
 			if self.setHelper.getValue(SettingsValues.StopAtEntry):
 				launch_info.SetLaunchFlags(lldb.eLaunchFlagDisableASLR + lldb.eLaunchFlagStopAtEntry)# lldb.eLaunchFlagDisableASLR + 
 			error = lldb.SBError()
-			target.Launch(launch_info, error)
+			# SBProcess
+			self.process = target.Launch(launch_info, error)
 			output = io.StringIO()
-			
+
+			#########
+			# Close the write end in your script so you can read from the read end
+			# os.close(write_fd)
+
+			# Read the output
+			# output = os.read(read_fd, 4096).decode("utf-8")
+			# print(f"Captured output:\n{output}")
+
+			# Read output from file
+			# output_file.close()
+			# with open(output_path, "r") as f:
+			# 	captured_output = f.read()
+
+			# print(f"Captured output:\n{captured_output}")
+			#########
+
 #			target.Launch(self.driver.debugger.GetListener(), None, None, None, output.fileno(), None, None, 0, False, error)
 ##			'/tmp/stdout.txt'
 			self.loadTarget()
@@ -723,14 +965,16 @@ class LLDBPyGUIWindow(QMainWindow):
 				
 				fileInfos = FileInfos()
 				fileInfos.loadFileInfo(target, self.tblFileInfos)
-				self.devHelper.bpHelper = self.bpHelper
-				self.devHelper.setDevBreakpoints()
-				self.devHelper.setDevWatchpointsNG()
+#				self.devHelper.bpHelper = self.bpHelper
+				self.devHelper.setupDevHelper()
+#				self.devHelper.setDevBreakpoints()
+#				self.devHelper.setDevWatchpointsNG()
 				self.treStats.loadFileStats()
 #					
 				self.process = target.GetProcess()
 				if self.process:
 					self.listener = LLDBListener(self.process, self.driver.debugger)
+					self.listener.setHelper = self.setHelper
 					self.listener.breakpointEvent.connect(self.handle_breakpointEvent)
 					self.listener.processEvent.connect(self.handle_processEvent)
 					self.listener.gotEvent.connect(self.treListener.handle_gotNewEvent)
@@ -749,7 +993,7 @@ class LLDBPyGUIWindow(QMainWindow):
 #						
 						for z in range(self.thread.GetNumFrames()):
 							frame = self.thread.GetFrameAtIndex(z)
-							self.tabWidgetStruct.cmbModules.addItem(frame.GetModule().GetFileSpec().GetFilename())
+							self.tabWidgetStruct.cmbModules.addItem(frame.GetModule().GetFileSpec().GetFilename() + " (" + str(frame.GetFrameID()) + ")")
 							if frame.GetModule().GetFileSpec().GetFilename() != target.GetExecutable().GetFilename():
 #								self.process.Continue()
 								continue
@@ -762,7 +1006,7 @@ class LLDBPyGUIWindow(QMainWindow):
 								self.start_loadDisassemblyWorker(True)
 
 								context = frame.GetSymbolContext(lldb.eSymbolContextEverything)
-								self.workerManager.start_loadSourceWorker(self.driver.debugger, ConfigClass.testTargetSource, self.handle_loadSourceFinished, context.GetLineEntry().GetLine())
+#								self.workerManager.start_loadSourceWorker(self.driver.debugger, ConfigClass.testTargetSource, self.handle_loadSourceFinished, context.GetLineEntry().GetLine())
 
 	def resetGUI(self):
 #		print(f"Resetting GUI")
@@ -854,6 +1098,8 @@ class LLDBPyGUIWindow(QMainWindow):
 		
 	def start_loadDisassemblyWorker(self, initTable = True):
 		self.symFuncName = ""
+		# import pdb; pdb.set_trace()
+		print(f'start_loadDisassemblyWorker')
 		self.workerManager.start_loadDisassemblyWorker(self.handle_loadInstruction, self.handle_workerFinished, initTable)
 
 	def start_loadRegisterWorker(self, initTabs = True):
@@ -868,7 +1114,23 @@ class LLDBPyGUIWindow(QMainWindow):
 			self.txtMultiline.appendAsmSymbol(str(instruction.GetAddress().GetLoadAddress(target)), self.symFuncName)
 			
 #		print(f'instruction.GetComment(target) => {instruction.GetComment(target)}')
-		self.txtMultiline.appendAsmText(hex(int(str(instruction.GetAddress().GetLoadAddress(target)), 10)), instruction.GetMnemonic(target),  instruction.GetOperands(target), instruction.GetComment(target), str(instruction.GetData(target)).replace("                             ", "\t\t").replace("		            ", "\t\t\t").replace("		         ", "\t\t").replace("		      ", "\t\t").replace("			   ", "\t\t\t"), True)
+			
+		daData = str(instruction.GetData(target))
+		idx = daData.find("                             ")
+		if idx == -1:
+			idx = daData.find("		            ")
+			if idx == -1:
+				idx = daData.find("		         ")
+				if idx == -1:
+					idx = daData.find("		      ")
+#					if idx == -1:
+#						idx = daData.find("		      ")
+		if  idx != -1:
+			daHex = daData[:idx]
+			daDataNg = daData[idx:]
+#		self.txtMultiline.appendAsmText(hex(int(str(instruction.GetAddress().GetLoadAddress(target)), 10)), instruction.GetMnemonic(target),  instruction.GetOperands(target), instruction.GetComment(target), str(instruction.GetData(target)).replace("                             ", "\t\t").replace("		            ", "\t\t\t").replace("		         ", "\t\t").replace("		      ", "\t\t").replace("			   ", "\t\t\t"), True)
+			
+			self.txtMultiline.appendAsmText(hex(int(str(instruction.GetAddress().GetLoadAddress(target)), 10)), instruction.GetMnemonic(target),  instruction.GetOperands(target), instruction.GetComment(target), daHex, "".join(str(daDataNg).split()), True)
 		pass
 		
 	def handle_workerFinished(self):
@@ -953,8 +1215,16 @@ class LLDBPyGUIWindow(QMainWindow):
 #				QApplication.processEvents()
 #				currTabIdx = self.tabWidgetDbg.currentIndex()
 #				self.tabWidgetDbg.setCurrentIndex(3)
-				line_text = "=>"
-				self.txtSource.scroll_to_line(line_text)
+#				line_text = "=>"
+#				self.txtSource.scroll_to_line(line_text)
+#				self.tabWidgetDbg.setCurrentIndex(currTabIdx)
+				
+				frame = self.driver.getTarget().GetProcess().GetThreadAtIndex(0).GetFrameAtIndex(0)
+				line_entry = frame.GetLineEntry()
+				line_number = line_entry.GetLine()
+				print(f"line_entry: {line_entry} / line_number: {line_number}")
+				if line_number != 0xFFFFFFFF:
+					self.txtSource.scroll_to_lineNG(line_number)
 				self.tabWidgetDbg.setCurrentIndex(currTabIdx)
 		else:
 			self.txtSource.setText("<Source code NOT available>")
