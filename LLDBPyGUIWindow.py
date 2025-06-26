@@ -70,18 +70,18 @@ from config import *
 			
 
 # myfile.py
-def wpcallback(frame, wp, dict):
+def wpcallbackng(frame, wp, dict):
 	print(f"================>>>>>>>>>>>>> YES WATCHPOINT HIT <<<<<<<<<<<=================")
 	wp.SetEnabled(True)
 	print(frame)
 	print(wp)
 	res = lldb.SBCommandReturnObject()
 	ci = frame.GetThread().GetProcess().GetTarget().GetDebugger().GetCommandInterpreter()
-	ci.HandleCommand('command script import "./LLDBPyGUIWindow.py"', res)
-	# settings
-#	ci.HandleCommand(f"w s v {varName}", res)
-	ci.HandleCommand(f"watchpoint command add -F LLDBPyGUIWindow.wpcallback {wp.GetID()}", res)
-	print(wp)
+# 	ci.HandleCommand('command script import "./LLDBPyGUIWindow.py"', res)
+# 	# settings
+# #	ci.HandleCommand(f"w s v {varName}", res)
+# 	ci.HandleCommand(f"watchpoint command add -F LLDBPyGUIWindow.wpcallbackng {wp.GetID()}", res)
+# 	print(wp)
 #	print(dict)
 	pass
 	
@@ -167,7 +167,11 @@ class LoadTargetThread(Thread):
 		print("END LOADTARGET THREAD!!!")
 		
 class LLDBPyGUIWindow(QMainWindow):
-	
+
+	def wpcallbackng(self):
+		print(f"================>>>>>>>>>>>>> YES WATCHPOINT CALLBACK NG <<<<<<<<<<<=================")
+		pass
+
 	def wpcallback(self, frame, wp, dict):
 		print(f"================>>>>>>>>>>>>> YES WATCHPOINT HIT <<<<<<<<<<<=================")
 		pass
@@ -968,7 +972,7 @@ class LLDBPyGUIWindow(QMainWindow):
 #				self.devHelper.bpHelper = self.bpHelper
 				self.devHelper.setupDevHelper()
 #				self.devHelper.setDevBreakpoints()
-#				self.devHelper.setDevWatchpointsNG()
+				self.devHelper.setDevWatchpointsNG()
 				self.treStats.loadFileStats()
 #					
 				self.process = target.GetProcess()
