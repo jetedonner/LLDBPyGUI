@@ -52,14 +52,14 @@ class DebuggerDriver(Thread):
         self.initialize(debugger)
 
     def initialize(self, debugger):
-        print("INITIALISING DRIVER!!!")
+        # print("INITIALISING DRIVER!!!")
         self.done = False
         self.debugger = debugger
         self.listener = debugger.GetListener()
         if not self.listener.IsValid():
             raise "Invalid listener"
 
-        print(f"=====================>>>>>>>>> self.debugger (ADD): {self.debugger} / {self.listener}")
+        # print(f"=====================>>>>>>>>> self.debugger (ADD): {self.debugger} / {self.listener}")
         self.listener.StartListeningForEventClass(self.debugger,
                                                   lldb.SBTarget.GetBroadcasterClassName(),
                                                   lldb.SBTarget.eBroadcastBitBreakpointChanged
@@ -107,7 +107,7 @@ class DebuggerDriver(Thread):
   #		self.maskTarget = bitMask # SBTarget.eBroadcastBitBreakpointChanged # | SBTarget.eBroadcastBitWatchpointChanged | SBTarget.eBroadcastBitModulesLoaded | SBThread.eBroadcastBitThreadSuspended 
   #		global lt
   #		self.listenerTarget = lt
-      print(f"==============>>>>>>>>>>>>> ADDING LISTENER: {self.debugger} / {self.listener}")
+      # print(f"==============>>>>>>>>>>>>> ADDING LISTENER: {self.debugger} / {self.listener}")
       self.listener.StopListeningForEventClass(self.debugger,                                                  lldb.SBTarget.GetBroadcasterClassName(),
         lldb.SBTarget.eBroadcastBitBreakpointChanged
         #| lldb.SBTarget.eBroadcastBitModuleLoaded
@@ -128,7 +128,7 @@ class DebuggerDriver(Thread):
   #		self.maskTarget = bitMask #SBTarget.eBroadcastBitBreakpointChanged # | SBTarget.eBroadcastBitWatchpointChanged | SBTarget.eBroadcastBitModulesLoaded | SBThread.eBroadcastBitThreadSuspended 
   #		global lt
   #		self.listenerTarget = lt
-      print(f"=====================>>>>>>>>> self.debugger (REMOVE): {self.debugger} / {self.listener}")
+      # print(f"=====================>>>>>>>>> self.debugger (REMOVE): {self.debugger} / {self.listener}")
       self.listener.StopListeningForEventClass(self.debugger,                                                  lldb.SBTarget.GetBroadcasterClassName(),
         lldb.SBTarget.eBroadcastBitBreakpointChanged
         #| lldb.SBTarget.eBroadcastBitModuleLoaded
@@ -137,7 +137,7 @@ class DebuggerDriver(Thread):
       )
       
       success = self.debugger.GetSelectedTarget().GetBroadcaster().RemoveListener(self.listener, bitMask)
-      print(f"Removed Listener with {success}")
+      # print(f"Removed Listener with {success}")
       #.RemoveListener(self.listenerTarget, bitMask)
   #		print(f"Removed Listener with {success} / self.broadcasterTarget => {self.broadcasterTarget} / self.listenerTarget  => {self.listenerTarget} / self.maskTarget => {self.maskTarget}")
 
@@ -153,8 +153,8 @@ class DebuggerDriver(Thread):
         # Set the standard output and error paths for the target
         self.handleCommand(f"settings set target.standard-output-path {stdout_path}")
         self.handleCommand(f"settings set target.standard-error-path {stderr_path}")
-        print(f"Stdout redirected to: {stdout_path}")
-        print(f"Stderr redirected to: {stderr_path}")
+        # print(f"Stdout redirected to: {stdout_path}")
+        # print(f"Stderr redirected to: {stderr_path}")
 
     def attachProcess(self, pid):
         self.handleCommand("process attach -p %d" % pid)
@@ -164,8 +164,9 @@ class DebuggerDriver(Thread):
         self.handleCommand("target create -c %s" % corefile)
         pass
 
-    def setDone(self):
-        self.done = True
+    def setDone(self, isDone=True):
+        self.done = isDone
+        self.aborted = isDone
 
     def isDone(self):
         return self.done
@@ -196,7 +197,7 @@ class DebuggerDriver(Thread):
         while not self.isDone() and not self.aborted:
             event = lldb.SBEvent()
             got_event = self.listener.WaitForEvent(lldb.UINT32_MAX, event)
-            print(f'GOT-EVENT: {event} / {event.GetType()} ====>>> THATS DA ONE')
+            # print(f'GOT-EVENT: {event} / {event.GetType()} ====>>> THATS DA ONE')
 #           desc = get_description(event)
 #           print('Event description:', desc)
 #           print('Event data flavor:', event.GetDataFlavor())
@@ -246,9 +247,9 @@ class DebuggerDriver(Thread):
 #           self.event_queue.put(event)
 #           self.signals.event_queued.emit(event)
 #           QCoreApplication.processEvents()
-        print(f"TERMINATING DRIVER EVENT-LOOP ===>>> TERMINATE")
+        # print(f"TERMINATING DRIVER EVENT-LOOP ===>>> TERMINATE")
         self.terminate()
-        print(f"TERMINATING DRIVER EVENT-LOOP ===>>> EXITED")
+        # print(f"TERMINATING DRIVER EVENT-LOOP ===>>> EXITED")
         
     def run(self):
         self.eventLoop()

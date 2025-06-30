@@ -46,7 +46,7 @@ class ConsoleWidget(QTextEdit):
 
         if event.key() == Qt.Key.Key_Return:
             user_input = doc_text[input_start:]
-            selfq.append(f"{user_input}\n")
+            self.append(f"{user_input}\n")
             self.insertPlainText(f"{self.prompt}")
             self.moveCursor(QTextCursor.MoveOperation.End)
         else:

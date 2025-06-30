@@ -29,7 +29,7 @@ class LLDBListener(QtCore.QObject, Thread):
 	def __init__(self, process, debugger):
 		super(LLDBListener, self).__init__()
 		Thread.__init__(self)
-		print('INITING LISTENER!!!!')
+		# print('INITING LISTENER!!!!')
 		self.listener = lldb.SBListener('Chrome Dev Tools Listener')
 		self.process = process
 		self.debugger = debugger
@@ -52,7 +52,7 @@ class LLDBListener(QtCore.QObject, Thread):
 #		self._add_commandline_interpreter(self.debugger)
 		self.setHelper.beginReadArray("listener_Target")
 		setKey = "lldb.target_eBroadcastBitBreakpointChanged" #SBTarget.eBroadcastBitBreakpointChanged #self.treListener.getKeyForBroadcastBitData([type, bit])
-		print(f"====>> Listener-Config (listener_Target) => Key: {setKey} is: {self.setHelper.getArrayValue(setKey)}")
+		# print(f"====>> Listener-Config (listener_Target) => Key: {setKey} is: {self.setHelper.getArrayValue(setKey)}")
 		if self.setHelper.getArrayValue(setKey) == "true":
 			self._add_listener(lldb.SBTarget, lldb.SBTarget.eBroadcastBitBreakpointChanged)
 		#subSectionNode.setCheckState(0, Qt.CheckState.Checked if self.setHelper.getArrayValue(setKey) == "true" else Qt.CheckState.Unchecked)
@@ -74,7 +74,7 @@ class LLDBListener(QtCore.QObject, Thread):
 		pass
 		
 	def _remove_listener(self, type, bitMask = lldb.SBTarget.eBroadcastBitWatchpointChanged):
-		print(f"=====================>>>>>>>>> self.debugger (REMOVE): {self.debugger} / {self.listener}")
+		# print(f"=====================>>>>>>>>> self.debugger (REMOVE): {self.debugger} / {self.listener}")
 		if type == lldb.SBTarget:
 			self.listener.StopListeningForEventClass(self.debugger,                                                  lldb.SBTarget.GetBroadcasterClassName(),
 				lldb.SBTarget.eBroadcastBitWatchpointChanged
@@ -84,7 +84,7 @@ class LLDBListener(QtCore.QObject, Thread):
 			)
 			
 			success = self.debugger.GetSelectedTarget().GetBroadcaster().RemoveListener(self.listener, bitMask)
-			print(f"Removed Listener with {success} (LISTENER)")
+			# print(f"Removed Listener with {success} (LISTENER)")
 		elif type == lldb.SBProcess:
 			self.listener.StopListeningForEventClass(self.debugger,                                                  type.GetBroadcasterClassName(),
 				bitMask
@@ -94,11 +94,11 @@ class LLDBListener(QtCore.QObject, Thread):
 			)
 			
 			success = self.debugger.GetSelectedTarget().GetProcess().GetBroadcaster().RemoveListener(self.listener, bitMask)
-			print(f"Removed Listener with {success} (LISTENER)")
+			# print(f"Removed Listener with {success} (LISTENER)")
 		pass
 	
 	def _add_listener(self, type, bitMask = lldb.SBTarget.eBroadcastBitWatchpointChanged):
-		print(f"=====================>>>>>>>>> self.debugger (ADD): {self.debugger} / {self.listener}")
+		# print(f"=====================>>>>>>>>> self.debugger (ADD): {self.debugger} / {self.listener}")
 		if type == lldb.SBTarget:
 			self.listener.StartListeningForEventClass(self.debugger,                                                  type.GetBroadcasterClassName(),
 					bitMask
@@ -108,7 +108,7 @@ class LLDBListener(QtCore.QObject, Thread):
 				)
 #		bitMask = lldb.SBTarget.eBroadcastBitWatchpointChanged
 			success = self.debugger.GetSelectedTarget().GetBroadcaster().AddListener(self.listener, bitMask)
-			print(f"Added Listener with {success} (LISTENER)")
+			# print(f"Added Listener with {success} (LISTENER)")
 		elif type == lldb.SBProcess:
 			self.listener.StartListeningForEventClass(self.debugger,                                                  type.GetBroadcasterClassName(),
 				bitMask
@@ -118,7 +118,7 @@ class LLDBListener(QtCore.QObject, Thread):
 			)
 			#		bitMask = lldb.SBTarget.eBroadcastBitWatchpointChanged
 			success = self.debugger.GetSelectedTarget().GetProcess().GetBroadcaster().AddListener(self.listener, bitMask)
-			print(f"Added Listener with {success} (LISTENER)")
+			# print(f"Added Listener with {success} (LISTENER)")
 		pass
 		
 	def _add_listener_to_target(self, target):
@@ -142,18 +142,18 @@ class LLDBListener(QtCore.QObject, Thread):
 			state = 'exited'
 			self.should_quit = True
 		thread = process.selected_thread
-		print('Process event: %s, reason: %d' % (state, thread.GetStopReason()))
+		# print('Process event: %s, reason: %d' % (state, thread.GetStopReason()))
 		if thread.GetStopReason() == lldb.eStopReasonBreakpoint:
-			print(f'REASON BP RFEACHED (listener) Event: {event} => Continuing...')
+			# print(f'REASON BP RFEACHED (listener) Event: {event} => Continuing...')
 			self.suspended = True
 		elif thread.GetStopReason() == lldb.eStopReasonWatchpoint:
-			print(f'REASON WATCHPOINT RFEACHED (listener) Event: {event} => Continuing...')
-#			pass
+			# print(f'REASON WATCHPOINT RFEACHED (listener) Event: {event} => Continuing...')
+			pass
 			
-		print(f"======================== IN HEA ========================")
+		# print(f"======================== IN HEA ========================")
 		self.processEvent.emit(process)
 		QCoreApplication.processEvents()
-		print(f"====================== IN HEA END ======================")
+		# print(f"====================== IN HEA END ======================")
 		
 #		if event != None and event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
 #			print("STD OUT EVENT LISTENER!!!")
@@ -177,7 +177,7 @@ class LLDBListener(QtCore.QObject, Thread):
 			
 			
 	def _breakpoint_event(self, event):
-		print(f"_breakpoint_event")
+		# print(f"_breakpoint_event")
 		breakpoint = SBBreakpoint.GetBreakpointFromEvent(event)
 		bpEventType = SBBreakpoint.GetBreakpointEventTypeFromEvent(event)
 		self.breakpointEvent.emit(event)
@@ -192,26 +192,26 @@ class LLDBListener(QtCore.QObject, Thread):
 		
 	suspended = False
 	def run(self):
-		print('STARTING LISTENER!!!!')
+		# print('STARTING LISTENER!!!!')
 		while not self.should_quit:
 			event = SBEvent()
-			print("GOING to WAIT 4 EVENT...")
+			# print("GOING to WAIT 4 EVENT...")
 			if self.listener.WaitForEvent(lldb.UINT32_MAX, event):
 				self.gotEvent.emit(event)
-				print("GOT NEW EVENT LISTENER!!")
+				# print("GOT NEW EVENT LISTENER!!")
 				if SBCommandInterpreter.EventIsCommandInterpreterEvent(event):
 					print("GOT COMMANDLINE EVENT!!!")
 				elif event.GetType() == SBThread.eBroadcastBitThreadSuspended:
 					print('THREAD SUSPENDED: %s' % str(event))
 				elif event.GetType() == SBThread.eBroadcastBitThreadResumed:
-					print("RESUMED!!")
+					# print("RESUMED!!")
 					if self.suspended:
-						print("RESUMED AFTER BP!!")
+						# print("RESUMED AFTER BP!!")
 						self.suspended = False
 				elif event.GetType() == SBTarget.eBroadcastBitModulesLoaded:
 					print('Module load: %s' % str(event))
-					
-				
+
+
 #				elif event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
 #					print("STD OUT EVENT LISTENER!!!")
 #					stdout = SBProcess.GetProcessFromEvent(event).GetSTDOUT(256)
@@ -228,13 +228,12 @@ class LLDBListener(QtCore.QObject, Thread):
 					self._broadcast_process_state(SBProcess.GetProcessFromEvent(event), event)
 #					self.processEvent.emit(SBProcess.GetProcessFromEvent(event))
 #					QCoreApplication.processEvents()
-					print("STD OUT EVENT ALT!!!")
+					# print("STD OUT EVENT ALT!!!")
+				    # pass
 				elif SBBreakpoint.EventIsBreakpointEvent(event):
-					print("GOT BREAKPOINT EVENT YESSSSS!!!")
+					# print("GOT BREAKPOINT EVENT YESSSSS!!!")
 					self._breakpoint_event(event)
 				elif event.GetType() == lldb.SBTarget.eBroadcastBitWatchpointChanged:
 					wp = lldb.SBWatchpoint.GetWatchpointFromEvent(event)
-					print(f"WATCHPOINT CHANGED!!!! => {wp}")
 				else:
-					print("OTHER EVENT!!!!")
-		print("END LISTENER!!!")
+					pass

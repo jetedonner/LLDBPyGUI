@@ -44,10 +44,10 @@ class BreakpointHelperNG():
 		bp = target.BreakpointCreateByName(name, target.GetExecutable().GetFilename())
 		bp.AddName(name)
 		bp.SetEnabled(True)
-		self.setCommandLineCommands(bp, ["banner"])
+		# self.setCommandLineCommands(bp, ["banner"])
 		return bp
 		
-	def enableBP(self, address, enabled = True):
+	def enableBP(self, address, enabled = True, updateUI = True):
 		print(f'enableBP: {address} => {enabled}')
 		target = self.driver.getTarget()
 		found = False
@@ -55,14 +55,16 @@ class BreakpointHelperNG():
 		if bpRet[0] != None:
 			bpRet[0].SetEnabled(enabled)
 			bpRet[1].SetEnabled(enabled)
+			# if updateUI:
 			self.txtDis.enableBP(address, enabled)
 			self.treBP.enableBP(address, enabled)
 		else:
 			bp = target.BreakpointCreateByAddress(int(address, 16))
 			bp.SetEnabled(enabled)
-			self.setCommandLineCommands(bp, ["banner"])
+			# self.setCommandLineCommands(bp, ["banner"])
 			self.txtDis.enableBP(address, enabled)
-			self.treBP.addBP(bp)
+			if updateUI:
+				self.treBP.addBP(bp)
 
 	def deleteBP(self, address):
 		target = self.driver.getTarget()

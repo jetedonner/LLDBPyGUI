@@ -29,22 +29,25 @@ class CommandsWidget(QWidget):
 		self.wdgCmd = QWidget()
 #		self.wdgCommands = QWidget()
 		self.layCmdParent = QVBoxLayout()
+		self.layCmdParent.setContentsMargins(10, 10, 10, 10)
 		self.layCmd = QHBoxLayout()
+		self.layCmd.setContentsMargins(0, 0, 0, 0)
 		self.wdgCmd.setLayout(self.layCmd)
 		self.setLayout(self.layCmdParent)
 		
-		self.lblCmd = QLabel("Command: ")
-		self.lblCmd.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
-		self.lblCmd.setStyleSheet("""
-			QLabel {
-				color: #abb2bf;
-				padding: 5px;
-			}
-		""")
+		# self.lblCmd = QLabel("Command: ")
+		# self.lblCmd.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
+		# self.lblCmd.setStyleSheet("""
+		# 	QLabel {
+		# 		color: #abb2bf;
+		# 		padding: 5px;
+		# 	}
+		# """)
 
 		self.txtCmd = QHistoryLineEdit(self.setHelper.getValue(SettingsValues.CmdHistory))
 		self.txtCmd.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
-		self.txtCmd.setText(ConfigClass.initialCommand)
+		# self.txtCmd.setText(ConfigClass.initialCommand)
+		self.txtCmd.setPlaceholderText("Enter LLDB command here ...")
 		self.txtCmd.returnPressed.connect(self.execCommand_clicked)
 		self.txtCmd.availCompletitions.connect(self.handle_availCompletitions)
 		self.txtCmd.setFocus(Qt.FocusReason.NoFocusReason)
@@ -55,9 +58,10 @@ class CommandsWidget(QWidget):
 				border: 1px solid #5c6370;
 				border-radius: 5px;
 				padding: 5px;
+				font: 12px 'Courier New';
 			}
 			QLineEdit:focus {
-				border: 1px solid #61afef; /* Highlight on focus */
+				/*border: 1px solid #61afef;*/ /* Highlight on focus */
 			}
 		""")
 		
@@ -76,7 +80,7 @@ class CommandsWidget(QWidget):
 		self.cmdClear.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
 		self.cmdClear.clicked.connect(self.clear_clicked)
 		
-		self.layCmd.addWidget(self.lblCmd)
+		# self.layCmd.addWidget(self.lblCmd)
 		self.layCmd.addWidget(self.txtCmd)
 		self.layCmd.addWidget(self.cmdExecuteCmd)
 		self.layCmd.addWidget(self.swtAutoscroll)

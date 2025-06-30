@@ -155,6 +155,7 @@ class PyQtConsoleWidget(QWidget):
                 border: 1px solid #3e4452;
                 border-radius: 5px;
                 padding: 5px;
+                font: 12px 'Courier New';
             }
         """)
         main_layout.addWidget(self.output_text_edit)
@@ -170,7 +171,8 @@ class PyQtConsoleWidget(QWidget):
                 color: #abb2bf;
                 border: 1px solid #5c6370;
                 border-radius: 5px;
-                padding: 8px;
+                padding: 5px;
+                font: 12px 'Courier New';
             }
             QLineEdit:focus {
                 border: 1px solid #61afef; /* Highlight on focus */

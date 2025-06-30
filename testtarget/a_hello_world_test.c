@@ -1,8 +1,8 @@
 // NO DEBUG-INFO:
-// clang -target x86_64-apple-macos -arch x86_64 -o hello_world_test hello_world_test.c
+// clang -target x86_64-apple-macos -arch x86_64 -o a_hello_world_test a_hello_world_test.c
 //
 // WITH DEBUG-INFO:
-// clang -g -target x86_64-apple-macos -arch x86_64 -o hello_world_test hello_world_test.c
+// clang -g -target x86_64-apple-macos -arch x86_64 -o a_hello_world_test a_hello_world_test.c
 //
 // Make executable:
 // chmod u+x hello_world
@@ -29,7 +29,7 @@ int main() {
   int idx = 0;
   
   // INT test variable for the disasseblers "Variable" view
-  int testVar = 1;
+  int testVar = 123;
 
   // Another test variable (char array) for the disasseblers "Variable" view
   char hardcoded_string[] = "S3CR3T";
@@ -37,32 +37,16 @@ int main() {
 //start_real_time = time(NULL); // Get starting real time
   
   // This msg will prompt the user to enter his / her secret
-  printf("Welc0me to calc test!\nPlease solve the following calculations:");
-  // fflush(stdout);
+  printf("Hello test: %d / %s", testVar, hardcoded_string);
+  fflush(stdout);
   
   while(1)
     {
-      /*if(idx % 3 == 0){
+      if(idx % 3 == 0){
 //      printf("\n%d", idx);
         subfunc(idx, testVar);
-      }*/
-      printf("What is the sum of: %d and %d?\n", testVar, (testVar + 1));
-      fflush(stdout);
-      // Variable to hold the user input
-      //char input[256];
-      int number = 0;
-      
-      // This msg will prompt the user to enter his / her secret
-      //printf("Please enter your secret: ");
-      
-      // Will wait for user input and store the input in the variable "input"
-      scanf("%d", &number);
-      if(number == (testVar + (testVar + 1))){
-        printf("Your result is correct! Proceeding to next calculation ....\n");
-        testVar *= 2;
-      }else{
-        printf("Your result is NOT correct! Try again ....\n");
       }
+      printf("...");
       fflush(stdout);
       sleep(1);
       idx++;

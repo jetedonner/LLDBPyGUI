@@ -43,21 +43,21 @@ class DebugWorker(BaseWorker):
 			thread = process.GetThreadAtIndex(0)
 			if thread:
 				if self.kind == StepKind.StepInto:
-					print("Trying to StepInto ...")
+					# print("Trying to StepInto ...")
 					thread.StepInstruction(False)
 					if thread.GetStopReason() == lldb.eStopReasonBreakpoint:
 						self.isRunning = False
-					print("After StepInto ...")
+					# print("After StepInto ...")
 				elif self.kind == StepKind.StepOut:
-					print("Trying to StepOut ...")
+					# print("Trying to StepOut ...")
 					thread.StepOut()
 					if thread.GetStopReason() == lldb.eStopReasonBreakpoint:
 						self.isRunning = False
-					print("After StepOut ...")
+					# print("After StepOut ...")
 				elif self.kind == StepKind.StepOver:
-					print("Trying to StepOver ...")
+					# print("Trying to StepOver ...")
 					thread.StepInstruction(True)
-					print("After StepOver ...")
+					# print("After StepOver ...")
 #					ID = thread.GetThreadID()
 					if thread.GetStopReason() == lldb.eStopReasonBreakpoint:
 						
@@ -71,21 +71,21 @@ class DebugWorker(BaseWorker):
 						self.isRunning = False
 #					print("After StepOver ...")
 				elif self.kind == StepKind.Continue:
-					print("Trying to Continue ...")
+					# print("Trying to Continue ...")
 					if thread.IsSuspended():
-						print("thread.IsSuspended() => Trying to Resume ...")
+						# print("thread.IsSuspended() => Trying to Resume ...")
 						thread.Resume()
 					error = process.Continue()
-					print("After Continue ...")
+					# print("After Continue ...")
 					if error:
 						print(error)
 
 					if thread.GetStopReason() == lldb.eStopReasonBreakpoint:
 						self.isRunning = False
 				else:
-					print("Trying to StepOver ...")
+					# print("Trying to StepOver ...")
 					thread.StepInstruction(True)
-					print("After StepOver ...")
+					# print("After StepOver ...")
 #					ID = thread.GetThreadID()
 					if thread.GetStopReason() == lldb.eStopReasonBreakpoint:
 #						print(f'GOT if thread.GetStopReason() == lldb.eStopReasonBreakpoint:')
@@ -113,11 +113,14 @@ class DebugWorker(BaseWorker):
 						self.isRunning = False
 #						pass
 				else:
-					print("NO FRAME")
+					# print("NO FRAME")
+					pass
 			else:
-				print("NO THREAD")
+				# print("NO THREAD")
+				pass
 		else:
-			print("NO PROCESS")
+			# print("NO PROCESS")
+			pass
 #		self.signals.finished.emit()
 		self.isRunning = False
 #		pass

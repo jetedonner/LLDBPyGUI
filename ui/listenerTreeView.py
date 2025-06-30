@@ -6,6 +6,9 @@ import sys
 from threading import Thread
 import io
 import contextlib
+
+from dbg.breakpointHelper import *
+
 try:
 	import queue
 except ImportError:
@@ -33,6 +36,8 @@ from worker.debugWorker import StepKind
 from ui.helper.listenerHelper import *
 from config import *
 from ui.baseTreeWidget import *
+from dbg.breakpointHelperNG import *
+from dbg.breakpointHelper import *
 
 class SBStreamForwarder(io.StringIO):
 	def __init__(self):
@@ -51,6 +56,7 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 #		
 #	self.lblModule.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
 	sigSTDOUT = pyqtSignal(str)
+	bp_loc = 0
 
 	def getTimestamp(self):
 		now = datetime.datetime.now()
@@ -62,7 +68,7 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 	def __init__(self, driver):
 		super().__init__(driver)
 		# self.driver = driver
-		
+		self.bp_loc = 0
 		self.setHelper = SettingsHelper()
 
 		self.setContentsMargins(0, 0, 0, 0)
@@ -102,7 +108,7 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 		stdout = self.driver.getTarget().GetProcess().GetSTDOUT(1024)
 		if stdout is not None and len(stdout) > 0:
 			
-			print(stdout)
+			# print(stdout)
 			message = {"status":"event", "type":"stdout", "output": "".join(["%02x" % ord(i) for i in stdout])}
 			print(message)
 			byte_values = bytes.fromhex("".join(["%02x" % ord(i) for i in stdout]))
@@ -163,8 +169,12 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 				sectionNode.setIcon(0, ConfigClass.iconTerminal)
 #				QCoreApplication.processEvents()
 #				QApplication.processEvents()
-				print(f"GOT STDOUT EVENT!!!")
-				print(">>>>> WE GOT STDOUT")
+
+
+				# print(f"GOT STDOUT EVENT!!!")
+				# print(">>>>> WE GOT STDOUT")
+
+
 #				print(sys.stdout)
 				# Example usage:
 #				with contextlib.redirect_stdout(SBStreamForwarder()):
@@ -184,11 +194,13 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 		elif SBBreakpoint.EventIsBreakpointEvent(event):
 			sectionNode.setIcon(0, ConfigClass.iconBPEnabled)
 			eventType = SBBreakpoint.GetBreakpointEventTypeFromEvent(event)
-			print(eventType)
+
+			# print(eventType)
 			subSectionNode = QTreeWidgetItem(sectionNode, ["EventType: ", BreakpointEventTypeString(eventType) + " (" + str(eventType) + ")"])
 			bp = SBBreakpoint.GetBreakpointFromEvent(event)
-			print(f"EventIsBreakpointEvent => {bp}")
+			# print(f"EventIsBreakpointEvent => {bp}")
 			bp_id = bp.GetID()
+
 #			if isinstance(extObj, lldb.SBTarget):
 #				thread = extObj.GetProcess().selected_thread
 #			else:
@@ -198,6 +210,18 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 			frame = thread.GetFrameAtIndex(0)
 			print(frame)
 #			self.window().handle_debugStepCompleted(StepKind.Continue, True, frame.register["rip"].value, frame)
+			if eventType == lldb.eBreakpointEventTypeAdded:
+				self.bpHelper = BreakpointHelperNG(self.driver)
+				self.bpHelper.setCtrls(self.window().txtMultiline, self.window().wdtBPsWPs.treBPs)
+				print("=============>>>>>>>>>>>>> BP ADDED!!!!!")
+				arrBPConditions[str(bp.GetID())] = bp.GetCondition()
+				arrBPHits[str(bp.GetID())] = 0
+				for bl in bp:
+					arrBPConditions[str(bp.GetID()) + "." + str(bl.GetID())] = bl.GetCondition()
+					arrBPHits[str(bp.GetID()) + "." + str(bl.GetID())] = 0
+					self.bpHelper.enableBP(hex(bl.GetAddress().GetLoadAddress(self.driver.getTarget())) , True)
+					self.window().wdtBPsWPs.treBPs.addBP(bp)
+				pass
 			return
 		else:
 			print(f"EventIsOTHEREvent")
@@ -231,23 +255,71 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 			elif reason == lldb.eStopReasonBreakpoint:# or reason == lldb.eBroadcastBitBreakpointChanged:
 #				self.window().handle_processEvent(event, extObj)
 				#assert(thread.GetStopReasonDataCount() == 2)
+
+				if isinstance(extObj, lldb.SBTarget):
+					thread = extObj.GetProcess().selected_thread
+				else:
+					thread = extObj.selected_thread
+
+				# reason = thread.GetStopReason()
+
 				if bp_id == -1:
 					bp_id = thread.GetStopReasonDataAtIndex(0)
-				print('bp_id:%s', bp_id)
+				# print(f'bp_id: {bp_id}')
 				if isinstance(extObj, lldb.SBTarget):
 					breakpoint = extObj.FindBreakpointByID(int(bp_id))
 				else:
 					breakpoint = extObj.GetTarget().FindBreakpointByID(int(bp_id))
+
+
+				self.bp_loc = 0
 				if breakpoint.GetNumLocations() == 1:
-					bp_loc = breakpoint.GetLocationAtIndex(0)
+					self.bp_loc = breakpoint.GetLocationAtIndex(0)
 				else:
 					bp_loc_id = thread.GetStopReasonDataAtIndex(1)
-					bp_loc = breakpoint.FindLocationByID(bp_loc_id)
-				line_entry = bp_loc.GetAddress().GetLineEntry()
+					self.bp_loc = breakpoint.FindLocationByID(bp_loc_id)
+
+				print(f"bp_id: {bp_id} / bp_loc.GetID() => {self.bp_loc.GetID()}")
+				# if(breakpoint.GetCondition() != ""):
+				print(arrBPConditions)
+				print(arrBPHits)
+				# print(breakpoint.GetID())
+				bpCond = arrBPConditions.get(str(breakpoint.GetID()) + "." + str(self.bp_loc.GetID()))
+				if bpCond is not None and bpCond != "":
+				# if (dbg.breakpointHelper.arrBPConditions[str(breakpoint.GetID())] != None and dbg.breakpointHelper.arrBPConditions[str(breakpoint.GetID())] != ""):
+					frame = thread.GetFrameAtIndex(0)
+					# Evaluate the condition
+					value = frame.EvaluateExpression(bpCond)
+
+					if value.GetError().Success():
+						result = value.GetValueAsUnsigned()
+						if result:
+							print(f"✅ Condition is True: {bpCond}")
+
+							# blHit = arrBPHits.get(str(breakpoint.GetID()) + "." + str(self.bp_loc.GetID()))
+							curHits = 0
+							if arrBPHits.get(str(breakpoint.GetID()) + "." + str(self.bp_loc.GetID())) is not None and arrBPHits.get(str(breakpoint.GetID()) + "." + str(self.bp_loc.GetID())) != "":
+								curHits = int(arrBPHits.get(str(breakpoint.GetID()) + "." + str(self.bp_loc.GetID())))
+								curHits += 1
+								arrBPHits[str(breakpoint.GetID()) + "." + str(self.bp_loc.GetID())] = curHits
+							else:
+								curHits += 1
+								arrBPHits[str(breakpoint.GetID()) + "." + str(self.bp_loc.GetID())] = curHits
+							# passa
+						else:
+							print(f"❌ Condition is False: {bpCond}")
+							extObj.Continue()
+							return
+					else:
+						print("⚠️ Evaluation error:", value.GetError().GetCString())
+					# pass
+
+
+				line_entry = self.bp_loc.GetAddress().GetLineEntry()
 				file_spec = line_entry.GetFileSpec()
 				filename = file_spec.fullpath
 				line_no = line_entry.GetLine()
-				print('stopped for BP %d: %s:%d', bp_id, filename, line_no)
+				print(f'stopped for BP {bp_id}: {filename}:{line_no}')
 				subSectionNode = QTreeWidgetItem(sectionNode, ["Breakpoint ID: ", str(bp_id)])
 				subSectionNode = QTreeWidgetItem(sectionNode, ["Filename: ", str(filename)])
 				subSectionNode = QTreeWidgetItem(sectionNode, ["Line no.: ", str(line_no)])
@@ -533,7 +605,7 @@ class ListenerWidget(QWidget):
 		self.wdtLog.setLayout(QVBoxLayout())
 		self.wdtLog.layout().addWidget(self.treEventLog)
 		self.wdtLog.layout().addWidget(QLabel("HELLO"))
-		self.grpLog.setLayout(QVBoxLayout())
+		# self.grpLog.setLayout(QVBoxLayout())
 		self.grpLog.layout().addWidget(self.wdtLog)
 		self.splitter.addWidget(self.treEventLog)
 		self.layout().addWidget(self.splitter)
@@ -552,7 +624,7 @@ class ListenerWidget(QWidget):
 #		if parent != self.treListener:
 		self.setHelper.beginReadArray("listener_" + parent.text(0))
 		setKey = self.treListener.getKeyForBroadcastBitData([type, bit])
-		print(f"Listener-Config (listener_{parent.text(0)}) => Key: {setKey} is: {self.setHelper.getArrayValue(setKey)}")
+		# print(f"Listener-Config (listener_{parent.text(0)}) => Key: {setKey} is: {self.setHelper.getArrayValue(setKey)}")
 		subSectionNode.setCheckState(0, Qt.CheckState.Checked if self.setHelper.getArrayValue(setKey) == "true" else Qt.CheckState.Unchecked)
 		self.setHelper.endArray()
 #		subSectionNode.setCheckState(0, Qt.CheckState.Unchecked)

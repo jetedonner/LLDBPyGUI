@@ -164,8 +164,8 @@ class VariablesTableWidget(BaseTableWidget):
 		variable = frame.FindVariable(item.text())
 		# Check if the variable was found
 		if variable.IsValid():
-			
-			if EditVariableDialog(variable).exec():
+			pass
+			# if EditVariableDialog(variable).exec():
 				# Get the variable's type using GetType()
 #				variable_type = variable.GetType()
 #			
@@ -183,7 +183,7 @@ class VariablesTableWidget(BaseTableWidget):
 #					self.window().updateStatusBar(successMsg)
 #				else:
 #					print(f"ERROR: {error}")
-				pass
+				# pass
 		else:
 			print("Variable not found.")
 		

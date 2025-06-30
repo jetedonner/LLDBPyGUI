@@ -102,9 +102,9 @@ class SourceTextEdit(QConsoleTextEdit):
 #		self.verticalScrollBar().setValue(int(scroll_value))
 		
 	def handle_valueChanged(self, value):
-		print(f'handle_valueChanged => {value}')
+		# print(f'handle_valueChanged => {value}')
 		pass
 		
 	def handle_rangeChanged(self, min, max):
-		print(f'handle_rangeChanged: min => {min} / max => {max}')
+		# print(f'handle_rangeChanged: min => {min} / max => {max}')
 		pass

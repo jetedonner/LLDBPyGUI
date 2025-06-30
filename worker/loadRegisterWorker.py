@@ -82,9 +82,9 @@ class LoadRegisterWorker(BaseWorker):
 							if(var.GetValue() == None):
 								continue
 							string_value = str(string_value)
-							print(dir(var))
-							print(var)
-							print(var.GetValue())
+							# print(dir(var))
+							# print(var)
+							# print(var.GetValue())
 							data = hex(int(var.GetValue()))
 #							hexVal = " (" + hex(int(var.GetValue())) + ")"
 						if var.GetTypeName().startswith("char"):

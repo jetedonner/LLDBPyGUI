@@ -132,10 +132,20 @@ class ConfirmDialog(QDialog):
 		self.buttonBox = QDialogButtonBox(QBtn)
 		self.buttonBox.accepted.connect(self.accept)
 		self.buttonBox.rejected.connect(self.reject)
-		
 		self.layout = QVBoxLayout()
 		message = QLabel(question)
-		self.layout.addWidget(message)
+		self.icon = ConfigClass.iconBugGreen
+		pixmap = self.icon.pixmap(64, 64)  # Set desired size
+		icon_label = QLabel()
+		icon_label.setPixmap(pixmap)
+		self.layoutIco = QHBoxLayout()
+		self.wdtIco = QWidget()
+		self.wdtIco.setLayout(self.layoutIco)
+		# self.layoutIco.addWidget(self.wdtIco)
+		self.layout.addWidget(self.wdtIco)
+
+		self.layoutIco.addWidget(icon_label)
+		self.layoutIco.addWidget(message)
 		self.layout.addWidget(self.buttonBox)
 		self.setLayout(self.layout)
 	
@@ -147,18 +157,43 @@ class ConfirmDialog(QDialog):
 		self.button_clicked = QDialogButtonBox.StandardButton.Cancel
 		super().reject()  # Call parent reject method
 
-#class InputDialog(QDialog):
-#	def __init__(self, title = "", prompt = "", preset = ""):
-#		super().__init__()
-#		
+class InputDialog(QDialog):
+	def __init__(self, title = "", prompt = "", preset = ""):
+		super().__init__()
+
+		self.setWindowTitle(title)
+
+		QBtn = QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+
+		self.buttonBox = QDialogButtonBox(QBtn)
+		self.buttonBox.accepted.connect(self.accept)
+		self.buttonBox.rejected.connect(self.reject)
+
+		self.layout = QVBoxLayout()
+		self.message = QLabel(prompt)
+		self.txtInput = QLineEdit()
+		self.txtInput.setText(preset)
+		self.layout.addWidget(self.message)
+		self.layout.addWidget(self.txtInput)
+		self.layout.addWidget(self.buttonBox)
+		self.setLayout(self.layout)
+		self.txtInput.setFocus()
+
+class GotoAddressDialog(InputDialog):
+	def __init__(self, presetAddress="0x"):
+		super().__init__("Address to goto", "Enter an address to goto:", presetAddress)
+
+#		self.setWindowTitle("Select goto address")
+#		self.message
+#		self.message.setText("Select an address to goto")
 #		self.setWindowTitle(title)
-#		
+#
 #		QBtn = QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
-#		
+#
 #		self.buttonBox = QDialogButtonBox(QBtn)
 #		self.buttonBox.accepted.connect(self.accept)
 #		self.buttonBox.rejected.connect(self.reject)
-#		
+#
 #		self.layout = QVBoxLayout()
 #		self.message = QLabel(prompt)
 #		self.txtInput = QLineEdit()
@@ -168,32 +203,7 @@ class ConfirmDialog(QDialog):
 #		self.layout.addWidget(self.buttonBox)
 #		self.setLayout(self.layout)
 #		self.txtInput.setFocus()
-#		
-#class GotoAddressDialog(InputDialog):
-#	def __init__(self, presetAddress="0x"):
-#		super().__init__("Address to goto", "Enter an address to goto:", presetAddress)
-#		
-##		self.setWindowTitle("Select goto address")
-##		self.message
-##		self.message.setText("Select an address to goto")
-##		self.setWindowTitle(title)
-##		
-##		QBtn = QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
-##		
-##		self.buttonBox = QDialogButtonBox(QBtn)
-##		self.buttonBox.accepted.connect(self.accept)
-##		self.buttonBox.rejected.connect(self.reject)
-##		
-##		self.layout = QVBoxLayout()
-##		self.message = QLabel(prompt)
-##		self.txtInput = QLineEdit()
-##		self.txtInput.setText(preset)
-##		self.layout.addWidget(self.message)
-##		self.layout.addWidget(self.txtInput)
-##		self.layout.addWidget(self.buttonBox)
-##		self.setLayout(self.layout)
-##		self.txtInput.setFocus()
-#
+
 #def showQuestionDialog(parent, title, question):
 #	dlg = QMessageBox(parent)
 #	dlg.setWindowTitle(title)

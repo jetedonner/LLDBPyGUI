@@ -17,7 +17,11 @@ from ui.helper.locationStack import *
 from ui.baseTableWidget import *
 
 from config import *
-	
+
+import lib.utils
+from  ui.dialogs.dialogHelper import *
+from dbg.breakpointHelper import *
+
 class DisassemblyImageTableWidgetItem(QTableWidgetItem):
 	
 	iconStd = None
@@ -93,6 +97,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 #		selItem = self.getSelectedItem(5)
 		if (selItem := self.getSelectedItem(5)) != None:
 			pyperclip.copy(selItem.text())
+			lib.utils.setStatusBar(f"Copied to clipboard HEX value: {selItem.text()}")
 #		if self.item(self.selectedItems()[0].row(), 5) != None:
 #			item = self.item(self.selectedItems()[0].row(), 5)
 #			pyperclip.copy(item.text())
@@ -104,16 +109,19 @@ class DisassemblyTableWidget(BaseTableWidget):
 		if (itemMnem := self.getSelectedItem(3)) != None:
 			if (itemOps := self.getSelectedItem(4)) != None:
 				pyperclip.copy(itemMnem.text() + " " + itemOps.text())
+				lib.utils.setStatusBar(f"Copied to clipboard instruction: {itemMnem.text()} {itemOps.text()}")
 		
 	def handle_copyAddress(self):
 		if self.item(self.selectedItems()[0].row(), 2) != None:
 			item = self.item(self.selectedItems()[0].row(), 2)
 			pyperclip.copy(item.text())
+			lib.utils.setStatusBar(f"Copied to clipboard address: {item.text()}")
 		
 	def handle_toggleBP(self):
 		if self.item(self.selectedItems()[0].row(), 1) != None:
 			item = self.item(self.selectedItems()[0].row(), 1)
 			item.toggleBPOn()
+			lib.utils.setStatusBar(f"Toggled breakpoint @: {self.item(self.selectedItems()[0].row(), 2).text()} to: {item.isBPOn}")
 			self.sigBPOn.emit(self.item(self.selectedItems()[0].row(), 2).text(), item.isBPOn)
 		pass
 	
@@ -128,6 +136,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 				item = self.item(i, 1)
 #				item.toggleBPEnabled()
 				item.enableBP(enabled)
+				lib.utils.setStatusBar(f"Enabled breakpoint @: 0x{address:X} ({enabled})")
 				break
 		pass
 		
@@ -146,13 +155,13 @@ class DisassemblyTableWidget(BaseTableWidget):
 #			self.window().wdtBPsWPs.treBPs.enableBPByAddress(self.item(self.selectedItems()[0].row(), 2).text(),  item.isBPEnabled)
 		
 	def handle_editCondition(self):
-		BreakpointHelper().handle_editCondition(self, 2, 5)
+		BreakpointHelper(self.window(), self.window().driver).handle_editCondition(self, 2, 5)
 		
 	def handle_setPC(self):
 		if self.item(self.selectedItems()[0].row(), 2) != None:
 			dlg = InputDialog("Set new PC", "Please enter address for PC", self.item(self.selectedItems()[0].row(), 2).text())
 			if dlg.exec():
-				print(f'dlg.txtInput: {dlg.txtInput.text()}')
+				# print(f'dlg.txtInput: {dlg.txtInput.text()}')
 				
 				frame = self.driver.getTarget().GetProcess().GetThreadAtIndex(0).GetFrameAtIndex(0)
 				if frame:
@@ -165,8 +174,10 @@ class DisassemblyTableWidget(BaseTableWidget):
 		if self.item(self.selectedItems()[0].row(), 2) != None:
 			gotoDlg = GotoAddressDialog(self.item(self.selectedItems()[0].row(), 2).text())
 			if gotoDlg.exec():
-				print(f"GOING TO ADDRESS: {gotoDlg.txtInput.text()}")
+				# print(f"GOING TO ADDRESS: {gotoDlg.txtInput.text()}")
+				# lib.utils.setStatusBar(f"Go to address to clipboard instruction: {gotoDlg.txtInput.text()} {temOps.text()}")
 				newPC = str(gotoDlg.txtInput.text())
+				lib.utils.setStatusBar(f"Go to address: {newPC}")
 				self.window().txtMultiline.viewAddress(newPC)
 			pass
 		
@@ -298,7 +309,12 @@ class DisassemblyTableWidget(BaseTableWidget):
 	def on_double_click(self, row, col):
 		if col in range(2):
 #			self.toggleBPOn(row)
-			self.bpHelper.enableBP(self.item(self.selectedItems()[0].row(), 2).text(), not self.item(self.selectedItems()[0].row(), 1).isBPEnabled)
+			# bp = self.driver.getTarget().BreakpointCreateByAddress(int(self.item(self.selectedItems()[0].row(), 2).text(), 16))
+			self.bpHelper.enableBP(self.item(self.selectedItems()[0].row(), 2).text(), not self.item(self.selectedItems()[0].row(), 1).isBPEnabled, False)
+			pass
+		# elif col == 4:
+		elif col == 5:
+			lib.utils.setStatusBar(f"Editing data @: {str(self.item(self.selectedItems()[0].row(), 2).text())}")
 		elif col in range(3, 5):
 			if self.item(self.selectedItems()[0].row(), 3) != None:
 				if self.item(self.selectedItems()[0].row(), 3).text().startswith(("call", "jmp", "jne", "jz", "jnz")):
@@ -306,6 +322,9 @@ class DisassemblyTableWidget(BaseTableWidget):
 					self.window().txtMultiline.locationStack.pushLocation(str(self.item(self.selectedItems()[0].row(), 2).text()))	
 					self.window().txtMultiline.locationStack.pushLocation(jumpAddr)
 					self.window().txtMultiline.viewAddress(jumpAddr)
+					# newPC = str(gotoDlg.txtInput.text())
+					# lib.utils.setStatusBar(f"Go to address: {newPC}")
+					# self.window().txtMultiline.viewAddress(newPC)
 			
 	def contextMenuEvent(self, event):
 		if self.item(self.selectedItems()[0].row(), 1) != None:
@@ -351,7 +370,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 	
 	def handle_findReferences(self):
 		address = self.getSelItemText(2)
-		self.window().start_findReferencesWorker(address, True)
+		self.window().start_findReferencesWorker(address)
 		
 	def handle_showMemoryFor(self):
 		sender = self.sender()  # get the sender object
@@ -360,9 +379,12 @@ class DisassemblyTableWidget(BaseTableWidget):
 		else:
 			# Find the QAction within the sender (e.g., QMenu or QToolBar)
 			action = sender.findChild(QAction)
-		print(f"action ===============>>>>>>>>>>>> {action.data()}")
+		self.window().tabWidgetMain.setCurrentIndex(2)
+		# print(f"action ===============>>>>>>>>>>>> {action.data()}")
 		addr = self.quickToolTip.get_memory_address(self.driver.debugger, action.data())
-		print(f"GETTING Memory for {addr}")
+		# print(f"GETTING Memory for 0x{addr:X}")
+		lib.utils.setStatusBar(f"Showing memory for: 0x{addr:X}")
+		# self.window().updateStatusBar(f"Showing memory for: 0x{addr:X} ...")
 		self.doReadMemory(addr)
 #		print(f"Triggering QAction: {action.text()}")
 			

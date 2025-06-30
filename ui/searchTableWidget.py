@@ -28,6 +28,9 @@ class SearchTableWidget(BaseTableWidget):
 		self.actionShowMemory = self.context_menu.addAction("Show Memory")
 		self.actionShowMemory.triggered.connect(self.handle_showMemory)
 
+		self.actionGotoAddress = self.context_menu.addAction("Goto Address")
+		self.actionGotoAddress.triggered.connect(self.handle_gotoAddress)
+
 #		actionDisableBP = self.context_menu.addAction("Enable / Disable Breakpoint")
 #		actionDisableBP.triggered.connect(self.handle_disableBP)
 #		
@@ -55,10 +58,17 @@ class SearchTableWidget(BaseTableWidget):
 		self.cellDoubleClicked.connect(self.on_double_click)
 		
 	def on_double_click(self, row, col):
-		self.handle_showMemory()
+		if(self.parentWidget().cmbSearchType.currentIndex() == 2):
+			self.handle_gotoAddress()
+		else:
+			self.handle_showMemory()
 #		if col in range(3):
 #			self.toggleBPOn(row)
 ##			self.sigBPOn.emit(self.item(self.selectedItems()[0].row(), 3).text(), self.item(self.selectedItems()[0].row(), 1).isBPOn)
+		pass
+
+	def handle_gotoAddress(self):
+		self.window().txtMultiline.viewAddress(self.item(self.selectedItems()[0].row(), 1).text())
 		pass
 			
 	def contextMenuEvent(self, event):
@@ -123,7 +133,7 @@ class SearchWidget(QWidget):
 		self.laySearchTop.addWidget(self.cmdSearch)
 		self.laySearchTop.addWidget(QLabel("Type:"))
 		self.cmbSearchType = QComboBox()
-		self.cmbSearchType.addItems(["String", "Address", "Operand", "Data", "RegExp"])
+		self.cmbSearchType.addItems(["String", "Address", "Reference", "Operand", "Data", "RegExp"])
 		self.laySearchTop.addWidget(self.cmbSearchType)
 		
 		self.swtCaseSensitive = QSwitch("Case sensitive", SwitchSize.Small, SwitchLabelPos.Trailing)
@@ -156,7 +166,8 @@ class SearchWidget(QWidget):
 		thread = self.target.GetProcess().GetSelectedThread()
 		
 		if self.cmbSearchType.currentText() == "RegExp":
-			print(f'Searching with REGEXP!!!!')
+			self.table.horizontalHeaderItem(3).setText(f"Data")
+			# print(f'Searching with REGEXP!!!!')
 #			target = lldb.debugger.GetSelectedTarget()
 #			module = target.GetModuleAtIndex(0)  # Assuming the executable is the first module
 #			base_address = module.GetObjectFileHeaderAddress().GetLoadAddress(target)
@@ -222,8 +233,12 @@ class SearchWidget(QWidget):
 #							remaining_bytes -= len(data)
 #				idx += 1
 #			idxOuter += 1
-			
+		elif(self.cmbSearchType.currentText() == "Reference"):
+			self.window().start_findReferencesWorker(searchTerm)
+			self.table.horizontalHeaderItem(3).setText(f"Instruction")
+			pass
 		else:
+			self.table.horizontalHeaderItem(3).setText(f"Data")
 			print(f'Searching WITHOUT REGEXP!!!!')
 			
 			numAll = self.target.GetNumModules()

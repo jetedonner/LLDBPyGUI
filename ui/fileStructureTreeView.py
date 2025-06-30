@@ -67,7 +67,7 @@ class FileStructureWidget(QWidget):
 		
 	def cmbModules_changed(self, index):
 		if index >= 0:
-			print(f"cmbModules_changed => {index}")
+			# print(f"cmbModules_changed => {index}")
 			self.loadFileStruct(index)
 		
 	def loadFileStruct(self, index):

@@ -10,10 +10,15 @@ from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 from PyQt6 import uic, QtWidgets
+
+import lib.utils
 from config import *
 
+arrBPConditions = {}
+arrBPHits = {}
+
 class BreakpointHelper():
-	
+
 	table = None
 	colNum = 1
 	colCond = 5
@@ -38,7 +43,7 @@ class BreakpointHelper():
 			self.colNum = colNum
 			self.colCond = colCond
 			itemNum = self.table.item(self.table.selectedItems()[0].row(), self.colNum)
-			itemCond = self.table.item(self.table.selectedItems()[0].row(), self.colCond)
+			itemCond = self.table.item(self.table.selectedItems()[0].row(), 5) #self.colCond)
 			title = f'Condition of breakpoint {itemNum.text()}'
 			label = f'Edit the condition of breakpoint {itemNum.text()}'
 			
@@ -57,8 +62,12 @@ class BreakpointHelper():
 #				for i in range(target.GetNumBreakpoints()):
 #					idx += 1
 				bp_cur = self.table.window().driver.getTarget().GetBreakpointAtIndex(self.table.selectedItems()[0].row())
+				print(f"Setting new BP-Condition: {itemCond.text()}")
+				print(bp_cur)
 				bp_cur.SetCondition(itemCond.text())
-				print(self.table.window().updateStatusBar(f"Breakpoint ({itemNum.text()}) condition changed successfully"))
+				lib.utils.setStatusBar(f"Breakpoint ({itemNum.text()}) condition changed successfully")
+				# self.table.window().updateStatusBar(f"Breakpoint ({itemNum.text()}) condition changed successfully")
+				# print(self.table.window().updateStatusBar(f"Breakpoint ({itemNum.text()}) condition changed successfully"))
 				pass
 			else:
 				itemCond.setText(self.oldCond)
@@ -70,7 +79,7 @@ class BreakpointHelper():
 			itemCond.setText(text)
 			
 	def handle_enableBP(self, address, enabled = True):
-		print(f'handle_enableBP: {address} => {enabled}')
+		# print(f'handle_enableBP: {address} => {enabled}')
 		target = self.driver.getTarget()
 		for i in range(target.GetNumBreakpoints()):
 			bp = self.driver.getTarget().GetBreakpointAtIndex(i)
@@ -89,7 +98,7 @@ class BreakpointHelper():
 	def handle_checkBPExists(self, address):
 		bpRet = None
 		blRet = None
-		print(f'handle_checkBPExists: {address}')
+		# print(f'handle_checkBPExists: {address}')
 		target = self.driver.getTarget()
 		for i in range(target.GetNumBreakpoints()):
 			bp = self.driver.getTarget().GetBreakpointAtIndex(i)
@@ -105,19 +114,19 @@ class BreakpointHelper():
 					break
 			if found:
 				break
-		print(f'handle_checkBPExists => Found: {bpRet}')
+		# print(f'handle_checkBPExists => Found: {bpRet}')
 		return bpRet, blRet
 		
 	def handle_deleteBP(self, bpId, enabled = True):
-		print(f'handle_enableBP: {bpId} => {enabled}')
+		# print(f'handle_enableBP: {bpId} => {enabled}')
 		target = self.driver.getTarget()
 		if target.BreakpointDelete(int(bpId)):
-			print(f"Breakpoint (ID: {bpId}) deleted successfully!")
+			# print(f"Breakpoint (ID: {bpId}) deleted successfully!")
 			return True
 		else:
-			print(f"Breakpoint (ID: {bpId}) COULD NOT BE DELETED!")
+			# print(f"Breakpoint (ID: {bpId}) COULD NOT BE DELETED!")
 			return False
 		
 	def handle_deleteAllBPs(self):
-		print(f'handle_deleteAllBPs!!!')
+		# print(f'handle_deleteAllBPs!!!')
 		self.driver.getTarget().DeleteAllBreakpoints()
