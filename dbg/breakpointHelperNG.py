@@ -12,6 +12,8 @@ from PyQt6.QtWidgets import *
 from PyQt6 import uic, QtWidgets
 from config import *
 
+# import SBBreakpointList
+
 class BreakpointHelperNG():
 	
 	def __init__(self, driver):
@@ -78,8 +80,31 @@ class BreakpointHelperNG():
 			
 			self.txtDis.deleteBP(address)
 			self.treBP.deleteBP(id)
-			
-			
+
+	# BreakpointsCreateFromFile(SBTarget
+	# self, SBFileSpec
+	# source_file, SBBreakpointList
+	# bkpt_list) -> SBError
+
+	def loadBPs(self, filepath):
+		target = self.driver.getTarget()
+		path_spec = lldb.SBFileSpec(filepath)
+		bkpt_list = lldb.SBBreakpointList(target)
+		# Load breakpoints from the file
+		# error = lldb.SBError()
+		error = target.BreakpointsCreateFromFile(path_spec, bkpt_list)
+		if error is not None and not error.Success():
+			print(f"Error while getting the Breakpoints from file ({filepath}): {error}")
+		else:
+			print(f"LOADED BPs FROM FILE!!!!")
+			print(f"{bkpt_list}")
+			dir(bkpt_list)
+			print(dir(bkpt_list))
+			for brIdx in range(bkpt_list.GetSize()):
+				for bl in bkpt_list.GetBreakpointAtIndex(brIdx):
+					print(f"bl.GetAddress(): {bl.GetAddress()}")
+		pass
+
 	def saveBPs(self, filepath):
 		target = self.driver.getTarget()
 		path_spec = lldb.SBFileSpec(filepath)

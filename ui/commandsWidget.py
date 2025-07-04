@@ -29,7 +29,8 @@ class CommandsWidget(QWidget):
 		self.wdgCmd = QWidget()
 #		self.wdgCommands = QWidget()
 		self.layCmdParent = QVBoxLayout()
-		self.layCmdParent.setContentsMargins(10, 10, 10, 10)
+		self.layCmdParent.setContentsMargins(0, 0, 0, 0)
+		self.layCmdParent.setSpacing(5)
 		self.layCmd = QHBoxLayout()
 		self.layCmd.setContentsMargins(0, 0, 0, 0)
 		self.wdgCmd.setLayout(self.layCmd)
@@ -95,13 +96,13 @@ class CommandsWidget(QWidget):
 		self.setStyleSheet("""
 				    QConsoleTextEdit {
 				        /* background-color: #f0f0f0;
-				        gridline-color: #ccc;
-				        font: 12px 'Courier New';*/
+				        gridline-color: #ccc;*/
+				        font: 12px 'Courier New';
 				        background-color: #282c34; /* Dark background */
 		                color: #abb2bf; /* Light grey text */
 		                /*border: 1px solid #3e4452;*/
 		                border-radius: 5px;
-		                /*padding: 10px;*/
+		                padding: 5px;
 				    }
 				""")
 		self.layCmdParent.addWidget(self.txtCommands)

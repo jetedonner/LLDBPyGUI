@@ -21,6 +21,8 @@ from config import *
 import lib.utils
 from  ui.dialogs.dialogHelper import *
 from dbg.breakpointHelper import *
+from ui.helper.dbgOutputHelper import *
+# from dbg.breakpointHelper import *
 
 class DisassemblyImageTableWidgetItem(QTableWidgetItem):
 	
@@ -183,20 +185,30 @@ class DisassemblyTableWidget(BaseTableWidget):
 		
 	driver = None
 	symbolCount = 0
-	setIT = False
-	def setBGColor(self, row, colored):
+	# setIT = False
+	def setBGColor(self, row, colored = False, colorIn = QColor(220, 220, 255, 80), rangeIn = None, fgColor = None):
+		if rangeIn is None:
+			rangeIn = range(self.columnCount())
 		if not colored:
 			color = QColor(220, 220, 255, 0)
 		else:
-			color = QColor(220, 220, 255, 80)
+			color = colorIn #QColor(220, 220, 255, 80)
 		# Set background color for a specific item
-		for i in range(self.columnCount()):
+		for i in rangeIn: # range(self.columnCount()):
 			item = self.item(row, i)  # Replace with desired row and column index
 			if item is not None:
 				item.setBackground(color)
+				if fgColor is not None:
+					item.setForeground(fgColor)
+					logDbg(f"item.setForeground({fgColor.isValid()}).....")
 		
-		self.setIT = not self.setIT
-		
+		# self.setIT w= not self.setIT
+
+	def on_scroll(self, value):
+		print(f"Scrolled to position: {value}")
+		self.window().wdtControlFlow.view.centerOn(0, value + 150) # / 0.8231292517)
+		# self.view.verticalScrollBar().scroll(0, 0.783171521)
+
 	def __init__(self, driver, bpHelper):
 		super().__init__()
 		
@@ -237,9 +249,12 @@ class DisassemblyTableWidget(BaseTableWidget):
 		self.actionSetPC.triggered.connect(self.handle_setPC)
 		self.actionGotoAddr = self.context_menu.addAction("Goto Address")
 		self.actionGotoAddr.triggered.connect(self.handle_gotoAddr)
+		self.context_menu.addSeparator()
+		self.actionRememberLoc = self.context_menu.addAction("Remember Location")
+		self.actionRememberLoc.triggered.connect(self.handle_RememberLoc)
 		
 		self.setColumnCount(8)
-		self.setColumnWidth(0, 24)
+		self.setColumnWidth(0, 42)
 		self.setColumnWidth(1, 32)
 		self.setColumnWidth(2, 108)
 		self.setColumnWidth(3, 84)
@@ -280,7 +295,10 @@ class DisassemblyTableWidget(BaseTableWidget):
 		self.setShowGrid(False)
 		self.setMouseTracking(True)
 		self.cellDoubleClicked.connect(self.on_double_click)
-		
+		self.verticalScrollBar().valueChanged.connect(self.on_scroll)
+
+
+
 	itemOld = None
 	
 	def mouseMoveEvent(self, event):	
@@ -313,6 +331,11 @@ class DisassemblyTableWidget(BaseTableWidget):
 			self.bpHelper.enableBP(self.item(self.selectedItems()[0].row(), 2).text(), not self.item(self.selectedItems()[0].row(), 1).isBPEnabled, False)
 			pass
 		# elif col == 4:
+		elif col == 4:
+			y = self.rowViewportPosition(row)
+			x = self.columnViewportPosition(4)
+
+			print(f'y: {y} / {QPoint(x, y)} / {self.viewport().mapToGlobal(QPoint(x, y))} / {self.verticalHeader().sectionPosition(row)}')
 		elif col == 5:
 			lib.utils.setStatusBar(f"Editing data @: {str(self.item(self.selectedItems()[0].row(), 2).text())}")
 		elif col in range(3, 5):
@@ -387,6 +410,17 @@ class DisassemblyTableWidget(BaseTableWidget):
 		# self.window().updateStatusBar(f"Showing memory for: 0x{addr:X} ...")
 		self.doReadMemory(addr)
 #		print(f"Triggering QAction: {action.text()}")
+
+	def handle_RememberLoc(self):
+		if self.item(self.selectedItems()[0].row(), 2) != None:
+			arrRememberedLocs[self.getSelItemText(2)] = {"id": len(arrRememberedLocs), "address": self.getSelItemText(2), "opcode": self.getSelItemText(3), "params": self.getSelItemText(4), "hex": self.getSelItemText(5), "data": self.getSelItemText(6), "comment": self.getSelItemText(7)}
+			self.setBGColor(self.selectedItems()[0].row(), True, QColor("yellow"), range(1), QColor("black"))
+			address = self.getSelItemText(2)
+			logDbg(f"Remember Location ... {address}")
+			self.item(self.selectedItems()[0].row(), 0).setText("I")
+			print(arrRememberedLocs[self.getSelItemText(2)])
+			self.window().handle_loadRememberLocation("TestLoc", self.getSelItemText(3), self.getSelItemText(5), self.getSelItemText(4), self.getSelItemText(2))
+		pass
 			
 	def doReadMemory(self, address, size = 0x100):
 		self.window().tabWidgetDbg.setCurrentWidget(self.window().tabMemory)
@@ -453,7 +487,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 		
 		item = DisassemblyImageTableWidgetItem()
 		
-		self.addItem(currRowCount, 0, ('>' if rip == address else ''))
+		self.addItem(currRowCount, 0, ('>' if rip == address else '') + ('I' if True else ''))
 		self.setItem(currRowCount, 1, item)
 		self.addItem(currRowCount, 2, address)
 		self.addItem(currRowCount, 3, instr)
@@ -482,6 +516,8 @@ class DisassemblyTableWidget(BaseTableWidget):
 			self.verticalScrollBar().setValue(int(scroll_value))
 #			print(f'self.verticalScrollBar().value() => {self.verticalScrollBar().value()}')
 			QApplication.processEvents()
+			# self.act = QAction("onScroll")
+
 		
 class AssemblerTextEdit(QWidget):
 	
@@ -506,6 +542,7 @@ class AssemblerTextEdit(QWidget):
 		item = QTableWidgetItem(f'function: {text}')
 		item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
 		item.setBackground(QColor(64, 0, 255, 96))
+		item.setForeground(QColor("black"))
 		# Set the item to span all columns
 		table_widget.setSpan(row_count, 0, 1, table_widget.columnCount())  # Adjust row and column indices as needed
 		
@@ -549,7 +586,12 @@ class AssemblerTextEdit(QWidget):
 	def clearPC(self):
 		if self.table.item(self.currentPCRow, 0) != None:
 			self.table.item(self.currentPCRow, 0).setText('')
-			self.table.setBGColor(self.currentPCRow, False)
+			curRememberLoc = arrRememberedLocs.get(self.table.item(self.currentPCRow, 2).text())
+			if curRememberLoc is not None:
+				self.table.setBGColor(self.currentPCRow, False, QColor(220, 220, 255, 0), range(1, 8))
+				self.table.item(self.currentPCRow, 0).setForeground(QColor("black"))
+			else:
+				self.table.setBGColor(self.currentPCRow, False)
 		pass
 		
 	def setPC(self, pc, pushLocation = False):
@@ -563,7 +605,16 @@ class AssemblerTextEdit(QWidget):
 					self.table.setBGColor(row, True)
 				else:
 					self.table.item(row, 0).setText('')
-					self.table.setBGColor(row, False)
+					self.table.setBGColor(row, False, QColor(220, 220, 255, 0), range(1, 8))
+
+				curRememberLoc = arrRememberedLocs.get(self.table.item(row, 2).text())
+				if curRememberLoc is not None:
+					self.table.setBGColor(row, True, QColor("yellow"), range(1), QColor("black"))
+					if not self.table.item(row, 0).text().endswith('I'):
+					# 	self.table.item(row, 0).setText(self.table.item(row, 0).text())
+					# else:
+						self.table.item(row, 0).setText(self.table.item(row, 0).text() + 'I') #  + 'I'
+						self.table.item(row, 0).setForeground(QColor("black"))
 		
 		if pushLocation:
 			self.locationStack.pushLocation(currentPC)
@@ -581,14 +632,16 @@ class AssemblerTextEdit(QWidget):
 		super().__init__()
 		self.driver = driver
 		self.setLayout(QHBoxLayout())
+		self.layout().setContentsMargins(0, 0, 0, 0)
 		
 		self.frame = QFrame()
+		self.frame.setContentsMargins(0, 0, 0, 0)
 		
 		self.vlayout = QHBoxLayout()
 		self.frame.setLayout(self.vlayout)
 		
 		self.table = DisassemblyTableWidget(self.driver, bpHelper)
-		
+		self.table.setContentsMargins(0, 0, 0, 0)
 		self.vlayout.addWidget(self.table)
 		
 		self.vlayout.setSpacing(0)
@@ -599,7 +652,9 @@ class AssemblerTextEdit(QWidget):
 		self.frame.setContentsMargins(0, 0, 0, 0)
 		
 		self.widget = QWidget()
+		self.widget.setContentsMargins(0, 0, 0, 0)
 		self.layFrame = QHBoxLayout()
+		self.layFrame.setContentsMargins(0, 0, 0, 0)
 		self.layFrame.addWidget(self.frame)
 		self.widget.setLayout(self.layFrame)
 		

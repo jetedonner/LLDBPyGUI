@@ -16,6 +16,8 @@ from config import *
 
 arrBPConditions = {}
 arrBPHits = {}
+arrRememberedLocs = {}
+arrRememberedLocStructs = []
 
 class BreakpointHelper():
 

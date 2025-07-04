@@ -41,7 +41,7 @@ class QConsoleTextEdit(QTextEdit):
 				border: 1px solid #3e4452;
 				border-radius: 5px;
 				padding: 5px;
-				font: 'Courier New';
+				font: 12px 'Courier New';
 			}
 		""")
 

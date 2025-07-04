@@ -169,6 +169,7 @@ class ConfigClass():
 	iconLoad = None
 	iconReload = None
 	iconInfo = None
+	iconShrink = None
 	
 	pixGears = None
 	pixGearsGrey = None
@@ -236,7 +237,8 @@ class ConfigClass():
 #		ConfigClass.pixTrash = QPixmap(os.path.join(resources_root, 'delete.png')).scaled(QSize(18, 18))
 #		ui->label->setStyleSheet("border-image:url(:/2.png);");
 #		ui->label->setPixmap(pix);
-		
+
+		ConfigClass.iconShrink = QIcon(os.path.join(resources_root, 'shrink.png'))
 		ConfigClass.iconMarkdown = QIcon(os.path.join(resources_root, 'markdown.png'))
 		ConfigClass.iconGlasses = QIcon(os.path.join(resources_root, 'glasses.png'))
 		ConfigClass.iconAnon = QIcon(os.path.join(resources_root, 'hacker.png'))

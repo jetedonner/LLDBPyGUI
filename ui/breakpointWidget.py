@@ -348,6 +348,7 @@ class BreakpointTreeWidget(BaseTreeWidget):
 							if str(bp.GetCondition()) != item.text(col) and not (bp.GetCondition() == None and item.text(5) == ""):
 								print(f"==========>>>>>>>>> SETTING CONDITION BP!!! => bp: {str(bp.GetCondition())} / item: {item.text(col)}")
 								# bp.SetCondition(item.text(col))
+								bp.SetCondition("")
 								# bp.myData = item.text(col)
 								dbg.breakpointHelper.arrBPConditions[str(bp.GetID())] = item.text(col)
 								# dbg.breakpointHelper.arrBPHits[str(bp.GetID())] = 0
@@ -356,9 +357,10 @@ class BreakpointTreeWidget(BaseTreeWidget):
 							if str(bl.GetCondition()) != item.text(col) and not (bl.GetCondition() == None and item.text(5) == ""):
 								print(f"==========>>>>>>>>> SETTING CONDITION BL!!! => bl: {str(bl.GetCondition())} / item: {item.text(col)}")
 								# bl.SetCondition(item.text(col))
+								bl.SetCondition("")
 								dbg.breakpointHelper.arrBPConditions[str(bp.GetID()) + "." + str(bl.GetID())] = item.text(col)
 								# dbg.breakpointHelper.arrBPHits[str(bp.GetID()) + "." + str(bl.GetID())] = 0
-								print(f"st§r(bl.GetID()): {str(bp.GetID())}.{str(bl.GetID())}")
+								print(f"str(bl.GetID()): {str(bp.GetID())}.{str(bl.GetID())}")
 								print(f"==========>>>>>>>>> SETTING CONDITION BL DONE!!! => bl: {str(dbg.breakpointHelper.arrBPConditions[str(bp.GetID()) + '.' + str(bl.GetID())])} / item: {item.text(col)}")
 							rootItem = self.invisibleRootItem()
 							for childPar in range(rootItem.childCount()):
@@ -578,6 +580,13 @@ class BPsWPsWidget(QWidget):
 		self.cmdDeleteAll.setStatusTip("Delete all breakpoints")
 		self.cmdDeleteAll.clicked.connect(self.cmdDeleteAll_clicked)
 		
+		self.cmdLoadBPs = QClickLabel()
+		self.cmdLoadBPs.setContentsMargins(0, 0, 0, 0)
+		self.cmdLoadBPs.setPixmap(ConfigClass.pixSave.scaledToWidth(24))
+		self.cmdLoadBPs.setToolTip("Load breakpoints")
+		self.cmdLoadBPs.setStatusTip("Load breakpoints")
+		self.cmdLoadBPs.clicked.connect(self.cmdLoadBPs_clicked)
+
 		self.cmdSaveBPs = QClickLabel()
 		self.cmdSaveBPs.setContentsMargins(0, 0, 0, 0)
 		self.cmdSaveBPs.setPixmap(ConfigClass.pixSave.scaledToWidth(24))
@@ -587,6 +596,8 @@ class BPsWPsWidget(QWidget):
 		
 		self.layBPCtrls.addWidget(self.cmdDeleteAll)
 		self.layBPCtrls.addWidget(self.cmdSaveBPs)
+		self.layBPCtrls.addWidget(self.cmdLoadBPs)
+
 		self.spacer = QSpacerItem(0, 200, QSizePolicy.Policy.Maximum, QSizePolicy.Policy.MinimumExpanding)
 		self.layBPCtrls.addItem(self.spacer)
 		self.treBPs.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
@@ -604,6 +615,13 @@ class BPsWPsWidget(QWidget):
 		self.setLayout(self.layBPWPMain)
 
 		# dlg = ConfirmDialog("Delete all breakpoints?", "Do you really want to reload the breakpoints (This WILL REMOVE all existing breakpoints)?")
+
+	def cmdLoadBPs_clicked(self):
+		print(f"Loading BPs ...")
+		filename = showOpenFileDialog()
+		if filename != "":
+			self.bpHelper.loadBPs(filename)
+		pass
 
 	def cmdSaveBPs_clicked(self):
 		print(f"Save BPs ...")

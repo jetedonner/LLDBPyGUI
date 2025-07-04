@@ -373,27 +373,16 @@ class LLDBPyGUIWindow(QMainWindow):
 		# self.layout = QVBoxLayout()
 		# self.layout.setContentsMargins(0, 0, 0, 0)
 
-		self.splitterAsm = QSplitter()
-		self.splitterAsm.setContentsMargins(0, 0, 0, 0)
-		self.splitterAsm.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-		self.splitterAsm.setOrientation(Qt.Orientation.Horizontal)
+		self.wdtDisassembly = QWidget()
+		self.layDisassembly = QHBoxLayout(self.wdtDisassembly)
+		self.wdtControlFlow = QControlFlowWidget()
+		self.layDisassembly.addWidget(self.wdtControlFlow)
+		self.wdtControlFlow.setMaximumWidth(80)
+		# self.wdtDisassembly.setMaximumWidth(80)
+
 
 		self.txtMultiline = AssemblerTextEdit(self.driver, self.bpHelper)
-		self.wdtControlFlow = QControlFlowWidget(self.txtMultiline)
-		self.wdtControlFlow.setContentsMargins(0, 0, 0, 0)
-		self.wdtControlFlowLeft = QWidget()
-		self.wdtControlFlowLeft.setContentsMargins(0, 30, 0, 0)
-		self.layControlFlowLeft = QVBoxLayout(self.wdtControlFlowLeft)
-		self.layControlFlowLeft.setContentsMargins(0, 0, 0, 0)
-		self.layControlFlowLeft.addStretch(1)
-		self.layControlFlowLeft.addWidget(self.wdtControlFlow)
-		self.splitterAsm.addWidget(self.wdtControlFlowLeft)
-		# self.splitterAsm.set
-		self.wdtControlFlowLeft.setMaximumWidth(50)
-		self.wdtControlFlow.setMaximumWidth(50)
-
-
-		self.splitterAsm.addWidget(self.txtMultiline)
+		self.layDisassembly.addWidget(self.txtMultiline)
 #		self.txtMultiline.table.sigEnableBP.connect(self.handle_enableBP)
 #		self.txtMultiline.table.sigBPOn.connect(self.handle_BPOn)
 		
@@ -404,7 +393,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.splitter.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 		self.splitter.setOrientation(Qt.Orientation.Vertical)
 		
-		self.splitter.addWidget(self.splitterAsm)
+		self.splitter.addWidget(self.wdtControlFlow)
 		
 		self.tabWidgetDbg = QTabWidget()
 		self.tabWidgetDbg.setContentsMargins(0, 0, 0, 0)
@@ -645,18 +634,16 @@ class LLDBPyGUIWindow(QMainWindow):
 		# else:
 		# 	event.ignore()
 
-		if self.setHelper.getValue(SettingsValues.ConfirmQuitApp):
-			dlg = ConfirmDialog("Quit LLDBPyGUI?", "Do you really want to quit LLDBPyGUI and discard all unsaved changes?")
-			if dlg.exec() and dlg.button_clicked == QDialogButtonBox.StandardButton.Ok:
-				print(f"Quitting LLDBPyGUI now YESSS ...")
-				self.driver.setDone()
-				# self.driver.terminate()
-				event.accept()
-				# self.driver.terminate()
-			else:
-				event.ignore()
-		else:
+
+		dlg = ConfirmDialog("Quit LLDBPyGUI?", "Do you really want to quit LLDBPyGUI and discard all unsaved changes?")
+		if dlg.exec() and dlg.button_clicked == QDialogButtonBox.StandardButton.Ok:
+			print(f"Quitting LLDBPyGUI now YESSS ...")
+			self.driver.setDone()
+			# self.driver.terminate()
 			event.accept()
+			# self.driver.terminate()
+		else:
+			event.ignore()
 			
 	def clearCompleteUI(self):
 		self.tblVariables.resetContent()

@@ -38,6 +38,7 @@ from config import *
 from ui.baseTreeWidget import *
 from dbg.breakpointHelperNG import *
 from dbg.breakpointHelper import *
+from ui.helper.dbgOutputHelper import *
 
 class SBStreamForwarder(io.StringIO):
 	def __init__(self):
@@ -105,15 +106,17 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 		self.collapseAll()
 		
 	def readSTDOUT(self):
+
 		stdout = self.driver.getTarget().GetProcess().GetSTDOUT(1024)
 		if stdout is not None and len(stdout) > 0:
-			
+
 			# print(stdout)
 			message = {"status":"event", "type":"stdout", "output": "".join(["%02x" % ord(i) for i in stdout])}
 			print(message)
 			byte_values = bytes.fromhex("".join(["%02x" % ord(i) for i in stdout]))
 			result_string = byte_values.decode('utf-8')
 			print(result_string)
+			logDbg(f"Reading STDOUT after Event: {result_string}")
 			self.sigSTDOUT.emit(result_string)
 		else:
 			print(f"stdout IS NONE or LEN == 0")
@@ -185,8 +188,9 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 #				if output_stream != None:
 #					for line in output_stream:
 #						print("Captured line:", line)
-				tmrAppStarted = QtCore.QTimer()
-				tmrAppStarted.singleShot(1000, self.readSTDOUT)
+				# tmrAppStarted = QtCore.QTimer()
+				# tmrAppStarted.singleShot(1000, self.readSTDOUT)
+				self.readSTDOUT()
 #				QCoreApplication.processEvents()
 #				QApplication.processEvents()
 				

@@ -1,0 +1,82 @@
+[
+  {
+    "Breakpoint": {
+      "BKPTOptions": {
+        "AutoContinue": false,
+        "EnabledState": true,
+        "IgnoreCount": 0,
+        "OneShotState": false
+      },
+      "BKPTResolver": {
+        "Options": {
+          "NameMask": [
+            56
+          ],
+          "Offset": 0,
+          "SkipPrologue": true,
+          "SymbolNames": [
+            "main"
+          ]
+        },
+        "Type": "SymbolName"
+      },
+      "Hardware": false,
+      "SearchFilter": {
+        "Options": {
+          "ModuleList": [
+            "a_hello_world_test"
+          ]
+        },
+        "Type": "Modules"
+      }
+    }
+  },
+  {
+    "Breakpoint": {
+      "BKPTOptions": {
+        "AutoContinue": false,
+        "ConditionText": "",
+        "EnabledState": true,
+        "IgnoreCount": 0,
+        "OneShotState": false
+      },
+      "BKPTResolver": {
+        "Options": {
+          "AddressOffset": 237,
+          "ModuleName": "",
+          "Offset": 0
+        },
+        "Type": "Address"
+      },
+      "Hardware": false,
+      "SearchFilter": {
+        "Options": {},
+        "Type": "Unconstrained"
+      }
+    }
+  },
+  {
+    "Breakpoint": {
+      "BKPTOptions": {
+        "AutoContinue": false,
+        "ConditionText": "",
+        "EnabledState": true,
+        "IgnoreCount": 0,
+        "OneShotState": false
+      },
+      "BKPTResolver": {
+        "Options": {
+          "AddressOffset": 29,
+          "ModuleName": "",
+          "Offset": 0
+        },
+        "Type": "Address"
+      },
+      "Hardware": false,
+      "SearchFilter": {
+        "Options": {},
+        "Type": "Unconstrained"
+      }
+    }
+  }
+]

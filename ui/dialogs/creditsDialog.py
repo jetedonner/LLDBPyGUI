@@ -103,7 +103,7 @@ class CreditsDialog(QDialog):
 
 		# Read the Markdown file content
 		with open(md_path, "r", encoding="utf-8") as f:
-		    md_text = f.read()
+			md_text = f.read()
 
 		return markdown.markdown(md_text, extensions=["fenced_code", "tables"])
 		
