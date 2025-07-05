@@ -170,6 +170,7 @@ class ConfigClass():
 	iconReload = None
 	iconInfo = None
 	iconShrink = None
+	iconClear = None
 	
 	pixGears = None
 	pixGearsGrey = None
@@ -238,6 +239,7 @@ class ConfigClass():
 #		ui->label->setStyleSheet("border-image:url(:/2.png);");
 #		ui->label->setPixmap(pix);
 
+		ConfigClass.iconClear = QIcon(os.path.join(resources_root, 'clear.png'))
 		ConfigClass.iconShrink = QIcon(os.path.join(resources_root, 'shrink.png'))
 		ConfigClass.iconMarkdown = QIcon(os.path.join(resources_root, 'markdown.png'))
 		ConfigClass.iconGlasses = QIcon(os.path.join(resources_root, 'glasses.png'))

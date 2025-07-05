@@ -29,6 +29,25 @@ class ControlFlowConnection():
     def __init__(self):
         super().__init__()
 
+from PyQt6.QtWidgets import QScrollBar
+
+class FixedScrollBar(QScrollBar):
+    
+    def __init__(self):
+        super().__init__()
+        self.rangeChanged.connect(self.on_range_changed)
+
+    def on_range_changed(self, min_val, max_val):
+        print("Intercepted range change:", min_val, max_val)
+        # Optionally override behavior here
+        self.setRange(min_val, max_val)
+        
+    def setRange(self, min_val, max_val):
+        fixed_max = 1102  # or whatever you want
+        # logDbg(f"setRange({min(fixed_max, max_val)}) / {max_val}")
+        super().setRange(min_val, min(fixed_max, max_val))
+
+
 class NoScrollGraphicsView(QGraphicsView):
 
     def __init__(self, scene):
@@ -39,7 +58,7 @@ class NoScrollGraphicsView(QGraphicsView):
         # self.view.verticalScrollBar().valueChanged.connect(self.on_scroll)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.setStyleSheet("background-color: #393939; border: 0px solid darkgray;")
+        self.setStyleSheet("background-color: #393939; border: 1px solid darkgray;")
         # self.view.setStyleSheet("background-color: transparent; border: none;")
         self.setContentsMargins(0, 0, 0, 0)
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -47,11 +66,22 @@ class NoScrollGraphicsView(QGraphicsView):
         self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
         # self.view.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
 
+        # scene.setSceneRect(0, 0, 50, 1260)  # Or whatever size you need
+
+
     def wheelEvent(self, event: QWheelEvent):
         pass  # Ignore mouse wheel
 
     def keyPressEvent(self, event: QKeyEvent):
         super().keyPressEvent(event)  # Optional: allow other keys
+
+    # def resizeEvent(self, event):
+    #     # Skip any scaling logic
+    #     super().resizeEvent(event)
+    #     # Optionally keep the center fixed
+    #     # self.centerOn(self.scene().itemsBoundingRect().center())
+    #     # self.resetTransform()
+    #     # self.repaint()
 
 class HoverLineItem(QGraphicsLineItem):
     # def __init__(self, line: QLineF):

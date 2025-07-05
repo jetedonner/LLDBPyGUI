@@ -12,6 +12,7 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtGui import QBrush, QPixmap, QImage
 from PyQt6 import uic, QtWidgets
 
+from ui.customQt.QControlFlowWidget import FixedScrollBar
 from ui.helper.quickToolTip import *
 from ui.helper.locationStack import *
 from ui.baseTableWidget import *
@@ -207,7 +208,9 @@ class DisassemblyTableWidget(BaseTableWidget):
 	def on_scroll(self, value):
 		if not self.disableScroll:
 			# print(f"Scrolled to position: {value}")
-			self.window().wdtControlFlow.view.centerOn(0, value + 150) # / 0.8231292517)
+			logDbg(f"scroll: {value + 150}")
+			self.window().wdtControlFlow.view.verticalScrollBar().setValue(value)
+			# self.window().wdtControlFlow.view.centerOn(0, value + 150) # / 0.8231292517)
 			# self.scroll()
 			# self.view.verticalScrollBar().scroll(0, 0.783171521)
 
@@ -297,6 +300,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 		self.setShowGrid(False)
 		self.setMouseTracking(True)
 		self.cellDoubleClicked.connect(self.on_double_click)
+		self.setVerticalScrollBar(FixedScrollBar())
 		self.verticalScrollBar().valueChanged.connect(self.on_scroll)
 
 

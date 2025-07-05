@@ -20,6 +20,16 @@ class DbgOutputWidget(QWidget):
         self.cmdShrink.setContentsMargins(0, 0, 0, 0)
         self.layCtrls.setContentsMargins(10, 0, 0, 0)
         self.layCtrls.addWidget(self.cmdShrink)
+
+        self.cmdClear = QPushButton()
+        self.cmdClear.setToolTip("Clear Debug Output...")
+        self.cmdClear.setIcon(ConfigClass.iconClear)
+        self.cmdClear.setMaximumWidth(18)
+        self.cmdClear.clicked.connect(self.cmdClear_clicked)
+        self.cmdClear.setContentsMargins(0, 0, 0, 0)
+        # self.layCtrls.setContentsMargins(10, 0, 0, 0)
+        self.layCtrls.addWidget(self.cmdClear)
+
         # Add stretch to push everything above it to the top
         self.layCtrls.addStretch()
         self.wdtCtrls = QWidget()
@@ -36,6 +46,10 @@ class DbgOutputWidget(QWidget):
 
     def cmdShrink_clicked(self):
         self.window().splitterDbgMain.setSizes([1, 0])
+        pass
+
+    def cmdClear_clicked(self):
+        self.txtDbg.setText("")
         pass
 
 class DbgOutputTextEdit(QTextEdit):

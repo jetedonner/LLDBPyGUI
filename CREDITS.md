@@ -34,4 +34,7 @@
 - <a href="https://www.flaticon.com/free-icons/glasses" title="glasses icons">Glasses icons created by Freepik - Flaticon</a>
 - <a href="https://www.flaticon.com/free-icons/ui" title="ui icons">Ui icons created by alfanz - Flaticon</a>
 - <a href="https://www.flaticon.com/free-icons/shrink" title="shrink icons">Shrink icons created by Metami septiana - Flaticon</a>
+- <a href="https://www.flaticon.com/free-icons/clear" title="clear icons">Clear icons created by iconmas - Flaticon</a>
+
+
 ### Event-Listener
