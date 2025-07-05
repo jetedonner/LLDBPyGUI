@@ -142,6 +142,17 @@ class DisassemblyTableWidget(BaseTableWidget):
 				lib.utils.setStatusBar(f"Enabled breakpoint @: 0x{address:X} ({enabled})")
 				break
 		pass
+
+	def getRowForAddress(self, address):
+		for i in range(self.rowCount()):
+			if self.item(i, 2) != None and self.item(i, 2).text() == address:
+				return i
+				# item = self.item(i, 1)
+				# #				item.toggleBPEnabled()
+				# item.enableBP(enabled)
+				# lib.utils.setStatusBar(f"Enabled breakpoint @: 0x{address:X} ({enabled})")
+				# break
+		return 0
 		
 	def handle_editBP(self):
 #		self.sigEnableBP.emit(self.item(self.selectedItems()[0].row(), 3).text(), item.isBPEnabled)
@@ -208,7 +219,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 	def on_scroll(self, value):
 		if not self.disableScroll:
 			# print(f"Scrolled to position: {value}")
-			logDbg(f"scroll: {value + 150}")
+			# logDbg(f"scroll: {value + 150}")
 			self.window().wdtControlFlow.view.verticalScrollBar().setValue(value)
 			# self.window().wdtControlFlow.view.centerOn(0, value + 150) # / 0.8231292517)
 			# self.scroll()
@@ -334,7 +345,8 @@ class DisassemblyTableWidget(BaseTableWidget):
 		if col in range(2):
 #			self.toggleBPOn(row)
 			# bp = self.driver.getTarget().BreakpointCreateByAddress(int(self.item(self.selectedItems()[0].row(), 2).text(), 16))
-			self.bpHelper.enableBP(self.item(self.selectedItems()[0].row(), 2).text(), not self.item(self.selectedItems()[0].row(), 1).isBPEnabled, False)
+			if self.item(self.selectedItems()[0].row(), 2) is not None and self.item(self.selectedItems()[0].row(), 1) is not None:
+				self.bpHelper.enableBP(self.item(self.selectedItems()[0].row(), 2).text(), not self.item(self.selectedItems()[0].row(), 1).isBPEnabled, False)
 			pass
 		# elif col == 4:
 		# elif col == 4:
@@ -503,6 +515,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 		self.addItem(currRowCount, 7, comment)
 		
 		self.setRowHeight(currRowCount, 14)
+		return item
 		
 		
 	def addItem(self, row, col, txt):
@@ -551,17 +564,24 @@ class AssemblerTextEdit(QWidget):
 		item.setForeground(QColor("black"))
 		# Set the item to span all columns
 		table_widget.setSpan(row_count, 0, 1, table_widget.columnCount())  # Adjust row and column indices as needed
-		
 		# Set the item in the table
 		table_widget.setItem(row_count, 0, item)
 		self.table.symbolCount += 1
+
+		# row_index = item.row()  # Get the row of the item
+		# height = table_widget.verticalHeader().sectionSize(row_index)
+		# logDbg(f"Row height: {height}")
 		pass
 		
 	def appendAsmText(self, addr, instr, args, comment, data, dataNg, addLineNum = True, rip = ""):
 #		if addLineNum:
 #			self.table.addRow(0, addr, instr, args, comment, data, rip)
 #		else:
-		self.table.addRow(0, addr, instr, args, comment, data, dataNg, rip)
+		item = self.table.addRow(0, addr, instr, args, comment, data, dataNg, rip)
+		# row_index = item.row()  # Get the row of the item
+		# height = self.table.verticalHeader().sectionSize(row_index)
+		# logDbg(f"Row height: {height}")
+
 			
 	def setTextColor(self, color = "black", lineNum = False):
 		pass
@@ -591,7 +611,10 @@ class AssemblerTextEdit(QWidget):
 	currentPCRow = -1
 	def clearPC(self):
 		if self.table.item(self.currentPCRow, 0) != None:
-			self.table.item(self.currentPCRow, 0).setText('')
+			if self.table.item(self.currentPCRow, 0).text().endswith("I"):
+				self.table.item(self.currentPCRow, 0).setText('I')
+			else:
+				self.table.item(self.currentPCRow, 0).setText('')
 			curRememberLoc = arrRememberedLocs.get(self.table.item(self.currentPCRow, 2).text())
 			if curRememberLoc is not None:
 				self.table.setBGColor(self.currentPCRow, False, QColor(220, 220, 255, 0), range(1, 8))

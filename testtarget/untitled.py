@@ -928,7 +928,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		# target = lldb.debugger.GetSelectedTarget()
 		# self.target
 
-		self.wdtDbg.logDbg("QMainWindow HELLO from wdtDbg")
+		# self.wdtDbg.logDbg("QMainWindow HELLO from wdtDbg")
 		# self.dbgTxt.logDbg("QMainWindow HELLO")
 		# breakpoint = self.driver.getTarget().BreakpointCreateByName("subfunc")  # or any breakpoint creation methodpass
 		# breakpoint.SetCondition("$rax == 0x0000000000000001")

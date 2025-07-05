@@ -379,7 +379,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.splitterAsm.setOrientation(Qt.Orientation.Horizontal)
 
 		self.txtMultiline = AssemblerTextEdit(self.driver, self.bpHelper)
-		self.wdtControlFlow = QControlFlowWidget(self.txtMultiline)
+		self.wdtControlFlow = QControlFlowWidget(self.txtMultiline, self.driver)
 		self.wdtControlFlow.setContentsMargins(0, 0, 0, 0)
 		self.wdtControlFlowLeft = QWidget()
 		self.wdtControlFlowLeft.setContentsMargins(0, 30, 0, 0)
@@ -390,8 +390,8 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.layControlFlowLeft.addWidget(self.wdtControlFlow)
 		self.splitterAsm.addWidget(self.wdtControlFlowLeft)
 		# self.splitterAsm.set
-		self.wdtControlFlowLeft.setMaximumWidth(50)
-		self.wdtControlFlow.setMaximumWidth(50)
+		self.wdtControlFlowLeft.setMaximumWidth(80)
+		self.wdtControlFlow.setMaximumWidth(80)
 
 
 		self.splitterAsm.addWidget(self.txtMultiline)
@@ -941,10 +941,14 @@ class LLDBPyGUIWindow(QMainWindow):
 		# self.tabWidgetMain.setCurrentIndex(2)
 		# target = lldb.debugger.GetSelectedTarget()
 		# self.target
-		self.wdtControlFlow.draw_flowConnection(0, 45)
-		self.wdtControlFlow.draw_flowConnection(37, 57, QColor("orange"), 40, 25, 1, 21)
-		self.wdtControlFlow.draw_flowConnection(42, 46, QColor("green"), 60, 15, 1, 29)
-		self.wdtDbg.logDbg("QMainWindow HELLO from wdtDbg")
+		self.wdtControlFlow.loadInstructions()
+		# objCon = self.wdtControlFlow.draw_flowConnection(0, 45)
+		# objCon.setToolTip(f"FIRST TOOLTIP!!!")
+		# objCon2 = self.wdtControlFlow.draw_flowConnection(37, 57, QColor("orange"), 25, 1, 21)
+		# objCon2.setToolTip(f"SECOND TOOLTIP!!!")
+		# objCon3 = self.wdtControlFlow.draw_flowConnection(42, 46, QColor("green"), 15, 1, 29)
+		# objCon3.setToolTip(f"THIRD TOOLTIP!!!")
+		# self.wdtDbg.logDbg("QMainWindow HELLO from wdtDbg")
 		# self.dbgTxt.logDbg("QMainWindow HELLO")
 		# breakpoint = self.driver.getTarget().BreakpointCreateByName("subfunc")  # or any breakpoint creation methodpass
 		# breakpoint.SetCondition("$rax == 0x0000000000000001")
