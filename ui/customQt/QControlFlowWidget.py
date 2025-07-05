@@ -58,6 +58,40 @@ class QControlFlowWidget(QWidget):
         # self.draw_instructions(instructions)
         self.draw_instructions()
 
+    def draw_flowConnection(self, startRow, endRow, color = QColor("lightblue"), xOffset = 0, radius = 50, lineWidth = 1):
+        nRowHeight = 21
+        nOffsetAdd = 23
+        xOffset = 115 + xOffset
+        # 45
+        line = QGraphicsLineItem(xOffset, 45 + ((startRow + 0) * nRowHeight) + 6 + nOffsetAdd - (nRowHeight / 2), xOffset, ((endRow + 0) * nRowHeight) + nOffsetAdd + 6 - (nRowHeight / 2))  # 1260)
+        line.setPen(QPen(color, lineWidth))
+        self.scene.addItem(line)
+
+        # Define the ellipse geometry (x, y, width, height)q
+        ellipse_rect = QRectF(xOffset, 45 + ((startRow + 0) * nRowHeight) + 6 - (nRowHeight / 2), radius, radius)
+        # Create a painter path and draw a 90° arc
+        path = QPainterPath()
+        path.arcMoveTo(ellipse_rect, 90)  # Start at 0 degrees
+        path.arcTo(ellipse_rect, 90, 90)  # Draw 90-degree arc clockwise
+
+        # Add the path to the scene
+        arc_item = QGraphicsPathItem(path)
+        arc_item.setPen(QPen(color, lineWidth))
+        self.scene.addItem(arc_item)
+
+        ellipse_rect2 = QRectF(xOffset, ((endRow + 0) * nRowHeight) + 6 - (nRowHeight / 2), radius, radius)
+        # Create a painter path and draw a 90° arc
+        path2 = QPainterPath()
+        path2.arcMoveTo(ellipse_rect2, 180)  # Start at 0 degrees
+        path2.arcTo(ellipse_rect2, 180, 90)  # Draw 90-degree arc clockwise
+
+        # Add the path to the scene
+        arc_item2 = QGraphicsPathItem(path2)
+        arc_item2.setPen(QPen(color, lineWidth))
+        self.scene.addItem(arc_item2)
+
+        pass
+
     # def draw_instructions(self, instructions):
     def draw_instructions(self):
         start = QPointF(75, 0)
@@ -70,6 +104,10 @@ class QControlFlowWidget(QWidget):
         line1 = QGraphicsLineItem(start.x() + 20, 0, end.x() + 20, 1260)
         line1.setPen(QPen(QColor("transparent"), 0))
         self.scene.addItem(line1)
+
+        line2 = QGraphicsLineItem(115, 45 + 23, 115, 250 + 23)  # 1260)
+        line2.setPen(QPen(QColor("red"), 2))
+        self.scene.addItem(line2)
 
         self.nodes = {}
         y = 0

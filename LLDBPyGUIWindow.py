@@ -940,7 +940,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		# self.tabWidgetMain.setCurrentIndex(2)
 		# target = lldb.debugger.GetSelectedTarget()
 		# self.target
-
+		self.wdtControlFlow.draw_flowConnection(0, 45)
 		self.wdtDbg.logDbg("QMainWindow HELLO from wdtDbg")
 		# self.dbgTxt.logDbg("QMainWindow HELLO")
 		# breakpoint = self.driver.getTarget().BreakpointCreateByName("subfunc")  # or any breakpoint creation methodpass
