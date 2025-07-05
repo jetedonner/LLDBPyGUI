@@ -15,6 +15,8 @@ from config import *
 from dbg.variableHelper import *
 from dbg.watchpointHelper import *
 from ui.baseTableWidget import *
+from ui.helper.dbgOutputHelper import logDbg
+
 
 class VariablesTableWidget(BaseTableWidget):
 	
@@ -236,7 +238,8 @@ class VariablesTableWidget(BaseTableWidget):
 		self.addItem(currRowCount, 2, str(datatype))
 		self.addItem(currRowCount, 3, str(address))
 		self.addItem(currRowCount, 4, str(data), True if str(datatype) == "int" else False)
-		self.setRowHeight(currRowCount, 18)
+		self.setRowHeight(currRowCount, 14)
+		logDbg(f"rowCount: {self.rowHeight(currRowCount)}")
 		self.ommitCellChanged = False
 		
 	def addItem(self, row, col, txt, editable = False):

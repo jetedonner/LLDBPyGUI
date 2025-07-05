@@ -91,7 +91,7 @@ class SearchTableWidget(BaseTableWidget):
 		self.addItem(currRowCount, 2, str(section))
 		self.addItem(currRowCount, 3, str(data))
 		self.addItem(currRowCount, 4, str(hexVal))
-		self.setRowHeight(currRowCount, 18)
+		self.setRowHeight(currRowCount, 14)
 		
 		
 	def addItem(self, row, col, txt):

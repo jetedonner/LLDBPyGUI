@@ -34,11 +34,12 @@ class RememberLocationsTableWidget(BaseTableWidget):
 	driver = None
 	wpHelper = None
 	ommitCellChanged = False
+	bpHelper = None
 	
-	
-	def __init__(self, driver):
+	def __init__(self, driver, bpHelper):
 		super().__init__()
 		self.driver = driver
+		self.bpHelper = bpHelper
 		# self.wpHelper = WatchpointHelper(self.driver)
 		
 		self.context_menu = QMenu(self)
@@ -51,6 +52,8 @@ class RememberLocationsTableWidget(BaseTableWidget):
 		self.actionShowMemory.triggered.connect(self.handle_showMemory)
 		self.actionEditValue = self.context_menu.addAction("Edit variable value")
 		self.actionEditValue.triggered.connect(self.handle_editValue)
+		self.actionAddBP = self.context_menu.addAction("Add Breakpoint")
+		self.actionAddBP.triggered.connect(self.handle_addBP)
 		self.addWP_menu = QMenu("Add Watchpoint", self)
 #		self.submenu_action1 = QAction("Only Read", self)
 #		self.submenu_action2 = QAction("Only Write", self)
@@ -105,6 +108,13 @@ class RememberLocationsTableWidget(BaseTableWidget):
 		self.installEventFilter(self)  # Install event filter on the widget itself
 
 
+
+	def handle_addBP(self):
+		# self.window().bp
+		if self.item(self.selectedItems()[0].row(), 1) is not None and self.item(self.selectedItems()[0].row(),1) is not None:
+			self.bpHelper.enableBP(self.item(self.selectedItems()[0].row(), 1).text(), True, False)
+		pass
+
 	def handle_saveToFile(self):
 		self.save_table_to_json("./rememberLocSave.json")
 		pass
@@ -138,7 +148,7 @@ class RememberLocationsTableWidget(BaseTableWidget):
 
 		for row_idx, row_data in enumerate(data):
 			currRowCount = table.rowCount()
-			table.setRowCount(currRowCount + 1)
+			# table.setRowCount(currRowCount + 1)
 			for col_idx, value in enumerate(row_data.values()):
 				item = QTableWidgetItem(value)
 				if col_idx == 0:
@@ -146,6 +156,7 @@ class RememberLocationsTableWidget(BaseTableWidget):
 				else:
 					table.addItem(row_idx, col_idx, value, False)
 				# table.setItem(row_idx, col_idx, item)
+			table.setRowHeight(row_idx, 14)
 
 	def eventFilter(self, obj, event):
 		if obj is self and event.type() == QtCore.QEvent.Type.Enter:
@@ -159,13 +170,16 @@ class RememberLocationsTableWidget(BaseTableWidget):
 		return super().eventFilter(obj, event)
 	
 	def cellEntered_handler(self, row, col):
-		if col == 3:
+		if col == 3 and self.item(row, col) is not None:
 			self.window().updateStatusBar(f"DoubleClick to view memory @ {self.item(row, col).text()}...", False)
 		else:
 			self.window().resetStatusBar()
 		pass
 		
 	def on_double_click(self, row, col):
+		if self.item(row, col) is None:
+			return
+
 		if col == 0:
 			self.window().updateStatusBar(f'Editing name of remember location ...')
 		elif col == 1:
@@ -174,11 +188,14 @@ class RememberLocationsTableWidget(BaseTableWidget):
 			self.window().updateStatusBar(f"Showing disassembly for address: '{sAddr}'")
 			pass
 		elif col == 3:
-			if self.item(row, col) != None:
-				item = self.item(row, col)
-				self.window().updateStatusBar(f"Showing memory for variable '{self.item(row, 0).text()}' at address: {item.text()}")
-				self.window().doReadMemory(int(item.text(), 16))
-		
+			# if self.item(row, col) != None:
+			# item = self.item(row, col)
+			sAddr = self.item(row, col).text()
+			# self.window().updateStatusBar(f"Showing memory for variable '{self.item(row, 0).text()}' at address: {item.text()}")
+			# self.window().doReadMemory(int(item.text(), 16))
+			self.window().updateStatusBar(f"Showing disassembly for address: '{sAddr}'")
+			self.window().txtMultiline.viewAddress(sAddr)
+
 #	def doReadMemory(self, address, size = 0x100):
 #		self.window().tabWidgetDbg.setCurrentWidget(self.window().tabMemory)
 #		self.window().tblHex.txtMemAddr.setText(hex(address))
@@ -310,7 +327,7 @@ class RememberLocationsTableWidget(BaseTableWidget):
 		self.addItem(currRowCount, 1, str(address))
 		self.addItem(currRowCount, 4, str(data), True if str(datatype) == "int" else False)
 		self.addItem(currRowCount, 5, str(comment))
-		self.setRowHeight(currRowCount, 18)
+		self.setRowHeight(currRowCount, 14)
 		self.ommitCellChanged = False
 		
 	def addItem(self, row, col, txt, editable = False):

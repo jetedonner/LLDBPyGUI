@@ -435,7 +435,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		
 		self.tabWidgetDbg.addTab(self.treThreads, "Threads/Frames")
 
-		self.tblRememberLoc = RememberLocationsTableWidget(self.driver)
+		self.tblRememberLoc = RememberLocationsTableWidget(self.driver, self.bpHelper)
 
 		self.tabWidgetDbg.addTab(self.tblRememberLoc, "Remember Locations")
 		
