@@ -203,11 +203,13 @@ class DisassemblyTableWidget(BaseTableWidget):
 					logDbg(f"item.setForeground({fgColor.isValid()}).....")
 		
 		# self.setIT w= not self.setIT
-
+	disableScroll = False
 	def on_scroll(self, value):
-		print(f"Scrolled to position: {value}")
-		self.window().wdtControlFlow.view.centerOn(0, value + 150) # / 0.8231292517)
-		# self.view.verticalScrollBar().scroll(0, 0.783171521)
+		if not self.disableScroll:
+			# print(f"Scrolled to position: {value}")
+			self.window().wdtControlFlow.view.centerOn(0, value + 150) # / 0.8231292517)
+			# self.scroll()
+			# self.view.verticalScrollBar().scroll(0, 0.783171521)
 
 	def __init__(self, driver, bpHelper):
 		super().__init__()
@@ -331,11 +333,11 @@ class DisassemblyTableWidget(BaseTableWidget):
 			self.bpHelper.enableBP(self.item(self.selectedItems()[0].row(), 2).text(), not self.item(self.selectedItems()[0].row(), 1).isBPEnabled, False)
 			pass
 		# elif col == 4:
-		elif col == 4:
-			y = self.rowViewportPosition(row)
-			x = self.columnViewportPosition(4)
-
-			print(f'y: {y} / {QPoint(x, y)} / {self.viewport().mapToGlobal(QPoint(x, y))} / {self.verticalHeader().sectionPosition(row)}')
+		# elif col == 4:
+		# 	y = self.rowViewportPosition(row)
+		# 	x = self.columnViewportPosition(4)
+		#
+		# 	print(f'y: {y} / {QPoint(x, y)} / {self.viewport().mapToGlobal(QPoint(x, y))} / {self.verticalHeader().sectionPosition(row)}')
 		elif col == 5:
 			lib.utils.setStatusBar(f"Editing data @: {str(self.item(self.selectedItems()[0].row(), 2).text())}")
 		elif col in range(3, 5):
