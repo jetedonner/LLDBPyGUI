@@ -4,6 +4,7 @@ import os
 import sys
 import re
 import pyperclip
+import json
 
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
@@ -41,6 +42,11 @@ class RememberLocationsTableWidget(BaseTableWidget):
 		# self.wpHelper = WatchpointHelper(self.driver)
 		
 		self.context_menu = QMenu(self)
+		self.actionSaveToFile = self.context_menu.addAction("Save to file")
+		self.actionSaveToFile.triggered.connect(self.handle_saveToFile)
+		self.actionLoadFromFile = self.context_menu.addAction("Load from file")
+		self.actionLoadFromFile.triggered.connect(self.handle_loadFromFile)
+		self.context_menu.addSeparator()
 		self.actionShowMemory = self.context_menu.addAction("Show Memory")
 		self.actionShowMemory.triggered.connect(self.handle_showMemory)
 		self.actionEditValue = self.context_menu.addAction("Edit variable value")
@@ -70,22 +76,24 @@ class RememberLocationsTableWidget(BaseTableWidget):
 #		
 #		self.context_menu.addSeparator()
 		
-		self.setColumnCount(5)
+		self.setColumnCount(6)
 		self.setColumnWidth(0, 196)
 		self.setColumnWidth(1, 196)
 		self.setColumnWidth(2, 196)
 		self.setColumnWidth(3, 196)
-		self.setColumnWidth(4, 450)
+		self.setColumnWidth(4, 250)
+		self.setColumnWidth(5, 200)
 		self.verticalHeader().hide()
 		self.horizontalHeader().show()
 		self.horizontalHeader().setHighlightSections(False)
-		self.setHorizontalHeaderLabels(['Name', 'Address', 'Value', 'Type', 'Data'])
+		self.setHorizontalHeaderLabels(['Name', 'Address', 'Mnemonic', 'Argument', 'Hex', 'Comment'])
 		
 		self.horizontalHeaderItem(0).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
 		self.horizontalHeaderItem(1).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
 		self.horizontalHeaderItem(2).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
 		self.horizontalHeaderItem(3).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
 		self.horizontalHeaderItem(4).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
+		self.horizontalHeaderItem(5).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
 		self.setFont(ConfigClass.font)
 		
 		self.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
@@ -95,7 +103,50 @@ class RememberLocationsTableWidget(BaseTableWidget):
 		self.cellChanged.connect(self.item_changed_handler)
 		self.cellEntered.connect(self.cellEntered_handler)
 		self.installEventFilter(self)  # Install event filter on the widget itself
-		
+
+
+	def handle_saveToFile(self):
+		self.save_table_to_json("./rememberLocSave.json")
+		pass
+
+	def handle_loadFromFile(self):
+		self.load_table_from_json("./rememberLocSave.json")
+		pass
+
+	def save_table_to_json(table, filename):
+		data = []
+		for row in range(table.rowCount()):
+			row_data = {}
+			headers = [table.horizontalHeaderItem(i).text() for i in range(table.columnCount())]
+			idx = 0
+			for col in headers: #range(table.columnCount()):
+				item = table.item(row, idx)
+				row_data[f"{col}"] = item.text() if item else ""
+				idx += 1
+			data.append(row_data)
+
+		with open(filename, "w") as f:
+			json.dump(data, f, indent=4)
+
+	def load_table_from_json(table, filename):
+		with open(filename, "r") as f:
+			data = json.load(f)
+
+		table.setRowCount(0)
+		table.setRowCount(len(data))
+		table.setColumnCount(len(data[0]) if data else 0)
+
+		for row_idx, row_data in enumerate(data):
+			currRowCount = table.rowCount()
+			table.setRowCount(currRowCount + 1)
+			for col_idx, value in enumerate(row_data.values()):
+				item = QTableWidgetItem(value)
+				if col_idx == 0:
+					table.addItem(row_idx, col_idx, value, True)
+				else:
+					table.addItem(row_idx, col_idx, value, False)
+				# table.setItem(row_idx, col_idx, item)
+
 	def eventFilter(self, obj, event):
 		if obj is self and event.type() == QtCore.QEvent.Type.Enter:
 			self.is_entered = True
@@ -220,7 +271,7 @@ class RememberLocationsTableWidget(BaseTableWidget):
 #		for row in range(self.rowCount(), 0):
 #			self.removeRow(row)
 	
-	def updateOrAddRow(self, name, value, datatype, address, data):
+	def updateOrAddRow(self, name, value, datatype, address, data, comment = ""):
 		self.ommitCellChanged = True
 		found = False
 		for i in range(self.rowCount()):
@@ -230,12 +281,13 @@ class RememberLocationsTableWidget(BaseTableWidget):
 				self.item(i, 2).setText(datatype)
 				self.item(i, 3).setText(address)
 				self.item(i, 4).setText(data)
+				self.item(i, 5).setText(comment)
 				break
 		if not found:
-			self.addRow(name, value, datatype, address, data)
+			self.addRow(name, value, datatype, address, data, comment)
 		self.ommitCellChanged = False
 		
-	def updateRow(self, name, value, datatype, address, data):
+	def updateRow(self, name, value, datatype, address, data, comment = ""):
 		self.ommitCellChanged = True
 		for i in range(self.rowCount()):
 			if self.item(i, 0).text() == name:
@@ -243,10 +295,11 @@ class RememberLocationsTableWidget(BaseTableWidget):
 				self.item(i, 2).setText(datatype)
 				self.item(i, 3).setText(address)
 				self.item(i, 4).setText(data)
+				self.item(i, 5).setText(comment)
 				break
 		self.ommitCellChanged = False
 		
-	def addRow(self, name, value, datatype, address, data):
+	def addRow(self, name, value, datatype, address, data, comment = ""):
 		self.ommitCellChanged = True
 		arrRememberedLocStructs.append(RememberLocationStruct(name, address, value, datatype, data, data, "", ""))
 		currRowCount = self.rowCount()
@@ -256,12 +309,13 @@ class RememberLocationsTableWidget(BaseTableWidget):
 		self.addItem(currRowCount, 3, str(datatype))
 		self.addItem(currRowCount, 1, str(address))
 		self.addItem(currRowCount, 4, str(data), True if str(datatype) == "int" else False)
+		self.addItem(currRowCount, 5, str(comment))
 		self.setRowHeight(currRowCount, 18)
 		self.ommitCellChanged = False
 		
 	def addItem(self, row, col, txt, editable = False):
 		item = QTableWidgetItem(txt, QTableWidgetItem.ItemType.Type)
-		if not editable: # or (col != 1 and col != 2):
+		if not editable or col != 0: # or (col != 1 and col != 2):
 			item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable) #Qt.ItemFlag.ItemIsSelectable)
 		
 		# Insert the items into the row
@@ -270,55 +324,56 @@ class RememberLocationsTableWidget(BaseTableWidget):
 	def item_changed_handler(self, row, col):
 #		print(f"item_changed_handler => row: {row} / col: {col}")
 		if not self.ommitCellChanged:
-			if self.item(row, 2).text() == "int":
-				if col == 1: #  or col == 2 or col == 2
-					changedItem = self.item(row, col)
-#					print(f"Item changed: {row} / {col} => NewVal: {changedItem.text()}")
-					newVal = ''
-					if col == 1:
-						varName = self.item(row, 0).text()
-						newVal = self.item(row, 1).text()
-						if newVal.lower().startswith("0x"):
-							newVal = int(newVal, 16)
-						else:
-							newVal = int(newVal)
-						# Get the frame object from the current debugging session
-#						frame = self.window().driver.getTarget().GetProcess().GetThreadAtIndex(0).GetFrameAtIndex(0)
-#						
-#						# Get the variable you want to modify by name
-#						var = frame.FindVariable(varName)
-#						var = VariablesHelper.GetVariable(self.window().driver, varName)
-						
-						if VariablesHelper.SetVariableDataInt(self.window().driver, varName, newVal):
-							self.item(row, 4).setText(hex(newVal))
-							self.item(row, 1).setText(str(newVal))
-						
-#						self.variable_type = var.GetType()
-#						print(f"self.variable_type => {self.variable_type}")
-#						
-#						value = str(var.GetValue())
-#						
-#						error = lldb.SBError()
-#						if self.variable_type.GetBasicType() == lldb.eBasicTypeInt:
-#							var.SetData(lldb.SBData().CreateDataFromSInt32Array(lldb.eByteOrderLittle, var.GetByteSize(), [int(self.item(row, 1).text())]), error)
-##						elif str(self.variable_type).startswith("char"):
-##							self.variable.SetData(lldb.SBData().CreateDataFromCString(lldb.eByteOrderLittle, int(self.txtSize.text(), 16), self.txtValue.text()), error)
-##							
-##							pass
-#							
-#						if error.Success():
-#							successMsg = f"Variable '{varName}' with type: '{self.variable_type}' ('{self.variable_type.GetBasicType()}') updated to: {self.item(row, 1).text()}"
-#							print(successMsg)
-#							self.window().updateStatusBar(successMsg)
-#						#			self.window().updateStatusBar(successMsg)
-#						else:
-#							print(f"ERROR: {error}")
-#						newVal = int(changedItem.text())
-#						self.item(row, 1).setText(hex(newVal))
-#					else:
-#						newVal = int(changedItem.text(), 16)
-#						self.item(row, 1).setText(str(newVal))
-					
-#					varName = self.item(row, 0).text()
-#					self.window().driver.handleCommand(f"expr {varName}={newVal}")
-#					self.window().updateStatusBar(f"Updated value of variable '{varName}' to '{newVal}'")
+			pass
+# 			if self.item(row, 2).text() == "int":
+# 				if col == 1: #  or col == 2 or col == 2
+# 					changedItem = self.item(row, col)
+# #					print(f"Item changed: {row} / {col} => NewVal: {changedItem.text()}")
+# 					newVal = ''
+# 					if col == 1:
+# 						varName = self.item(row, 0).text()
+# 						newVal = self.item(row, 1).text()
+# 						if newVal.lower().startswith("0x"):
+# 							newVal = int(newVal, 16)
+# 						else:
+# 							newVal = int(newVal)
+# 						# Get the frame object from the current debugging session
+# #						frame = self.window().driver.getTarget().GetProcess().GetThreadAtIndex(0).GetFrameAtIndex(0)
+# #
+# #						# Get the variable you want to modify by name
+# #						var = frame.FindVariable(varName)
+# #						var = VariablesHelper.GetVariable(self.window().driver, varName)
+#
+# 						if VariablesHelper.SetVariableDataInt(self.window().driver, varName, newVal):
+# 							self.item(row, 4).setText(hex(newVal))
+# 							self.item(row, 1).setText(str(newVal))
+#
+# #						self.variable_type = var.GetType()
+# #						print(f"self.variable_type => {self.variable_type}")
+# #
+# #						value = str(var.GetValue())
+# #
+# #						error = lldb.SBError()
+# #						if self.variable_type.GetBasicType() == lldb.eBasicTypeInt:
+# #							var.SetData(lldb.SBData().CreateDataFromSInt32Array(lldb.eByteOrderLittle, var.GetByteSize(), [int(self.item(row, 1).text())]), error)
+# ##						elif str(self.variable_type).startswith("char"):
+# ##							self.variable.SetData(lldb.SBData().CreateDataFromCString(lldb.eByteOrderLittle, int(self.txtSize.text(), 16), self.txtValue.text()), error)
+# ##
+# ##							pass
+# #
+# #						if error.Success():
+# #							successMsg = f"Variable '{varName}' with type: '{self.variable_type}' ('{self.variable_type.GetBasicType()}') updated to: {self.item(row, 1).text()}"
+# #							print(successMsg)
+# #							self.window().updateStatusBar(successMsg)
+# #						#			self.window().updateStatusBar(successMsg)
+# #						else:
+# #							print(f"ERROR: {error}")
+# #						newVal = int(changedItem.text())
+# #						self.item(row, 1).setText(hex(newVal))
+# #					else:
+# #						newVal = int(changedItem.text(), 16)
+# #						self.item(row, 1).setText(str(newVal))
+#
+# #					varName = self.item(row, 0).text()
+# #					self.window().driver.handleCommand(f"expr {varName}={newVal}")
+# #					self.window().updateStatusBar(f"Updated value of variable '{varName}' to '{newVal}'")

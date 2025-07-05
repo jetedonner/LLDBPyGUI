@@ -42,6 +42,7 @@ class RegisterTableWidget(BaseTableWidget):
 		self.setMouseTracking(True)
 		self.cellDoubleClicked.connect(self.on_double_click)
 		self.itemEntered.connect(self.handle_itemEntered)
+		self.setContentsMargins(0, 0, 0, 0)
 		
 	def handle_itemEntered(self, item):
 #		if item.column() == 1:

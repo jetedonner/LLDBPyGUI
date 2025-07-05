@@ -1409,11 +1409,13 @@ class LLDBPyGUIWindow(QMainWindow):
 	tblRegs = []
 	def handle_loadRegister(self, type):
 		tabDet = QWidget()
+		tabDet.setContentsMargins(0, 0, 0, 0)
 		tblReg = RegisterTableWidget()
 		tabDet.tblWdgt = tblReg
 		self.tblRegs.append(tblReg)
 		tabDet.setLayout(QVBoxLayout())
 		tabDet.layout().addWidget(tblReg)
+		tabDet.layout().setContentsMargins(0, 0, 0, 0)
 		self.tabWidgetReg.addTab(tabDet, type)
 		self.currTblDet = tblReg
 #		pass
@@ -1431,9 +1433,9 @@ class LLDBPyGUIWindow(QMainWindow):
 				tblWdgt.item(i, 2).setText(value)
 				break
 
-	def handle_loadRememberLocation(self, name, value, data, valType, address):
+	def handle_loadRememberLocation(self, name, value, data, valType, address, comment):
 		# self.inited = True
-		self.tblRememberLoc.addRow(name, value, valType, address, data)
+		self.tblRememberLoc.addRow(name, value, valType, address, data, comment)
 
 	def handle_loadVariableValue(self, name, value, data, valType, address):
 		self.inited = True

@@ -55,6 +55,7 @@ class BreakpointTreeWidget(BaseTreeWidget):
 	def __init__(self, driver, bpHelper):
 		super().__init__(driver)
 
+		self.setContentsMargins(0, 0, 0, 0)
 		# self.setStyleSheet("""
 		# 	QTreeWidget {
 		# 		/* background-color: #f0f0f0;
@@ -570,6 +571,7 @@ class BPsWPsWidget(QWidget):
 		
 #		self.layBPWPMain.addWidget(self.treBPs)
 		self.layBPCtrls = QVBoxLayout()
+		self.layBPCtrls.setContentsMargins(0, 0, 0, 0)
 		self.wdtBPCtrls = QWidget()
 		self.wdtBPCtrls.setContentsMargins(0, 0, 0, 0)
 		self.wdtBPCtrls.setLayout(self.layBPCtrls)
@@ -599,6 +601,7 @@ class BPsWPsWidget(QWidget):
 		self.layBPCtrls.addWidget(self.cmdLoadBPs)
 
 		self.spacer = QSpacerItem(0, 200, QSizePolicy.Policy.Maximum, QSizePolicy.Policy.MinimumExpanding)
+		# self.spacer.setContentsMargins(0, 0, 0, 0)
 		self.layBPCtrls.addItem(self.spacer)
 		self.treBPs.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
 #		self.layBPWPMain.addWidget(self.treBPs)

@@ -21,6 +21,9 @@ class ControlFlowConnection():
     originRow = 0
     destRow = 0
 
+    startArrow = None
+    endArrow = None
+
     mainLine = None
     topArc = None
     bottomArc = None
@@ -226,6 +229,7 @@ class QControlFlowWidget(QWidget):
 
     def loadInstructions(self):
         radius = 50
+        scrollOrig = self.window().txtMultiline.table.verticalScrollBar().value()
         self.window().txtMultiline.table.verticalScrollBar().setValue(0)
         for row in range(self.window().txtMultiline.table.rowCount()):
             # self.window().txtMultiline.table.rowAt(row).
@@ -243,6 +247,7 @@ class QControlFlowWidget(QWidget):
                 # else:
                 #     # logDbg(f"IS NOOOOOOT INSIDE!!!")
                 #     pass
+        self.window().txtMultiline.table.verticalScrollBar().setValue(scrollOrig)
 
     def draw_flowConnection(self, startRow, endRow, color = QColor("lightblue"), radius = 50, lineWidth = 1, switched = False):
         newConnection = ControlFlowConnection()
@@ -316,8 +321,7 @@ class QControlFlowWidget(QWidget):
         else:
             arrowEnd = QPointF(xOffset + (radius / 2) - 6 - 2, y_position + (nRowHeight / 2))  # ellipse_rect.topLeft() #+ QPointF(radius / 2, -(radius + 6))
             arrowStart = QPointF(xOffset + (radius / 2) - 2, y_position + (nRowHeight / 2))  # ellipse_rect.topRight()
-        # self.draw_arrowNG(ellipse_rect.bottomLeft(), ellipse_rect2.topLeft())
-        self.draw_arrowNG(arrowStart, arrowEnd)
+        newConnection.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
 
         if switched:
             arrowEnd = QPointF(xOffset + (radius / 2) - 6 - 2, y_position2 + (nRowHeight / 2))  # ellipse_rect.topLeft() #+ QPointF(radius / 2, -(radius + 6))
@@ -325,8 +329,7 @@ class QControlFlowWidget(QWidget):
         else:
             arrowStart = QPointF(xOffset + (radius / 2) - 6 - 2, y_position2 + ( nRowHeight / 2))  # ellipse_rect.topLeft() #+ QPointF(radius / 2, -(radius + 6))
             arrowEnd = QPointF(xOffset + (radius / 2) - 2, y_position2 + (nRowHeight / 2))  # ellipse_rect.topRight()
-
-        self.draw_arrowNG(arrowStart, arrowEnd)
+        newConnection.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
 
         self.connections.append(newConnection)
         # self.draw_arrow(QPointF(ellipse_rect.topLeft(), ellipse_rect.bottomLeft()), QPointF(ellipse_rect.topLeft(), ellipse_rect.bottomLeft()))
@@ -368,3 +371,4 @@ class QControlFlowWidget(QWidget):
             QPen(QColor("lightgreen")),
             QBrush(QColor("lightgreen")) # transparent"))
         )
+        return arrow_head

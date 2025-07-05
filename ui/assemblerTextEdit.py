@@ -437,10 +437,10 @@ class DisassemblyTableWidget(BaseTableWidget):
 			logDbg(f"Remember Location ... {address}")
 			if self.item(self.selectedItems()[0].row(), 0).text().endswith(">"):
 				self.item(self.selectedItems()[0].row(), 0).setText(self.item(self.selectedItems()[0].row(), 0).text() + "I")
-				self.window().handle_loadRememberLocation("TestLoc", self.getSelItemText(3), self.getSelItemText(5), self.getSelItemText(4), self.getSelItemText(2))
+				self.window().handle_loadRememberLocation("TestLoc", self.getSelItemText(3), self.getSelItemText(5), self.getSelItemText(4), self.getSelItemText(2), self.getSelItemText(7))
 			elif not self.item(self.selectedItems()[0].row(), 0).text().endswith("I"):
 				self.item(self.selectedItems()[0].row(), 0).setText("I")
-				self.window().handle_loadRememberLocation("TestLoc", self.getSelItemText(3), self.getSelItemText(5), self.getSelItemText(4), self.getSelItemText(2))
+				self.window().handle_loadRememberLocation("TestLoc", self.getSelItemText(3), self.getSelItemText(5), self.getSelItemText(4), self.getSelItemText(2), self.getSelItemText(7))
 			print(arrRememberedLocs[self.getSelItemText(2)])
 		pass
 			
