@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QGraphicsView, QGraphicsScene, QGraphicsRectItem, QGraphicsTextItem,
-    QGraphicsLineItem, QGraphicsEllipseItem, QTableWidget, QTableWidgetItem, QSizePolicy, QGraphicsPathItem
+    QGraphicsLineItem, QGraphicsEllipseItem, QTableWidget, QTableWidgetItem, QSizePolicy, QGraphicsPathItem, QMenu
 )
 from PyQt6.QtGui import QBrush, QPen, QColor, QTransform, QPainterPath, QPolygonF
 from PyQt6.QtCore import Qt, QPointF, QLineF
@@ -22,6 +22,10 @@ from ui.helper.dbgOutputHelper import *
 
 class ControlFlowConnection():
 
+    asmTable = None
+    originRow = 0
+    destRow = 0
+    
     mainLine = None
     topArc = None
     bottomArc = None
@@ -92,7 +96,11 @@ class HoverLineItem(QGraphicsLineItem):
         self.connection = connection
         self.connection.mainLine = self
         self.setAcceptHoverEvents(True)
-        # self.setPen(QPen(QColor("black"), 3))
+        self.context_menu = QMenu()
+        self.actionGotoOrigin = self.context_menu.addAction("Goto Origin")
+        self.actionGotoOrigin.triggered.connect(self.handle_gotoOrigin)
+        self.actionGotoDestination = self.context_menu.addAction("Goto Destination")
+        self.actionGotoDestination.triggered.connect(self.handle_gotoDestination)
 
     def hoverEnterEvent(self, event):
         logDbg("Hover entered line")
@@ -110,6 +118,19 @@ class HoverLineItem(QGraphicsLineItem):
         self.connection.bottomArc.setPen(newPen)
         # self.setPen(QPen(QColor("black"), 3))  # Reset color
 
+    def contextMenuEvent(self, event):
+        self.context_menu.exec(event.screenPos())
+
+    def handle_gotoOrigin(self):
+        logDbg(f"handle_gotoOrigin...")
+        self.connection.asmTable.scrollToRow(self.connection.originRow)
+        pass
+
+    def handle_gotoDestination(self):
+        logDbg(f"handle_gotoDestination....")
+        self.connection.asmTable.scrollToRow(self.connection.destRow)
+        pass
+
 class HoverPathItem(QGraphicsPathItem):
 
     connection = None
@@ -120,9 +141,11 @@ class HoverPathItem(QGraphicsPathItem):
         # Enable hover events
         self.setAcceptHoverEvents(True)
 
-        # # Create a curved path
-        # path = QPainterPath()
-        # path.moveTo(50, 50)
+        self.context_menu = QMenu()
+        self.actionGotoOrigin = self.context_menu.addAction("Goto Origin")
+        self.actionGotoOrigin.triggered.connect(self.handle_gotoOrigin)# # Create a curved path
+        self.actionGotoDestination = self.context_menu.addAction("Goto Destination")# path = QPainterPath()
+        self.actionGotoDestination.triggered.connect(self.handle_gotoDestination)# path.moveTo(50, 50)
         # path.cubicTo(150, 0, 250, 100, 350, 50)
         # self.setPath(path)
         #
@@ -148,14 +171,19 @@ class HoverPathItem(QGraphicsPathItem):
             self.connection.topArc.setPen(newPen)
         else:
             self.connection.bottomArc.setPen(newPen)
-    #
-    # def shape(self):
-    #     # Expand the hoverable area using a stroker
-    #     from PyQt6.QtGui import QPainterPathStroker
-    #     stroker = QPainterPathStroker()
-    #     stroker.setWidth(10)
-    #     return stroker.createStroke(self.path())
 
+    def contextMenuEvent(self, event):
+        self.context_menu.exec(event.screenPos())
+
+    def handle_gotoOrigin(self):
+        logDbg(f"handle_gotoOrigin...")
+        self.connection.asmTable.scrollToRow(self.connection.originRow)
+        pass
+    
+    def handle_gotoDestination(self):
+        logDbg(f"handle_gotoDestination....")
+        self.connection.asmTable.scrollToRow(self.connection.destRow)
+        pass
 
 class QControlFlowWidget(QWidget):
 
@@ -169,9 +197,10 @@ class QControlFlowWidget(QWidget):
         self.layout = QVBoxLayout(self)
 
         # Graphics view and scene
-        self.scene = QGraphicsScene()
+        self.scene = QGraphicsScene() # 0, 0, 50, 1260
         self.setContentsMargins(0, 0, 0, 0)
         self.view = NoScrollGraphicsView(self.scene)
+        # self.view.pos().setY(20)
         self.layout.addWidget(self.view)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.draw_instructions()
@@ -184,6 +213,10 @@ class QControlFlowWidget(QWidget):
 
     def draw_flowConnection(self, startRow, endRow, color = QColor("lightblue"), xOffset = 0, radius = 50, lineWidth = 1, yOffset = 0):
         newConnection = ControlFlowConnection()
+        newConnection.originRow = startRow
+        newConnection.destRow = endRow
+        newConnection.asmTable = self.window().txtMultiline.table
+        
         nRowHeight = 21
         nOffsetAdd = 23
         xOffset = 65 + radius + xOffset
@@ -218,7 +251,7 @@ class QControlFlowWidget(QWidget):
         self.scene.addItem(arc_item2)
         newConnection.bottomArc = arc_item2
 
-        arrowEnd = ellipse_rect.bottomLeft() + QPointF(radius / 2, -(radius + 3))
+        arrowEnd = ellipse_rect.bottomLeft() + QPointF(radius / 2, -(radius + 6))
         arrowStart = ellipse_rect.bottomLeft()
         # self.draw_arrowNG(ellipse_rect.bottomLeft(), ellipse_rect2.topLeft())
         self.draw_arrowNG(arrowStart, arrowEnd)
@@ -360,7 +393,7 @@ class QControlFlowWidget(QWidget):
         #     end = self.nodes[to_addr].sceneBoundingRect().topLeft() + QPointF(75, 0)
 
         # # Add arrowhead
-        arrow_size = 6
+        arrow_size = 12
         direction = (toPos - fromPos)
         direction /= (direction.manhattanLength() or 1)
         perp = QPointF(-direction.y(), direction.x())

@@ -383,9 +383,10 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.wdtControlFlow.setContentsMargins(0, 0, 0, 0)
 		self.wdtControlFlowLeft = QWidget()
 		self.wdtControlFlowLeft.setContentsMargins(0, 30, 0, 0)
+		# self.wdtControlFlowLeft.setMin
 		self.layControlFlowLeft = QVBoxLayout(self.wdtControlFlowLeft)
 		self.layControlFlowLeft.setContentsMargins(0, 0, 0, 0)
-		self.layControlFlowLeft.addStretch(1)
+		# self.layControlFlowLeft.addStretch(1)
 		self.layControlFlowLeft.addWidget(self.wdtControlFlow)
 		self.splitterAsm.addWidget(self.wdtControlFlowLeft)
 		# self.splitterAsm.set
