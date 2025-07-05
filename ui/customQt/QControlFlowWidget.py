@@ -73,8 +73,8 @@ class NoScrollGraphicsView(QGraphicsView):
         # scene.setSceneRect(0, 0, 50, 1260)  # Or whatever size you need
 
 
-    def wheelEvent(self, event: QWheelEvent):
-        pass  # Ignore mouse wheel
+    # def wheelEvent(self, event: QWheelEvent):
+    #     pass  # Ignore mouse wheel
 
     def keyPressEvent(self, event: QKeyEvent):
         super().keyPressEvent(event)  # Optional: allow other keys
@@ -310,9 +310,22 @@ class QControlFlowWidget(QWidget):
         self.scene.addItem(arc_item2)
         newConnection.bottomArc = arc_item2
 
-        arrowEnd = QPointF(xOffset + (radius / 2) - 12, y_position + (nRowHeight / 2)) # ellipse_rect.topLeft() #+ QPointF(radius / 2, -(radius + 6))
-        arrowStart = QPointF(xOffset + (radius / 2), y_position + (nRowHeight / 2)) # ellipse_rect.topRight()
+        if switched:
+            arrowStart = QPointF(xOffset + (radius / 2) - 6 - 2, y_position + (nRowHeight / 2)) # ellipse_rect.topLeft() #+ QPointF(radius / 2, -(radius + 6))
+            arrowEnd = QPointF(xOffset + (radius / 2) - 2, y_position + (nRowHeight / 2)) # ellipse_rect.topRight()
+        else:
+            arrowEnd = QPointF(xOffset + (radius / 2) - 6 - 2, y_position + (nRowHeight / 2))  # ellipse_rect.topLeft() #+ QPointF(radius / 2, -(radius + 6))
+            arrowStart = QPointF(xOffset + (radius / 2) - 2, y_position + (nRowHeight / 2))  # ellipse_rect.topRight()
         # self.draw_arrowNG(ellipse_rect.bottomLeft(), ellipse_rect2.topLeft())
+        self.draw_arrowNG(arrowStart, arrowEnd)
+
+        if switched:
+            arrowEnd = QPointF(xOffset + (radius / 2) - 6 - 2, y_position2 + (nRowHeight / 2))  # ellipse_rect.topLeft() #+ QPointF(radius / 2, -(radius + 6))
+            arrowStart = QPointF(xOffset + (radius / 2) - 2, y_position2 + (nRowHeight / 2))  # ellipse_rect.topRight()
+        else:
+            arrowStart = QPointF(xOffset + (radius / 2) - 6 - 2, y_position2 + ( nRowHeight / 2))  # ellipse_rect.topLeft() #+ QPointF(radius / 2, -(radius + 6))
+            arrowEnd = QPointF(xOffset + (radius / 2) - 2, y_position2 + (nRowHeight / 2))  # ellipse_rect.topRight()
+
         self.draw_arrowNG(arrowStart, arrowEnd)
 
         self.connections.append(newConnection)
@@ -337,7 +350,7 @@ class QControlFlowWidget(QWidget):
     
     def draw_arrowNG(self, fromPos, toPos):
         # # Add arrowhead
-        arrow_size = 12
+        arrow_size = 8
         direction = (toPos - fromPos)
         direction /= (direction.manhattanLength() or 1)
         perp = QPointF(-direction.y(), direction.x())
@@ -352,6 +365,6 @@ class QControlFlowWidget(QWidget):
         arrow_head = self.scene.addPolygon(
             # [end, p1, p2],
             polygon,
-            QPen(QColor("red")),
-            QBrush(QColor("transparent"))
+            QPen(QColor("lightgreen")),
+            QBrush(QColor("lightgreen")) # transparent"))
         )

@@ -435,9 +435,13 @@ class DisassemblyTableWidget(BaseTableWidget):
 			self.setBGColor(self.selectedItems()[0].row(), True, QColor("yellow"), range(1), QColor("black"))
 			address = self.getSelItemText(2)
 			logDbg(f"Remember Location ... {address}")
-			self.item(self.selectedItems()[0].row(), 0).setText("I")
+			if self.item(self.selectedItems()[0].row(), 0).text().endswith(">"):
+				self.item(self.selectedItems()[0].row(), 0).setText(self.item(self.selectedItems()[0].row(), 0).text() + "I")
+				self.window().handle_loadRememberLocation("TestLoc", self.getSelItemText(3), self.getSelItemText(5), self.getSelItemText(4), self.getSelItemText(2))
+			elif not self.item(self.selectedItems()[0].row(), 0).text().endswith("I"):
+				self.item(self.selectedItems()[0].row(), 0).setText("I")
+				self.window().handle_loadRememberLocation("TestLoc", self.getSelItemText(3), self.getSelItemText(5), self.getSelItemText(4), self.getSelItemText(2))
 			print(arrRememberedLocs[self.getSelItemText(2)])
-			self.window().handle_loadRememberLocation("TestLoc", self.getSelItemText(3), self.getSelItemText(5), self.getSelItemText(4), self.getSelItemText(2))
 		pass
 			
 	def doReadMemory(self, address, size = 0x100):
