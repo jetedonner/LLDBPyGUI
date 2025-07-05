@@ -238,16 +238,20 @@ class QControlFlowWidget(QWidget):
                     if (rowStart < rowEnd):
                         self.draw_flowConnection(rowStart, rowEnd, QColor("lightblue"), radius)
                     else:
-                        self.draw_flowConnection(rowEnd, rowStart, QColor("lightgreen"), radius)
+                        self.draw_flowConnection(rowEnd, rowStart, QColor("lightgreen"), radius, 1, True)
                     radius -= 15
                 # else:
                 #     # logDbg(f"IS NOOOOOOT INSIDE!!!")
                 #     pass
 
-    def draw_flowConnection(self, startRow, endRow, color = QColor("lightblue"), radius = 50, lineWidth = 1, yOffset = 0):
+    def draw_flowConnection(self, startRow, endRow, color = QColor("lightblue"), radius = 50, lineWidth = 1, switched = False):
         newConnection = ControlFlowConnection()
-        newConnection.originRow = startRow
-        newConnection.destRow = endRow
+        if switched:
+            newConnection.originRow = endRow
+            newConnection.destRow = startRow
+        else:
+            newConnection.originRow = startRow
+            newConnection.destRow = endRow
         newConnection.asmTable = self.window().txtMultiline.table
         nSectionsStart = 0
         nSectionsEnd = 0
@@ -306,8 +310,8 @@ class QControlFlowWidget(QWidget):
         self.scene.addItem(arc_item2)
         newConnection.bottomArc = arc_item2
 
-        arrowEnd = ellipse_rect.topLeft() #+ QPointF(radius / 2, -(radius + 6))
-        arrowStart = ellipse_rect.topRight()
+        arrowEnd = QPointF(xOffset + (radius / 2) - 12, y_position + (nRowHeight / 2)) # ellipse_rect.topLeft() #+ QPointF(radius / 2, -(radius + 6))
+        arrowStart = QPointF(xOffset + (radius / 2), y_position + (nRowHeight / 2)) # ellipse_rect.topRight()
         # self.draw_arrowNG(ellipse_rect.bottomLeft(), ellipse_rect2.topLeft())
         self.draw_arrowNG(arrowStart, arrowEnd)
 
