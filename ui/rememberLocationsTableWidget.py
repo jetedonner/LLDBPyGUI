@@ -17,6 +17,8 @@ from dbg.breakpointHelper import arrRememberedLocs, arrRememberedLocStructs
 from dbg.variableHelper import *
 from dbg.watchpointHelper import *
 from ui.baseTableWidget import *
+from ui.helper.dbgOutputHelper import logDbg
+
 
 class RememberLocationStruct:
 	def __init__(self, name, address, mnemonic, arguments, hex, data, comment, hint):
@@ -123,14 +125,14 @@ class RememberLocationsTableWidget(BaseTableWidget):
 		self.load_table_from_json("./rememberLocSave.json")
 		pass
 
-	def save_table_to_json(table, filename):
+	def save_table_to_json(self, filename):
 		data = []
-		for row in range(table.rowCount()):
+		for row in range(self.rowCount()):
 			row_data = {}
-			headers = [table.horizontalHeaderItem(i).text() for i in range(table.columnCount())]
+			headers = [self.horizontalHeaderItem(i).text() for i in range(self.columnCount())]
 			idx = 0
 			for col in headers: #range(table.columnCount()):
-				item = table.item(row, idx)
+				item = self.item(row, idx)
 				row_data[f"{col}"] = item.text() if item else ""
 				idx += 1
 			data.append(row_data)
@@ -138,25 +140,36 @@ class RememberLocationsTableWidget(BaseTableWidget):
 		with open(filename, "w") as f:
 			json.dump(data, f, indent=4)
 
-	def load_table_from_json(table, filename):
+	def load_table_from_json(self, filename):
 		with open(filename, "r") as f:
 			data = json.load(f)
 
-		table.setRowCount(0)
-		table.setRowCount(len(data))
-		table.setColumnCount(len(data[0]) if data else 0)
+		self.setRowCount(0)
+		self.setRowCount(len(data))
+		self.setColumnCount(len(data[0]) if data else 0)
 
+		daAddr = ""
 		for row_idx, row_data in enumerate(data):
-			currRowCount = table.rowCount()
+			currRowCount = self.rowCount()
 			# table.setRowCount(currRowCount + 1)
 			for col_idx, value in enumerate(row_data.values()):
+				if col_idx == 1:
+					daAddr = value
 				item = QTableWidgetItem(value)
 				if col_idx == 0:
-					table.addItem(row_idx, col_idx, value, True)
+					self.addItem(row_idx, col_idx, value, True)
 				else:
-					table.addItem(row_idx, col_idx, value, False)
+					self.addItem(row_idx, col_idx, value, False)
 				# table.setItem(row_idx, col_idx, item)
-			table.setRowHeight(row_idx, 14)
+			self.setRowHeight(row_idx, 14)
+		# arrRememberedLocs[self.getSelItemText(2)] = {"id": len(arrRememberedLocs), "address": self.getSelItemText(2),
+		# 											 "opcode": self.getSelItemText(3), "params": self.getSelItemText(4),
+		# 											 "hex": self.getSelItemText(5), "data": self.getSelItemText(6),
+		# 											 "comment": self.getSelItemText(7)}
+			logDbg(f"row_idx: {row_idx} / daAddr: {daAddr} / daAddrItem: {self.window().txtMultiline.table.getRowForAddress(daAddr)}")
+			self.window().txtMultiline.table.setBGColor(self.window().txtMultiline.table.getRowForAddress(daAddr), True, QColor("yellow"), range(1), QColor("black"))
+			self.window().txtMultiline.table.item(self.window().txtMultiline.table.getRowForAddress(daAddr), 0).setText("I")
+			# self.window().txtMultiline.table.handle_RememberLoc(row_idx)
 
 	def eventFilter(self, obj, event):
 		if obj is self and event.type() == QtCore.QEvent.Type.Enter:

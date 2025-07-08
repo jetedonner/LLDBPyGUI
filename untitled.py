@@ -207,12 +207,9 @@ class DisassemblyTableWidget(BaseTableWidget):
 			color = colorIn #QColor(220, 220, 255, 80)
 		# Set background color for a specific item
 		for i in rangeIn: # range(self.columnCount()):
-			logDbg(f"i: {i}")
 			item = self.item(row, i)  # Replace with desired row and column index
 			if item is not None:
-				logDbg(f"item: {item}")
 				item.setBackground(color)
-				logDbg(f"setBackground: {color}")
 				if fgColor is not None:
 					item.setForeground(fgColor)
 					logDbg(f"item.setForeground({fgColor.isValid()}).....")
@@ -432,17 +429,25 @@ class DisassemblyTableWidget(BaseTableWidget):
 		self.doReadMemory(addr)
 #		print(f"Triggering QAction: {action.text()}")
 
-	def handle_RememberLoc(self):
-		if self.item(self.selectedItems()[0].row(), 2) != None:
+	def handle_RememberLoc(self, row = -1):
+
+		if row != -1:
+			daRow = row
+			self.selectRow(daRow)
+		elif len(self.selectedItems()) > 0:
+			# self.selectRow(0)
+			daRow = self.selectedItems()[0].row()
+
+		if self.item(daRow, 2) != None:
 			arrRememberedLocs[self.getSelItemText(2)] = {"id": len(arrRememberedLocs), "address": self.getSelItemText(2), "opcode": self.getSelItemText(3), "params": self.getSelItemText(4), "hex": self.getSelItemText(5), "data": self.getSelItemText(6), "comment": self.getSelItemText(7)}
-			self.setBGColor(self.selectedItems()[0].row(), True, QColor("yellow"), range(1), QColor("black"))
+			self.setBGColor(daRow, True, QColor("yellow"), range(1), QColor("black"))
 			address = self.getSelItemText(2)
 			logDbg(f"Remember Location ... {address}")
-			if self.item(self.selectedItems()[0].row(), 0).text().endswith(">"):
-				self.item(self.selectedItems()[0].row(), 0).setText(self.item(self.selectedItems()[0].row(), 0).text() + "I")
+			if self.item(daRow, 0).text().endswith(">"):
+				self.item(daRow, 0).setText(self.item(daRow, 0).text() + "I")
 				self.window().handle_loadRememberLocation("TestLoc", self.getSelItemText(3), self.getSelItemText(5), self.getSelItemText(4), self.getSelItemText(2), self.getSelItemText(7))
-			elif not self.item(self.selectedItems()[0].row(), 0).text().endswith("I"):
-				self.item(self.selectedItems()[0].row(), 0).setText("I")
+			elif not self.item(daRow, 0).text().endswith("I"):
+				self.item(daRow, 0).setText("I")
 				self.window().handle_loadRememberLocation("TestLoc", self.getSelItemText(3), self.getSelItemText(5), self.getSelItemText(4), self.getSelItemText(2), self.getSelItemText(7))
 			print(arrRememberedLocs[self.getSelItemText(2)])
 		pass

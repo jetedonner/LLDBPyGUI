@@ -228,7 +228,7 @@ class QControlFlowWidget(QWidget):
         pass
 
     def loadInstructions(self):
-        radius = 50
+        radius = 75
         scrollOrig = self.window().txtMultiline.table.verticalScrollBar().value()
         self.window().txtMultiline.table.verticalScrollBar().setValue(0)
         for row in range(self.window().txtMultiline.table.rowCount()):
@@ -243,7 +243,7 @@ class QControlFlowWidget(QWidget):
                         self.draw_flowConnection(rowStart, rowEnd, QColor("lightblue"), radius)
                     else:
                         self.draw_flowConnection(rowEnd, rowStart, QColor("lightgreen"), radius, 1, True)
-                    radius -= 15
+                    radius -= 20
                 # else:
                 #     # logDbg(f"IS NOOOOOOT INSIDE!!!")
                 #     pass
