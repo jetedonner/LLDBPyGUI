@@ -5,6 +5,7 @@ from lldb import *
 
 from worker.baseWorker import *
 
+from ui.helper.dbgOutputHelper import *
 #class LoadDisassemblyWorkerReceiver(BaseWorkerReceiver):
 #	interruptWorker = pyqtSignal()
 	
@@ -48,7 +49,7 @@ class LoadDisassemblyWorker(BaseWorker):
 #				if not section.IsReadable():
 #					continue
 				
-				if section.GetName() == "__TEXT" or  section.GetName() == "__PAGEZERO":
+				if section.GetName() == "__TEXT":# or  section.GetName() == "__PAGEZERO":
 #					print(f'section => {section}')
 					# Get section start and size
 #					start_address = section.GetLoadAddress(self.target)
@@ -110,6 +111,8 @@ class LoadDisassemblyWorker(BaseWorker):
 #									print(f'start_address => {start_address} / remaining_bytes => {remaining_bytes} / data_size => {data_size}')
 ##								(50*100)/200
 #								print(f'sym.GetStartAddress().GetFunction() => {sym.GetStartAddress().GetFunction()}')
+								print(f"Analyzing instructions: {len(sym.GetStartAddress().GetFunction().GetInstructions(self.target))}")
+								logDbg(f"Analyzing instructions: {len(sym.GetStartAddress().GetFunction().GetInstructions(self.target))}")
 								for instruction in sym.GetStartAddress().GetFunction().GetInstructions(self.target):
 									if symFuncName == instruction.GetAddress().GetFunction().GetName():
 #										print(f"Address: {instruction.GetAddress()}")

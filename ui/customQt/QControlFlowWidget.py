@@ -12,6 +12,7 @@ from PyQt6.QtCore import QPointF, QRectF
 
 from PyQt6.QtGui import QWheelEvent, QKeyEvent
 from ui.helper.dbgOutputHelper import *
+from lib.utils import *
 
 controlFlowWidth = 75
 
@@ -56,7 +57,7 @@ class ControlFlowConnectionNG():
     destRow = 0
     destAddr = 0x0
     jumpDist = 0x0
-    color = QColor("red")
+    color = random_qcolor() # QColor("red")
     lineWidth = 1
     switched = False
     radius = 0x0
@@ -131,17 +132,17 @@ class FixedScrollBar(QScrollBar):
     
     def __init__(self):
         super().__init__()
-        self.rangeChanged.connect(self.on_range_changed)
-
-    def on_range_changed(self, min_val, max_val):
-        print("Intercepted range change:", min_val, max_val)
-        # Optionally override behavior here
-        self.setRange(min_val, max_val)
-        
-    def setRange(self, min_val, max_val):
-        fixed_max = 1102  # or whatever you want
-        # logDbg(f"setRange({min(fixed_max, max_val)}) / {max_val}")
-        super().setRange(min_val, min(fixed_max, max_val))
+    #     self.rangeChanged.connect(self.on_range_changed)
+    #
+    # def on_range_changed(self, min_val, max_val):
+    #     print("Intercepted range change:", min_val, max_val)
+    #     # Optionally override behavior here
+    #     self.setRange(min_val, max_val)
+    #
+    # def setRange(self, min_val, max_val):
+    #     fixed_max = 1102  # or whatever you want
+    #     # logDbg(f"setRange({min(fixed_max, max_val)}) / {max_val}")
+    #     super().setRange(min_val, min(fixed_max, max_val))
 
 
 class NoScrollGraphicsView(QGraphicsView):
@@ -220,7 +221,7 @@ class HoverLineItem(QGraphicsLineItem, ArrowHelperClass):
         # self.setToolTip(f"HELLLO TOOLTIP!!!")
 
     def hoverEnterEvent(self, event):
-        logDbg("Hover entered line")
+        # logDbg("Hover entered line")
         # newPen = QPen(self.pen().color(), 3)
         self.connection.setPen(QPen(self.pen().color(), 3))
         # self.setPen(newPen)
@@ -243,7 +244,7 @@ class HoverLineItem(QGraphicsLineItem, ArrowHelperClass):
         # self.connection.endArrow = self.connection.parentControlFlow.draw_arrowNG(self.connection.endArrow.fromPos, self.connection.endArrow.toPos, 8)
 
     def hoverLeaveEvent(self, event):
-        logDbg("Hover left line")
+        # logDbg("Hover left line")
         # newPen = QPen(self.pen().color(), 1)
         # self.setPen(newPen)
         # self.connection.topArc.setPen(newPen)
@@ -296,7 +297,7 @@ class HoverPathItem(QGraphicsPathItem, ArrowHelperClass):
         self.actionGotoDestination.triggered.connect(self.handle_gotoDestination)# path.moveTo(50, 50)
 
     def hoverEnterEvent(self, event):
-        logDbg("Hover entered path")
+        # logDbg("Hover entered path")
         self.connection.setPen(QPen(self.pen().color(), 3))
         # newPen = QPen(self.pen().color(), 3)
         # self.setPen(newPen)
@@ -324,7 +325,7 @@ class HoverPathItem(QGraphicsPathItem, ArrowHelperClass):
         self.connection.endArrow = self.resizeArrow(self.connection.parentControlFlow, self.connection.endArrow, 16, True)
 
     def hoverLeaveEvent(self, event):
-        logDbg("Hover left path")
+        # logDbg("Hover left path")
         self.connection.setPen(QPen(self.pen().color(), 1))
         # newPen = QPen(self.pen().color(), 1)
         # self.setPen(newPen)
@@ -435,7 +436,8 @@ class QControlFlowWidget(QWidget):
 
                     newConObj.parentControlFlow = self
                     # newConObj.setToolTip(f"Branch from {sAddrJumpFrom} to {sAddrJumpTo}")
-                    radius -= 20
+                    if radius >= 20:
+                        radius -= 10
         self.connectionsNG.sort(key=lambda x: abs(x.jumpDist), reverse=True)
 
         idx = 1
@@ -451,7 +453,7 @@ class QControlFlowWidget(QWidget):
             nRowHeight = 21
             nOffsetAdd = 23
             # xOffset = 65 + radius + xOffset
-            xOffset = controlFlowWidth + ((controlFlowWidth - radius) / 2) # + (radius / 2)
+            xOffset = controlFlowWidth + (((controlFlowWidth - radius) / 2))  # + (radius / 2)
 
             logDbg(f"xOffset: {xOffset} / radius: {radius}")
             # 45
@@ -519,7 +521,8 @@ class QControlFlowWidget(QWidget):
                                    y_position2 + (nRowHeight / 2))  # ellipse_rect.topRight()
                 # newConnection.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
                 con.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
-            radius -= 20
+            if radius >= 20:
+                radius -= 10
             idx += 1
 
         self.window().txtMultiline.table.verticalScrollBar().setValue(scrollOrig)
@@ -528,8 +531,8 @@ class QControlFlowWidget(QWidget):
     def loadInstructions(self):
         # print(f"self.window().txtMultiline.table.verticalScrollBar().maximum() => {self.tableView.table.get_total_table_height() - 2}")
         # logDbg(f"self.window().txtMultiline.table.verticalScrollBar().maximum() => {self.tableView.table.get_total_table_height() - 2}")
-        self.scene.setSceneRect(0, 0, 77, self.tableView.table.get_total_table_height() - 2)
         radius = 75
+        self.scene.setSceneRect(0, 0, 75, self.tableView.table.get_total_table_height() - 2)
         scrollOrig = self.window().txtMultiline.table.verticalScrollBar().value()
         self.window().txtMultiline.table.verticalScrollBar().setValue(0)
         for row in range(self.window().txtMultiline.table.rowCount()):
@@ -549,7 +552,8 @@ class QControlFlowWidget(QWidget):
 
                     newConObj.parentControlFlow = self
                     newConObj.setToolTip(f"Branch from {sAddrJumpFrom} to {sAddrJumpTo}")
-                    radius -= 20
+                    if radius >= 20:
+                        radius -= 10
                 # else:
                 #     # logDbg(f"IS NOOOOOOT INSIDE!!!")
                 #     pass
@@ -611,6 +615,7 @@ class QControlFlowWidget(QWidget):
     def draw_flowConnectionNG(self, startRow, endRow, startAddr, endAddr, color=QColor("lightblue"), radius=50, lineWidth=1, switched=False):
         newConnectionNG = ControlFlowConnectionNG(startRow, endRow, startAddr, endAddr, self.window().txtMultiline.table)
         newConnectionNG.switched = switched
+        newConnectionNG.color = random_qcolor()
         # if switched:
         #     newConnectionNG.origRow = endRow
         #     newConnectionNG.origAddr = endAddr

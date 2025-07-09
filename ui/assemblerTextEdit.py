@@ -213,12 +213,12 @@ class DisassemblyTableWidget(BaseTableWidget):
 			color = colorIn #QColor(220, 220, 255, 80)
 		# Set background color for a specific item
 		for i in rangeIn: # range(self.columnCount()):
-			logDbg(f"i: {i}")
+			# logDbg(f"i: {i}")
 			item = self.item(row, i)  # Replace with desired row and column index
 			if item is not None:
-				logDbg(f"item: {item}")
+				# logDbg(f"item: {item}")
 				item.setBackground(color)
-				logDbg(f"setBackground: {color}")
+				# logDbg(f"setBackground: {color}")
 				if fgColor is not None:
 					item.setForeground(fgColor)
 					logDbg(f"item.setForeground({fgColor.isValid()}).....")

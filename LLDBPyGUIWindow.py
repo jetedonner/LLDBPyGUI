@@ -964,7 +964,24 @@ class LLDBPyGUIWindow(QMainWindow):
 	def test2_clicked(self):
 		# self.wdtControlFlow.worker.quit()
 		# self.wdtControlFlow.worker.wait()
-		self.wdtControlFlow.toggleTestTimer()
+		# self.wdtControlFlow.toggleTestTimer()
+		scene_rect = self.wdtControlFlow.scene.sceneRect()
+		line_rect = self.wdtControlFlow.connectionsNG[5].mainLine.mapToScene(self.wdtControlFlow.connectionsNG[0].mainLine.boundingRect()).boundingRect()
+
+		if scene_rect.intersects(line_rect):
+			print("Line item is within the visible scene area.")
+			logDbg(f"CONNECTION IS VISIBLE")
+		else:
+			print(f"NOT INSIDE!!!!")
+
+		view_rect = self.wdtControlFlow.view.mapToScene(self.wdtControlFlow.view.viewport().rect()).boundingRect()
+		line_rect = self.wdtControlFlow.connectionsNG[5].mainLine.mapToScene(self.wdtControlFlow.connectionsNG[5].mainLine.boundingRect()).boundingRect()
+
+		if view_rect.intersects(line_rect):
+			logDbg(f"Line item IS VISIBLE in the view.")
+		else:
+			logDbg(f"Line item IS NOOOOOTTTTT VISIBLE in the view!!!!")
+
 		pass
 
 	def test_clicked(self):
