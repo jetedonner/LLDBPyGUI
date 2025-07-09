@@ -13,13 +13,53 @@ from PyQt6.QtCore import QPointF, QRectF
 from PyQt6.QtGui import QWheelEvent, QKeyEvent
 from ui.helper.dbgOutputHelper import *
 
-controlFlowWidth = 80
+controlFlowWidth = 75
 
-class ControlFlowConnection():
+# import threading
+# import time
+#
+# class Repeater(threading.Thread):
+#     def __init__(self, interval, function):
+#         super().__init__()
+#         self.interval = interval
+#         self.function = function
+#         self.stop_event = threading.Event()
+#
+#     def run(self):
+#         while not self.stop_event.wait(self.interval):
+#             self.function()
+#
+#     def stop(self):
+#         self.stop_event.set()
 
+from PyQt6.QtWidgets import QApplication, QLabel, QVBoxLayout, QWidget
+from PyQt6.QtCore import QThread, pyqtSignal, QTimer
+import sys
+
+# Worker thread that emits a signal every 0.5 seconds
+class IntervalWorker(QThread):
+    tick = pyqtSignal()
+
+    def run(self):
+        self.timer = QTimer()
+        self.timer.setInterval(150)  # 0.5 seconds
+        self.timer.timeout.connect(self.tick.emit)
+        self.timer.start()
+        self.exec()  # Start event loop for the timer
+
+class ControlFlowConnectionNG():
+
+    parentControlFlow = None
     asmTable = None
-    originRow = 0
+    origRow = 0
+    origAddr = 0x0
     destRow = 0
+    destAddr = 0x0
+    jumpDist = 0x0
+    color = QColor("red")
+    lineWidth = 1
+    switched = False
+    radius = 0x0
 
     startArrow = None
     endArrow = None
@@ -27,15 +67,65 @@ class ControlFlowConnection():
     mainLine = None
     topArc = None
     bottomArc = None
-    
-    def __init__(self):
+
+    def __init__(self, startRow = 0, endRow = 0, origAddr = 0x0, destAddr = 0x0, table = None):
         super().__init__()
+        self.origRow = startRow
+        self.destRow = endRow
+        self.asmTable = table
+        self.origAddr = origAddr
+        self.destAddr = destAddr
+        self.jumpDist = self.destAddr - self.origAddr
 
     def setToolTip(self, tooltip):
         self.mainLine.setToolTip(tooltip)
         self.topArc.setToolTip(tooltip)
         self.bottomArc.setToolTip(tooltip)
-        pass
+
+    def setPen(self, pen = None):
+        if pen is not None:
+            newPen = pen
+        else:
+            newPen = QPen(self.pen().color(), 1)
+        self.mainLine.setPen(newPen)
+        self.topArc.setPen(newPen)
+        self.bottomArc.setPen(newPen)
+
+class ControlFlowConnection():
+
+    parentControlFlow = None
+    asmTable = None
+    origRow = 0
+    # origAddr = 0x0
+    destRow = 0
+    # destAddr = 0x0
+
+    startArrow = None
+    endArrow = None
+
+    mainLine = None
+    topArc = None
+    bottomArc = None
+
+    def __init__(self, startRow = 0, endRow = 0, table = None):
+        super().__init__()
+        self.origRow = startRow
+        self.destRow = endRow
+        self.asmTable = table
+
+    def setToolTip(self, tooltip):
+        self.mainLine.setToolTip(tooltip)
+        self.topArc.setToolTip(tooltip)
+        self.bottomArc.setToolTip(tooltip)
+
+    def setPen(self, pen = None):
+        if pen is not None:
+            newPen = pen
+        else:
+            newPen = QPen(self.pen().color(), 1)
+        self.mainLine.setPen(newPen)
+        self.topArc.setPen(newPen)
+        self.bottomArc.setPen(newPen)
 
 class FixedScrollBar(QScrollBar):
     
@@ -92,7 +182,27 @@ class NoScrollGraphicsView(QGraphicsView):
         # self.scroll()
         # self.view.verticalScrollBar().scroll(0, 0.783171521)
 
-class HoverLineItem(QGraphicsLineItem):
+class ArrowHelperClass:
+
+    def resizeArrow(self, parentControlFlow, arrow, size, addOffset = False):
+        if arrow is not None:
+            parentControlFlow.scene.removeItem(arrow)
+
+        if not addOffset:
+            pFrom = arrow.fromPos
+            pTo = arrow.toPos
+        else:
+            if(size != 8):
+                pFrom = arrow.fromPos + QPointF(-10, 0)
+                pTo = arrow.toPos + QPointF(-10, 0)
+            else:
+                pFrom = arrow.fromPos + QPointF(10, 0)
+                pTo = arrow.toPos + QPointF(10, 0)
+
+        arrow = parentControlFlow.draw_arrowNG(pFrom, pTo, size)
+        return arrow
+
+class HoverLineItem(QGraphicsLineItem, ArrowHelperClass):
     # def __init__(self, line: QLineF):
     connection = None
     
@@ -101,6 +211,7 @@ class HoverLineItem(QGraphicsLineItem):
         self.connection = connection
         self.connection.mainLine = self
         self.setAcceptHoverEvents(True)
+        # self.setContentsMargins(0, 0, 0, 0)
         self.context_menu = QMenu()
         self.actionGotoOrigin = self.context_menu.addAction("Goto Origin")
         self.actionGotoOrigin.triggered.connect(self.handle_gotoOrigin)
@@ -110,26 +221,57 @@ class HoverLineItem(QGraphicsLineItem):
 
     def hoverEnterEvent(self, event):
         logDbg("Hover entered line")
-        newPen = QPen(self.pen().color(), 3)
-        self.setPen(newPen)
-        self.connection.topArc.setPen(newPen)
-        self.connection.bottomArc.setPen(newPen)
+        # newPen = QPen(self.pen().color(), 3)
+        self.connection.setPen(QPen(self.pen().color(), 3))
+        # self.setPen(newPen)
+        # self.connection.topArc.setPen(newPen)
+        # self.connection.bottomArc.setPen(newPen)
         # self.setPen(QPen(QColor("red"), 3))  # Highlight on hover
+
+
+        self.connection.startArrow = self.resizeArrow(self.connection.parentControlFlow, self.connection.startArrow, 16)
+        self.connection.endArrow = self.resizeArrow(self.connection.parentControlFlow, self.connection.endArrow, 16, True)
+        # if self.connection.startArrow is not None:
+        #     self.connection.parentControlFlow.scene.removeItem(self.connection.startArrow)
+        #
+        # self.connection.startArrow = self.connection.parentControlFlow.draw_arrowNG(self.connection.startArrow.fromPos,
+        #                                                                            self.connection.startArrow.toPos, 16)
+        #
+        # if self.connection.endArrow is not None:
+        #     self.connection.parentControlFlow.scene.removeItem(self.connection.endArrow)
+        #
+        # self.connection.endArrow = self.connection.parentControlFlow.draw_arrowNG(self.connection.endArrow.fromPos, self.connection.endArrow.toPos, 8)
 
     def hoverLeaveEvent(self, event):
         logDbg("Hover left line")
-        newPen = QPen(self.pen().color(), 1)
-        self.setPen(newPen)
-        self.connection.topArc.setPen(newPen)
-        self.connection.bottomArc.setPen(newPen)
+        # newPen = QPen(self.pen().color(), 1)
+        # self.setPen(newPen)
+        # self.connection.topArc.setPen(newPen)
+        # self.connection.bottomArc.setPen(newPen)
         # self.setPen(QPen(QColor("black"), 3))  # Reset color
+        self.connection.setPen(QPen(self.pen().color(), 1))
+
+        self.connection.startArrow = self.resizeArrow(self.connection.parentControlFlow, self.connection.startArrow, 8)
+        self.connection.endArrow = self.resizeArrow(self.connection.parentControlFlow, self.connection.endArrow, 8, True)
+
+        # if self.connection.startArrow is not None:
+        #     self.connection.parentControlFlow.scene.removeItem(self.connection.startArrow)
+        #
+        # self.connection.startArrow = self.connection.parentControlFlow.draw_arrowNG(self.connection.startArrow.fromPos,
+        #                                                                             self.connection.startArrow.toPos,
+        #                                                                             8)
+        #
+        # if self.connection.endArrow is not None:
+        #     self.connection.parentControlFlow.scene.removeItem(self.connection.endArrow)
+        #
+        # self.connection.endArrow = self.connection.parentControlFlow.draw_arrowNG(self.connection.endArrow.fromPos, self.connection.endArrow.toPos, 8)
 
     def contextMenuEvent(self, event):
         self.context_menu.exec(event.screenPos())
 
     def handle_gotoOrigin(self):
         logDbg(f"handle_gotoOrigin...")
-        self.connection.asmTable.scrollToRow(self.connection.originRow)
+        self.connection.asmTable.scrollToRow(self.connection.origRow)
         pass
 
     def handle_gotoDestination(self):
@@ -137,7 +279,7 @@ class HoverLineItem(QGraphicsLineItem):
         self.connection.asmTable.scrollToRow(self.connection.destRow)
         pass
 
-class HoverPathItem(QGraphicsPathItem):
+class HoverPathItem(QGraphicsPathItem, ArrowHelperClass):
 
     connection = None
 
@@ -155,30 +297,63 @@ class HoverPathItem(QGraphicsPathItem):
 
     def hoverEnterEvent(self, event):
         logDbg("Hover entered path")
-        newPen = QPen(self.pen().color(), 3)
-        self.setPen(newPen)
-        self.connection.mainLine.setPen(newPen)
-        if self == self.connection.bottomArc:
-            self.connection.topArc.setPen(newPen)
-        else:
-            self.connection.bottomArc.setPen(newPen)
+        self.connection.setPen(QPen(self.pen().color(), 3))
+        # newPen = QPen(self.pen().color(), 3)
+        # self.setPen(newPen)
+        # self.connection.mainLine.setPen(newPen)
+        # if self == self.connection.bottomArc:
+        #     self.connection.topArc.setPen(newPen)
+        # else:
+        #     self.connection.bottomArc.setPen(newPen)
+
+        # arrow_head.fromPos = fromPos
+        # arrow_head.toPos = toPos
+        # arrow_head.arrow_size = arrow_size
+
+        # if self.connection.startArrow is not None:
+        #     self.connection.parentControlFlow.scene.removeItem(self.connection.startArrow)
+        #
+        # self.connection.startArrow = self.connection.parentControlFlow.draw_arrowNG(self.connection.startArrow.fromPos, self.connection.startArrow.toPos, 16)
+        #
+        # if self.connection.endArrow is not None:
+        #     self.connection.parentControlFlow.scene.removeItem(self.connection.endArrow)
+        #
+        # self.connection.endArrow = self.connection.parentControlFlow.draw_arrowNG(self.connection.endArrow.fromPos, self.connection.endArrow.toPos, 16)
+        self.connection.startArrow = self.resizeArrow(self.connection.parentControlFlow, self.connection.startArrow, 16)
+        # self.connection.startArrow.moveBy(-20, 0)
+        self.connection.endArrow = self.resizeArrow(self.connection.parentControlFlow, self.connection.endArrow, 16, True)
 
     def hoverLeaveEvent(self, event):
         logDbg("Hover left path")
-        newPen = QPen(self.pen().color(), 1)
-        self.setPen(newPen)
-        self.connection.mainLine.setPen(newPen)
-        if self == self.connection.bottomArc:
-            self.connection.topArc.setPen(newPen)
-        else:
-            self.connection.bottomArc.setPen(newPen)
+        self.connection.setPen(QPen(self.pen().color(), 1))
+        # newPen = QPen(self.pen().color(), 1)
+        # self.setPen(newPen)
+        # self.connection.mainLine.setPen(newPen)
+        # if self == self.connection.bottomArc:
+        #     self.connection.topArc.setPen(newPen)
+        # else:
+        #     self.connection.bottomArc.setPen(newPen)
+
+        # if self.connection.startArrow is not None:
+        #     self.connection.parentControlFlow.scene.removeItem(self.connection.startArrow)
+        #
+        # self.connection.startArrow = self.connection.parentControlFlow.draw_arrowNG(self.connection.startArrow.fromPos,
+        #                                                                             self.connection.startArrow.toPos,
+        #                                                                             8)
+        # if self.connection.endArrow is not None:
+        #     self.connection.parentControlFlow.scene.removeItem(self.connection.endArrow)
+        #
+        # self.connection.endArrow = self.connection.parentControlFlow.draw_arrowNG(self.connection.endArrow.fromPos, self.connection.endArrow.toPos, 8)
+
+        self.connection.startArrow = self.resizeArrow(self.connection.parentControlFlow, self.connection.startArrow, 8)
+        self.connection.endArrow = self.resizeArrow(self.connection.parentControlFlow, self.connection.endArrow, 8, True)
 
     def contextMenuEvent(self, event):
         self.context_menu.exec(event.screenPos())
 
     def handle_gotoOrigin(self):
         logDbg(f"handle_gotoOrigin...")
-        self.connection.asmTable.scrollToRow(self.connection.originRow)
+        self.connection.asmTable.scrollToRow(self.connection.origRow)
         pass
     
     def handle_gotoDestination(self):
@@ -189,10 +364,17 @@ class HoverPathItem(QGraphicsPathItem):
 class QControlFlowWidget(QWidget):
 
     connections = []
+    connectionsNG = []
+    currStep = 0
+    worker = None
+    testTimerRunning = False
+    startPos = QPointF(0, 0)
+    testTimerAborting = False
 
     def __init__(self, tableView, driver):
         super().__init__()
 
+        self.currStep = 0
         # Main layout
         self.thread = None
         self.tableView = tableView
@@ -201,7 +383,9 @@ class QControlFlowWidget(QWidget):
 
         # Graphics view and scene
         self.scene = QGraphicsScene() # 0, 0, 50, 1260
-        self.scene.setSceneRect(0, 0, 80, 1260)
+
+        # print(f"self.window().txtMultiline.table.verticalScrollBar().maximum() => {self.tableView.table.verticalScrollBar().maximum()}")
+        # self.scene.setSceneRect(0, 0, 80, self.tableView.table.verticalScrollBar().maximum())
         self.setContentsMargins(0, 0, 0, 0)
         self.view = NoScrollGraphicsView(self.scene)
         # self.view.pos().setY(20)
@@ -227,47 +411,241 @@ class QControlFlowWidget(QWidget):
                 #     pass
         pass
 
+    def loadConnections(self):
+        radius = 75
+        scrollOrig = self.window().txtMultiline.table.verticalScrollBar().value()
+        self.window().txtMultiline.table.verticalScrollBar().setValue(0)
+        for row in range(self.window().txtMultiline.table.rowCount()):
+            # self.window().txtMultiline.table.rowAt(row).
+            if self.window().txtMultiline.table.item(row, 3) is not None and self.window().txtMultiline.table.item(row,
+                                                                                                                   3).text().startswith(
+                    ("call", "jmp", "jne", "jz", "jnz")):
+                sAddrJumpTo = self.window().txtMultiline.table.item(row, 4).text()
+                if self.isInsideTextSection(sAddrJumpTo):
+                    # logDbg(f"IS INSIDE!!!")
+                    sAddrJumpFrom = self.window().txtMultiline.table.item(row, 2).text()
+                    logDbg(f"Found instruction with jump @: {sAddrJumpFrom} / isInside: {sAddrJumpTo}!")
+                    rowStart = int(self.window().txtMultiline.table.getRowForAddress(sAddrJumpFrom))
+                    rowEnd = int(self.window().txtMultiline.table.getRowForAddress(sAddrJumpTo))
+
+                    if (rowStart < rowEnd):
+                        newConObj = self.draw_flowConnectionNG(rowStart, rowEnd, int(sAddrJumpFrom, 16), int(sAddrJumpTo, 16), QColor("lightblue"), radius)
+                    else:
+                        newConObj = self.draw_flowConnectionNG(rowEnd, rowStart, int(sAddrJumpFrom, 16), int(sAddrJumpTo, 16), QColor("lightgreen"), radius, 1, True)
+
+                    newConObj.parentControlFlow = self
+                    # newConObj.setToolTip(f"Branch from {sAddrJumpFrom} to {sAddrJumpTo}")
+                    radius -= 20
+        self.connectionsNG.sort(key=lambda x: abs(x.jumpDist), reverse=True)
+
+        idx = 1
+        radius = 75
+        for con in self.connectionsNG:
+            logDbg(f"Connection {idx} dist: {abs(con.jumpDist)}")
+            y_position = self.window().txtMultiline.table.rowViewportPosition(con.origRow)
+            logDbg(f"y_position Start: {y_position}")
+
+            y_position2 = self.window().txtMultiline.table.rowViewportPosition(con.destRow)
+            logDbg(f"y_position End: {y_position2}")
+
+            nRowHeight = 21
+            nOffsetAdd = 23
+            # xOffset = 65 + radius + xOffset
+            xOffset = controlFlowWidth + ((controlFlowWidth - radius) / 2) # + (radius / 2)
+
+            logDbg(f"xOffset: {xOffset} / radius: {radius}")
+            # 45
+            # line = HoverLineItem(xOffset, 37 + (radius / 2) + ((startRow - 1) * nRowHeight), xOffset, ((endRow + 0) * nRowHeight) + nOffsetAdd + 7 - (nRowHeight / 2) + (yOffset / 2), newConnection)  # 1260)
+            line = HoverLineItem(xOffset, y_position + (nRowHeight / 2) + (radius / 2), xOffset,
+                                 y_position2 + (nRowHeight / 2) - (radius / 2), con)  # 1260)
+            line.setPen(QPen(con.color, con.lineWidth))
+            self.scene.addItem(line)
+            # Define the ellipse geometry (x, y, width, height)q
+            # ellipse_rect = QRectF(xOffset, 45 + ((startRow + 0) * nRowHeight) + 6 - (nRowHeight / 2), radius, radius)
+            ellipse_rect = QRectF(xOffset, y_position + (nRowHeight / 2), radius, radius)
+
+            # Create a painter path and draw a 90° arc
+            path = QPainterPath()
+            path.arcMoveTo(ellipse_rect, 90)  # Start at 0 degrees
+            path.arcTo(ellipse_rect, 90, 90)  # Draw 90-degree arc clockwise
+
+            # Add the path to the scene
+            arc_item = HoverPathItem(path, con)
+            arc_item.setPen(QPen(con.color, con.lineWidth))
+            self.scene.addItem(arc_item)
+            con.topArc = arc_item
+
+            # ellipse_rect2 = QRectF(xOffset, ((endRow + 0) * nRowHeight) + 6 - (nRowHeight / 2) + (yOffset), radius, radius)
+            ellipse_rect2 = QRectF(xOffset, y_position2 + (nRowHeight / 2) - (radius), radius,
+                                   radius)  # y_position2 - (nRowHeight * (nSectionsStart)) - ((nSectionsEnd) * 2.5), radius, radius)
+            # Create a painter path and draw a 90° arc
+            path2 = QPainterPath()
+            path2.arcMoveTo(ellipse_rect2, 180)  # Start at 0 degrees
+            path2.arcTo(ellipse_rect2, 180, 90)  # Draw 90-degree arc clockwise
+
+            # Add the path to the scene
+            arc_item2 = HoverPathItem(path2, con)
+            arc_item2.setPen(QPen(con.color, con.lineWidth))
+            # arc_item2.hoverMoveEvent().connect(self.handle_hoverMoveEvent)
+            self.scene.addItem(arc_item2)
+            con.bottomArc = arc_item2
+
+            if con.switched:
+                arrowStart = QPointF(xOffset + (radius / 2) - 6 - 2, y_position + (
+                        nRowHeight / 2))  # ellipse_rect.topLeft() #+ QPointF(radius / 2, -(radius + 6))
+                arrowEnd = QPointF(xOffset + (radius / 2) - 2, y_position + (nRowHeight / 2))  # ellipse_rect.topRight()
+                # newConnection.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+                con.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+            else:
+                arrowEnd = QPointF(xOffset + (radius / 2) - 6 - 2, y_position + (
+                        nRowHeight / 2))  # ellipse_rect.topLeft() #+ QPointF(radius / 2, -(radius + 6))
+                arrowStart = QPointF(xOffset + (radius / 2) - 2,
+                                     y_position + (nRowHeight / 2))  # ellipse_rect.topRight()
+                # newConnection.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+                con.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+            # newConnection.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+
+            if con.switched:
+                arrowEnd = QPointF(xOffset + (radius / 2) - 6 - 2, y_position2 + (
+                        nRowHeight / 2))  # ellipse_rect.topLeft() #+ QPointF(radius / 2, -(radius + 6))
+                arrowStart = QPointF(xOffset + (radius / 2) - 2,
+                                     y_position2 + (nRowHeight / 2))  # ellipse_rect.topRight()
+                # newConnection.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+                con.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+            else:
+                arrowStart = QPointF(xOffset + (radius / 2) - 6 - 2, y_position2 + (
+                        nRowHeight / 2))  # ellipse_rect.topLeft() #+ QPointF(radius / 2, -(radius + 6))
+                arrowEnd = QPointF(xOffset + (radius / 2) - 2,
+                                   y_position2 + (nRowHeight / 2))  # ellipse_rect.topRight()
+                # newConnection.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+                con.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+            radius -= 20
+            idx += 1
+
+        self.window().txtMultiline.table.verticalScrollBar().setValue(scrollOrig)
+        pass
+
     def loadInstructions(self):
+        # print(f"self.window().txtMultiline.table.verticalScrollBar().maximum() => {self.tableView.table.get_total_table_height() - 2}")
+        # logDbg(f"self.window().txtMultiline.table.verticalScrollBar().maximum() => {self.tableView.table.get_total_table_height() - 2}")
+        self.scene.setSceneRect(0, 0, 77, self.tableView.table.get_total_table_height() - 2)
         radius = 75
         scrollOrig = self.window().txtMultiline.table.verticalScrollBar().value()
         self.window().txtMultiline.table.verticalScrollBar().setValue(0)
         for row in range(self.window().txtMultiline.table.rowCount()):
             # self.window().txtMultiline.table.rowAt(row).
             if self.window().txtMultiline.table.item(row, 3) is not None and self.window().txtMultiline.table.item(row, 3).text().startswith(("call", "jmp", "jne", "jz", "jnz")):
-                if self.isInsideTextSection(self.window().txtMultiline.table.item(row, 4).text()):
+                sAddrJumpTo = self.window().txtMultiline.table.item(row, 4).text()
+                if self.isInsideTextSection(sAddrJumpTo):
                     # logDbg(f"IS INSIDE!!!")
-                    logDbg(f"Found instruction with jump @: {self.window().txtMultiline.table.item(row, 2).text()} / isInside: {self.window().txtMultiline.table.item(row, 4).text()}!")
-                    rowStart = int(self.window().txtMultiline.table.getRowForAddress(self.window().txtMultiline.table.item(row, 2).text()))
-                    rowEnd = int(self.window().txtMultiline.table.getRowForAddress(self.window().txtMultiline.table.item(row, 4).text()))
+                    sAddrJumpFrom = self.window().txtMultiline.table.item(row, 2).text()
+                    logDbg(f"Found instruction with jump @: {sAddrJumpFrom} / isInside: {sAddrJumpTo}!")
+                    rowStart = int(self.window().txtMultiline.table.getRowForAddress(sAddrJumpFrom))
+                    rowEnd = int(self.window().txtMultiline.table.getRowForAddress(sAddrJumpTo))
                     if (rowStart < rowEnd):
-                        self.draw_flowConnection(rowStart, rowEnd, QColor("lightblue"), radius)
+                        newConObj = self.draw_flowConnection(rowStart, rowEnd, QColor("lightblue"), radius)
                     else:
-                        self.draw_flowConnection(rowEnd, rowStart, QColor("lightgreen"), radius, 1, True)
+                        newConObj = self.draw_flowConnection(rowEnd, rowStart, QColor("lightgreen"), radius, 1, True)
+
+                    newConObj.parentControlFlow = self
+                    newConObj.setToolTip(f"Branch from {sAddrJumpFrom} to {sAddrJumpTo}")
                     radius -= 20
                 # else:
                 #     # logDbg(f"IS NOOOOOOT INSIDE!!!")
                 #     pass
         self.window().txtMultiline.table.verticalScrollBar().setValue(scrollOrig)
 
+        # r = Repeater(0.5, self.my_task)
+        # r.start()
+        #
+        # # To stop it later: r.stop()
+        # Set up the worker thread
+        # self.connections[0].startArrow.moveBy(-8, 0)
+        # self.worker = IntervalWorker()
+        # self.worker.tick.connect(self.on_tick)
+        # self.worker.start()
+        # self.toggleTestTimer()
+
+    def toggleTestTimer(self):
+        if self.testTimerAborting:
+            return
+
+        self.testTimerRunning = not self.testTimerRunning
+        if self.testTimerRunning:
+            self.startPos = self.connections[0].startArrow.pos()
+            # self.connections[0].startArrow.moveBy(-8, 0)
+            self.connections[0].startArrow.setPos(self.startPos + QPointF(-8, 0))
+            self.worker = IntervalWorker()
+            self.worker.tick.connect(self.on_tick)
+            self.worker.start()
+        else:
+            self.testTimerAborting = True
+            self.worker.quit()
+            self.worker.wait()
+            self.currStep = 0
+            self.connections[0].startArrow.setPos(self.startPos)
+            self.testTimerAborting = False
+            # self.currStep = 0
+            # self.connections[0].startArrow.setPos(self.startPos)
+
+
+    def on_tick(self):
+        self.currStep += 1
+        logDbg(f"Tick at 0.5s interval! Step: {self.currStep}")
+        if self.currStep % 5 == 0:
+            # self.connections[0].startArrow.moveBy(-8, 0)
+            self.connections[0].startArrow.setPos(self.startPos + QPointF(-8, 0))
+            self.connections[0].endArrow.moveBy(8, 0)
+            self.currStep = 0
+        else:
+            # self.connections[0].startArrow.moveBy(2, 0)
+            self.connections[0].startArrow.setPos(self.startPos + QPointF(-8 + (2 * self.currStep), 0))
+            self.connections[0].endArrow.moveBy(-2, 0)
+
+
+    # # Usage
+    # def my_task(self):
+    #     print("Running...")
+    #     self.connections[0].startArrow.moveBy(-2, 0)
+
+    def draw_flowConnectionNG(self, startRow, endRow, startAddr, endAddr, color=QColor("lightblue"), radius=50, lineWidth=1, switched=False):
+        newConnectionNG = ControlFlowConnectionNG(startRow, endRow, startAddr, endAddr, self.window().txtMultiline.table)
+        newConnectionNG.switched = switched
+        # if switched:
+        #     newConnectionNG.origRow = endRow
+        #     newConnectionNG.origAddr = endAddr
+        #     newConnectionNG.destRow = startRow
+        #     newConnectionNG.destAddr = startAddr
+        # else:
+        newConnectionNG.origRow = startRow
+        newConnectionNG.origAddr = startAddr
+        newConnectionNG.destRow = endRow
+        newConnectionNG.destAddr = endAddr
+        newConnectionNG.radius = radius
+        # newConnection.asmTablqe = self.window().txtMultiline.table
+
+        self.connectionsNG.append(newConnectionNG)
+        return newConnectionNG
+
     def draw_flowConnection(self, startRow, endRow, color = QColor("lightblue"), radius = 50, lineWidth = 1, switched = False):
         newConnection = ControlFlowConnection()
         if switched:
-            newConnection.originRow = endRow
+            newConnection.origRow = endRow
             newConnection.destRow = startRow
         else:
-            newConnection.originRow = startRow
+            newConnection.origRow = startRow
             newConnection.destRow = endRow
         newConnection.asmTable = self.window().txtMultiline.table
-        nSectionsStart = 0
-        nSectionsEnd = 0
-        for idx in range(self.window().txtMultiline.table.rowCount()):
-            height = self.window().txtMultiline.table.verticalHeader().sectionSize(idx)
-            print(f"Row height: {height}")
-            if height == 30:
-                if idx <= startRow:
-                    nSectionsStart += 1
-                elif idx <= endRow:
-                    nSectionsEnd += 1
+        # nSectionsStart = 0
+        # nSectionsEnd = 0
+        # for idx in range(self.window().txtMultiline.table.rowCount()):
+        #     height = self.window().txtMultiline.table.verticalHeader().sectionSize(idx)
+        #     print(f"Row height: {height}")
+        #     if height == 30:
+        #         if idx <= startRow:
+        #             nSectionsStart += 1
+        #         elif idx <= endRow:
+        #             nSectionsEnd += 1
 
         # logDbg(f"{newConnection.asmTable.rowAt(startRow)} / {dir(newConnection.asmTable.rowAt(startRow))}")
         # logDbg(f"{newConnection.asmTable.rowAt(endRow)} / {dir(newConnection.asmTable.rowAt(endRow))}")
@@ -318,18 +696,27 @@ class QControlFlowWidget(QWidget):
         if switched:
             arrowStart = QPointF(xOffset + (radius / 2) - 6 - 2, y_position + (nRowHeight / 2)) # ellipse_rect.topLeft() #+ QPointF(radius / 2, -(radius + 6))
             arrowEnd = QPointF(xOffset + (radius / 2) - 2, y_position + (nRowHeight / 2)) # ellipse_rect.topRight()
+            # newConnection.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+            newConnection.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
         else:
             arrowEnd = QPointF(xOffset + (radius / 2) - 6 - 2, y_position + (nRowHeight / 2))  # ellipse_rect.topLeft() #+ QPointF(radius / 2, -(radius + 6))
             arrowStart = QPointF(xOffset + (radius / 2) - 2, y_position + (nRowHeight / 2))  # ellipse_rect.topRight()
-        newConnection.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+            # newConnection.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+            newConnection.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+        # newConnection.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
 
         if switched:
             arrowEnd = QPointF(xOffset + (radius / 2) - 6 - 2, y_position2 + (nRowHeight / 2))  # ellipse_rect.topLeft() #+ QPointF(radius / 2, -(radius + 6))
             arrowStart = QPointF(xOffset + (radius / 2) - 2, y_position2 + (nRowHeight / 2))  # ellipse_rect.topRight()
+            # newConnection.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+            newConnection.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
         else:
             arrowStart = QPointF(xOffset + (radius / 2) - 6 - 2, y_position2 + ( nRowHeight / 2))  # ellipse_rect.topLeft() #+ QPointF(radius / 2, -(radius + 6))
             arrowEnd = QPointF(xOffset + (radius / 2) - 2, y_position2 + (nRowHeight / 2))  # ellipse_rect.topRight()
-        newConnection.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+            # newConnection.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+            newConnection.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+
+        # newConnection.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
 
         self.connections.append(newConnection)
         # self.draw_arrow(QPointF(ellipse_rect.topLeft(), ellipse_rect.bottomLeft()), QPointF(ellipse_rect.topLeft(), ellipse_rect.bottomLeft()))
@@ -340,20 +727,21 @@ class QControlFlowWidget(QWidget):
     #     pass
     # def draw_instructions(self, instructions):
     def draw_instructions(self):
-        start = QPointF(75, 0)
-        end = QPointF(75, 0)
+        start = QPointF(15, 0)
+        end = QPointF(15, 0)
 
         # line = QGraphicsLineItem(start.x() + 20, start.y(), end.x() + 20, end.y())
         # line.setPen(QPen(QColor("red"), 2))
         # self.scene.addItem(line)
-
-        line1 = QGraphicsLineItem(start.x() + 20, 0, end.x() + 20, 1260)
+        # logDbg(f"self.tableView.viewport().height() => {self.tableView.table.viewport().height()}")
+        print(f"self.tableView.viewport().height() => {self.tableView.table.viewport().height()}")
+        line1 = QGraphicsLineItem(start.x() + 20, 0, end.x() + 20, self.tableView.table.viewport().height() - 5)
         line1.setPen(QPen(QColor("transparent"), 0))
         self.scene.addItem(line1)
     
-    def draw_arrowNG(self, fromPos, toPos):
+    def draw_arrowNG(self, fromPos, toPos, arrow_size = 8):
         # # Add arrowhead
-        arrow_size = 8
+        # arrow_size = 8
         direction = (toPos - fromPos)
         direction /= (direction.manhattanLength() or 1)
         perp = QPointF(-direction.y(), direction.x())
@@ -369,6 +757,9 @@ class QControlFlowWidget(QWidget):
             # [end, p1, p2],
             polygon,
             QPen(QColor("lightgreen")),
-            QBrush(QColor("lightgreen")) # transparent"))
+            QBrush(QColor("transparent")) # lightgreen")) #
         )
+        arrow_head.fromPos = fromPos
+        arrow_head.toPos = toPos
+        arrow_head.arrow_size = arrow_size
         return arrow_head

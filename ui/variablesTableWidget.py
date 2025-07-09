@@ -154,6 +154,7 @@ class VariablesTableWidget(BaseTableWidget):
 		print(f'Adding WP For: {item.text()}, type = {type}')
 		
 		self.wpHelper.setWatchpointForVariable(item.text(), type)
+		self.window().tabWatchpoints.reloadWatchpoints(False)
 		
 	def handle_editValue(self):
 		item = self.item(self.selectedItems()[0].row(), 0)

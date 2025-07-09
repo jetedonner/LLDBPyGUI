@@ -101,12 +101,37 @@ class WatchpointsWidget(QWidget):
 	def addWatchpoint_clicked(self):
 		print(f"addWatchpoint_clicked")
 		if self.forVariable:
-			self.wpHelper.setWatchpointForVariable(self.txtMemoryAddress.text())
+			# self.wpHelper.setWatchpointForVariable(self.txtMemoryAddress.text())
+			self.watch_var(self.driver.debugger, self.txtMemoryAddress.text(), True, False)
 		else:
 			self.wpHelper.setWatchpointForExpression(self.txtMemoryAddress.text())
 		
 	def reloadWatchpoints(self, initTable = True):
 		self.tblWatchpoints.reloadWatchpoints(initTable)
+
+	def watch_var(self, debugger, var_name, read = True, write = True):#, command, result, internal_dict):
+		target = debugger.GetSelectedTarget()
+		process = target.GetProcess()
+		thread = process.GetSelectedThread()
+		frame = thread.GetSelectedFrame()
+
+		var = frame.FindVariable(var_name)
+
+		if not var.IsValid():
+			print(f"Variable '{var_name}' not found.")
+			return
+
+		addr = var.GetLoadAddress()
+		size = var.GetByteSize()
+
+		errorWP = lldb.SBError()
+		wp = target.WatchAddress(addr, size, read, write, errorWP)  # read=True, write=True
+
+		if wp.IsValid():
+			print(f"Watchpoint {wp.GetID()} set on '{var_name}' at 0x{addr:x}")
+		else:
+			print(f"Failed to set watchpoint. ({errorWP})")
+
 		
 class WatchpointsTableWidget(BaseTableWidget):
 	
@@ -215,6 +240,7 @@ class WatchpointsTableWidget(BaseTableWidget):
 		pass
 		
 	def contextMenuEvent(self, event):
+		pass
 		if self.item(self.selectedItems()[0].row(), 0).isBPEnabled:
 			self.actionEnableWP.setText("Disable Watchpoint")
 		else:
@@ -346,6 +372,7 @@ class WatchpointsTableWidget(BaseTableWidget):
 			self.addRow(state, num, address, size, kind, spec, name, hitcount, ignore, condition)
 		self.ommitCellChanged = False
 		
+
 	def addRow(self, state, num, address, size, kind, spec, name, hitcount, ignore, condition):
 		self.ommitCellChanged = True
 		value = ""

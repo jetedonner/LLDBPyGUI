@@ -389,7 +389,41 @@ class MACH_HEADER(Structure):
 		("sizeofcmds",      c_uint),
 		("flags",           c_uint)
 	]
-	
+
+def find_main(debugger):
+	target = debugger.GetSelectedTarget()
+	if not target:
+		print("No target loaded.")
+		return
+
+	main_symbol = target.FindFunctions("main")
+	if main_symbol.GetSize() == 0:
+		print("Could not find 'main' function.")
+		return
+
+	symbol_context = main_symbol.GetContextAtIndex(0)
+	address = symbol_context.GetSymbol().GetStartAddress()
+	print(f"Main entry point address: {address.GetLoadAddress(target)}")
+
+	return address.GetLoadAddress(target)
+
+# def get_oep(debugger, command, result, internal_dict):
+def get_oep(debugger):
+	target = debugger.GetSelectedTarget()
+	if not target:
+		print("No target selected.")
+		return
+
+	module = target.GetModuleAtIndex(0)
+	if not module:
+		print("No module found.")
+		return
+
+	entry_point = module.GetObjectFileHeaderAddress().GetLoadAddress(target)
+	print(f"OEP (Original Entry Point): {entry_point}")
+	# result.PutCString(f"OEP (Original Entry Point): {entry_point}")
+	return entry_point
+
 def GetFileHeader(exe):
 	with open(exe,'rb') as fopen:
 		data = bytearray(fopen.read())

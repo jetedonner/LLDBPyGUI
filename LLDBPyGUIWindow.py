@@ -79,17 +79,17 @@ from lib import utils
 
 # myfile.py
 def wpcallbackng(frame, wp, dict):
-	print(f"================>>>>>>>>>>>>> YES WATCHPOINT HIT <<<<<<<<<<<=================")
-	wp.SetEnabled(True)
-	print(frame)
-	print(wp)
-	res = lldb.SBCommandReturnObject()
-	ci = frame.GetThread().GetProcess().GetTarget().GetDebugger().GetCommandInterpreter()
-	ci.HandleCommand('command script import "./LLDBPyGUIWindow.py"', res)
-	# settings
-#	ci.HandleCommand(f"w s v {varName}", res)
-	ci.HandleCommand(f"watchpoint command add -F LLDBPyGUIWindow.wpcallback {wp.GetID()}", res)
-	print(wp)
+	# print(f"================>>>>>>>>>>>>> YES WATCHPOINT HIT <<<<<<<<<<<=================")
+	# wp.SetEnabled(True)
+	# print(frame)
+	# print(wp)
+# 	res = lldb.sbcommandreturnobject()
+# 	ci = frame.getthread().getprocess().gettarget().getdebugger().getcommandinterpreter()
+# 	ci.handlecommand('command script import "./lldbpyguiwindow.py"', res)
+# 	# settings
+# #	ci.handlecommand(f"w s v {varname}", res)
+# 	ci.handlecommand(f"watchpoint command add -f lldbpyguiwindow.wpcallback {wp.getid()}", res)
+# 	print(wp)
 #	print(dict)
 	pass
 	
@@ -176,9 +176,9 @@ class LoadTargetThread(Thread):
 		
 class LLDBPyGUIWindow(QMainWindow):
 
-	def wpcallbackng(self):
-		print(f"================>>>>>>>>>>>>> YES WATCHPOINT CALLBACK NG <<<<<<<<<<<=================")
-		pass
+	# def wpcallbackng(self):
+	# 	print(f"================>>>>>>>>>>>>> YES WATCHPOINT CALLBACK NG <<<<<<<<<<<=================")
+	# 	pass
 
 	def wpcallback(self, frame, wp, dict):
 		print(f"================>>>>>>>>>>>>> YES WATCHPOINT HIT <<<<<<<<<<<=================")
@@ -245,7 +245,17 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.load_action.setShortcut('Ctrl+L')
 		self.load_action.triggered.connect(self.load_clicked)
 		self.toolbar.addAction(self.load_action)
-		
+
+		self.goep_action = QAction(ConfigClass.iconBug, 'Go OE&P', self)
+		self.goep_action.setStatusTip('Goto OEP (original entry point)')
+		self.goep_action.setShortcut('Ctrl+E')
+		self.goep_action.triggered.connect(self.goep_clicked)
+
+		self.goep2_action = QAction(ConfigClass.iconBug, 'Go OE&P 2', self)
+		self.goep2_action.setStatusTip('Goto OEP (original entry point)')
+		self.goep2_action.setShortcut('Ctrl+E')
+		self.goep2_action.triggered.connect(self.goep2_clicked)
+
 		self.attach_action = QAction(ConfigClass.iconGears, '&Attach Process', self)
 		self.attach_action.setStatusTip('Attach Process')
 		self.attach_action.setShortcut('Ctrl+A')
@@ -339,6 +349,12 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.test_action.setShortcut('Ctrl+T')
 		self.test_action.triggered.connect(self.test_clicked)
 		self.toolbar.addAction(self.test_action)
+
+		self.test2_action = QAction(ConfigClass.iconTest, '&Test 2', self)
+		self.test2_action.setStatusTip('Test 2')
+		self.test2_action.setShortcut('Ctrl+2')
+		self.test2_action.triggered.connect(self.test2_clicked)
+		self.toolbar.addAction(self.test2_action)
 		
 		self.menu = self.menuBar()
 		
@@ -347,6 +363,12 @@ class LLDBPyGUIWindow(QMainWindow):
 
 		self.file_menu = self.menu.addMenu("&Load Action")
 		self.file_menu.addAction(self.load_action)
+		# self.file_menu.addAction(self.goep_action)
+		self.oep_menu = self.menu.addMenu("&OEP")
+		self.file_menu.addSeparator()
+		self.file_menu.addMenu(self.oep_menu)
+		self.oep_menu.addAction(self.goep_action)
+		self.oep_menu.addAction(self.goep2_action)
 #		file_menu.addAction(self.settings_action)
 
 #		self.help_action = QAction(ConfigClass.iconInfo, '&Show Help', self)
@@ -739,7 +761,31 @@ class LLDBPyGUIWindow(QMainWindow):
 #		self.tmrResetStatusBarActive = False
 #		print(f"RESETING STATUSBAR MSG...")
 		self.statusBar.showMessage("")
-		
+
+	def goep_clicked(self):
+		logDbg(f"Goto OEP clickediclicked!")
+		addrObj = get_oep(self.driver.debugger)
+		addrObjHex = f"{hex(addrObj)}"
+		print(f"OEP2 (load addr): ")
+		logDbg(f"OEP2 (load addr): {addrObjHex}")
+		lib.utils.setStatusBar(f"Go to address: {addrObjHex}")
+		self.txtMultiline.viewAddress(addrObjHex)
+		pass
+
+	def goep2_clicked(self):
+		logDbg(f"Goto OEP 2 clickediclicked!")
+		# addrObj = get_oep(self.driver.debugger)
+		# print(f"OEP (load addr): 0x{hex(addrObj)}")
+		# logDbg(f"OEP (load addr): 0x{hex(addrObj)}")
+
+		addrObj2 = find_main(self.driver.debugger)
+		addrObj2Hex = f"{hex(addrObj2)}"
+		print(f"OEP2 (load addr): ")
+		logDbg(f"OEP2 (load addr): {addrObj2Hex}")
+		lib.utils.setStatusBar(f"Go to address: {addrObj2Hex}")
+		self.txtMultiline.viewAddress(addrObj2Hex)
+		pass
+
 	def load_clicked(self):
 		filename = showOpenFileDialog()
 		if filename != None and filename != "":
@@ -914,7 +960,13 @@ class LLDBPyGUIWindow(QMainWindow):
 		# 		self.attach_action.setToolTip("Attach to process")
 		# 		self.isAttached = False
 		pass
-		
+
+	def test2_clicked(self):
+		# self.wdtControlFlow.worker.quit()
+		# self.wdtControlFlow.worker.wait()
+		self.wdtControlFlow.toggleTestTimer()
+		pass
+
 	def test_clicked(self):
 #		self.resetGUI()
 #		QAppl
@@ -1326,7 +1378,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			self.wdtBPsWPs.treBPs.setPC(self.rip)
 			self.start_loadRegisterWorker(False)
 			self.wdtBPsWPs.reloadBreakpoints(False)
-			self.tabWatchpoints.reloadWatchpoints(False)
+			# self.tabWatchpoints.reloadWatchpoints(False)
 			self.loadStacktrace()
 			
 			context = frm.GetSymbolContext(lldb.eSymbolContextEverything)
@@ -1385,10 +1437,14 @@ class LLDBPyGUIWindow(QMainWindow):
 #		self.reloadBreakpoints(True)
 		self.wdtBPsWPs.treBPs.clear()
 		self.wdtBPsWPs.reloadBreakpoints(True)
-		self.tabWatchpoints.reloadWatchpoints(True)
+		# self.tabWatchpoints.reloadWatchpoints(True)
 		self.loadStacktrace()
 #		print(f'self.rip => {self.rip}')
 		QApplication.processEvents()
+
+		logDbg(f"Finished loading disassembly ... loading GUI-FlowControl")
+		# self.wdtControlFlow.loadInstructions()
+		self.wdtControlFlow.loadConnections()
 #		self.txtMulriline.locationStack.pushLocation(hex(self.driver.getPC()).lower())
 #		print(f"self.txtMultiline.table.rowCount() => {self.txtMultiline.table.rowCount()}")
 		

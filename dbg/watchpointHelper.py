@@ -50,6 +50,7 @@ class WatchpointHelper(QObject):
 		# settings
 		ci.HandleCommand(f"w s v -w read_write {varName}", res)
 		ci.HandleCommand("watchpoint command add -F LLDBPyGUIWindow.wpcallbackng 1", res)
+
 #	debugger.HandleCommand("watchpoint command add -F myfile.callback %s" % mywatchpoint.GetID())
 #	read | write | modify | read_write
 	def setWatchpointForExpression(self, expression, type = WatchpointAccessMod.Modify):

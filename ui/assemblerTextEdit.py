@@ -183,7 +183,13 @@ class DisassemblyTableWidget(BaseTableWidget):
 					frame.SetPC(newPC)
 					self.window().txtMultiline.setPC(newPC)
 #					self.setPC(newPC)
-					
+
+	def get_total_table_height(self):
+		total_height = 0
+		for row in range(self.rowCount()):
+			total_height += self.rowHeight(row)
+		return total_height
+
 	def handle_gotoAddr(self):
 		if self.item(self.selectedItems()[0].row(), 2) != None:
 			gotoDlg = GotoAddressDialog(self.item(self.selectedItems()[0].row(), 2).text())

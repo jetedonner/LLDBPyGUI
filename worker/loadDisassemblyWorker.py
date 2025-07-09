@@ -48,7 +48,7 @@ class LoadDisassemblyWorker(BaseWorker):
 #				if not section.IsReadable():
 #					continue
 				
-				if section.GetName() == "__TEXT":
+				if section.GetName() == "__TEXT" or  section.GetName() == "__PAGEZERO":
 #					print(f'section => {section}')
 					# Get section start and size
 #					start_address = section.GetLoadAddress(self.target)
