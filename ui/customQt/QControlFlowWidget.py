@@ -13,6 +13,7 @@ from PyQt6.QtCore import QPointF, QRectF
 from PyQt6.QtGui import QWheelEvent, QKeyEvent
 from ui.helper.dbgOutputHelper import *
 from lib.utils import *
+from config import *
 
 controlFlowWidth = 75
 
@@ -48,6 +49,34 @@ class IntervalWorker(QThread):
         self.timer.start()
         self.exec()  # Start event loop for the timer
 
+class ControlFlowConnectionMgr():
+
+    controlFlowWidget = None
+    connections = []
+
+    def __init__(self, controlFlowWidget):
+        super().__init__()
+        self.controlFlowWidget = controlFlowWidget
+
+    def addConnection(self, conn):
+        self.connections.append(conn)
+
+    def checkHideOverflowConnections(self):
+        for con in self.connections:
+            # con.
+            view_rect = self.controlFlowWidget.view.mapToScene(self.controlFlowWidget.view.viewport().rect()).boundingRect()
+            line_rect = self.controlFlowWidget.connectionsNG[5].mainLine.mapToScene(
+                self.wdtControlFlow.connectionsNG[5].mainLine.boundingRect()).boundingRect()
+
+            if view_rect.intersects(line_rect):
+                logDbg(f"Line item IS VISIBLE in the view.")
+                self.wdtControlFlow.connectionsNG[5].mainLine.setVisible(True)
+            else:
+                logDbg(f"Line item IS NOOOOOTTTTT VISIBLE in the view!!!!")
+                self.wdtControlFlow.connectionsNG[5].mainLine.setVisible(False)
+            pass
+
+
 class ControlFlowConnectionNG():
 
     parentControlFlow = None
@@ -77,6 +106,8 @@ class ControlFlowConnectionNG():
         self.origAddr = origAddr
         self.destAddr = destAddr
         self.jumpDist = self.destAddr - self.origAddr
+
+
 
     def setToolTip(self, tooltip):
         self.mainLine.setToolTip(tooltip)
@@ -179,6 +210,9 @@ class NoScrollGraphicsView(QGraphicsView):
             # print(f"Scrolled to position: {value}")
             # logDbg(f"scroll: {value + 150}")
             self.window().txtMultiline.table.verticalScrollBar().setValue(value)
+            if self.window().wdtControlFlow is not None:
+                self.window().wdtControlFlow.checkHideOverflowConnections()
+
         # self.window().wdtControlFlow.view.centerOn(0, value + 150) # / 0.8231292517)
         # self.scroll()
         # self.view.verticalScrollBar().scroll(0, 0.783171521)
@@ -366,6 +400,8 @@ class QControlFlowWidget(QWidget):
 
     connections = []
     connectionsNG = []
+    # ctrlFlowConManager = None #ControlFlowConnectionMgr(self)
+
     currStep = 0
     worker = None
     testTimerRunning = False
@@ -375,6 +411,7 @@ class QControlFlowWidget(QWidget):
     def __init__(self, tableView, driver):
         super().__init__()
 
+        # self.ctrlFlowConManager = ControlFlowConnectionMgr(self)
         self.currStep = 0
         # Main layout
         self.thread = None
@@ -394,6 +431,55 @@ class QControlFlowWidget(QWidget):
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.draw_instructions()
 
+    # controlFlowWidget = None
+    # connections = []
+
+    # def __init__(self, controlFlowWidget):
+    #     super().__init__()
+    #     self.controlFlowWidget = controlFlowWidget
+
+    def addConnection(self, conn):
+        self.connections.append(conn)
+
+    def checkHideOverflowConnections(self):
+        nVisibleCon = 0
+        for con in self.connections:
+            # con.
+            view_rect = self.view.mapToScene(
+                self.view.viewport().rect()).boundingRect()
+            line_rect = con.mainLine.mapToScene(
+                con.mainLine.boundingRect()).boundingRect()
+            startarrow_rect = con.startArrow.mapToScene(
+                con.startArrow.boundingRect()).boundingRect()
+            endarrow_rect = con.startArrow.mapToScene(
+                con.endArrow.boundingRect()).boundingRect()
+
+            if view_rect.intersects(line_rect):
+                # logDbg(f"Line item IS VISIBLE in the view.")
+                # self.connectionsNG[5].mainLine.setVisible(True)
+                nVisibleCon += 1
+                if nVisibleCon >= 4 and not view_rect.intersects(startarrow_rect) and not view_rect.intersects(endarrow_rect):
+                    con.mainLine.setVisible(False)
+                    con.startArrow.setVisible(False)
+                    con.endArrow.setVisible(False)
+                    con.bottomArc.setVisible(False)
+                    con.topArc.setVisible(False)
+                    continue
+            else:
+                # logDbg(f"Line item IS NOOOOOTTTTT VISIBLE in the view!!!!")
+                # self.connectionsNG[5].mainLine.setVisible(False)
+                pass
+            con.mainLine.setVisible(True)
+            con.startArrow.setVisible(True)
+            con.endArrow.setVisible(True)
+            con.bottomArc.setVisible(True)
+            con.topArc.setVisible(True)
+            pass
+
+        if nVisibleCon >= 4:
+            logDbg(f"TOOOMAAANNNNYYYY Connections.")
+        else:
+            logDbg(f"Connections are ... GO!")
     # def loadTextSection(self):
     def isInsideTextSection(self, addr):
         target = self.driver.getTarget()
@@ -419,8 +505,7 @@ class QControlFlowWidget(QWidget):
         for row in range(self.window().txtMultiline.table.rowCount()):
             # self.window().txtMultiline.table.rowAt(row).
             if self.window().txtMultiline.table.item(row, 3) is not None and self.window().txtMultiline.table.item(row,
-                                                                                                                   3).text().startswith(
-                    ("call", "jmp", "jne", "jz", "jnz")):
+                                                                                                                   3).text().startswith(JMP_MNEMONICS): #"call", "jmp", "jne", "jz", "je", "jnz", "jle", "jl", "jge", "jg")):
                 sAddrJumpTo = self.window().txtMultiline.table.item(row, 4).text()
                 if self.isInsideTextSection(sAddrJumpTo):
                     # logDbg(f"IS INSIDE!!!")
@@ -433,16 +518,17 @@ class QControlFlowWidget(QWidget):
                         newConObj = self.draw_flowConnectionNG(rowStart, rowEnd, int(sAddrJumpFrom, 16), int(sAddrJumpTo, 16), QColor("lightblue"), radius)
                     else:
                         newConObj = self.draw_flowConnectionNG(rowEnd, rowStart, int(sAddrJumpFrom, 16), int(sAddrJumpTo, 16), QColor("lightgreen"), radius, 1, True)
-
+                    # self.connectionsNG.append(newConnectionNG)
                     newConObj.parentControlFlow = self
+                    self.addConnection(newConObj)
                     # newConObj.setToolTip(f"Branch from {sAddrJumpFrom} to {sAddrJumpTo}")
                     if radius >= 20:
                         radius -= 10
-        self.connectionsNG.sort(key=lambda x: abs(x.jumpDist), reverse=True)
+        self.connections.sort(key=lambda x: abs(x.jumpDist), reverse=True)
 
         idx = 1
         radius = 75
-        for con in self.connectionsNG:
+        for con in self.connections:
             logDbg(f"Connection {idx} dist: {abs(con.jumpDist)}")
             y_position = self.window().txtMultiline.table.rowViewportPosition(con.origRow)
             logDbg(f"y_position Start: {y_position}")
@@ -537,7 +623,7 @@ class QControlFlowWidget(QWidget):
         self.window().txtMultiline.table.verticalScrollBar().setValue(0)
         for row in range(self.window().txtMultiline.table.rowCount()):
             # self.window().txtMultiline.table.rowAt(row).
-            if self.window().txtMultiline.table.item(row, 3) is not None and self.window().txtMultiline.table.item(row, 3).text().startswith(("call", "jmp", "jne", "jz", "jnz")):
+            if self.window().txtMultiline.table.item(row, 3) is not None and self.window().txtMultiline.table.item(row, 3).text().startswith(JMP_MNEMONICS): #("call", "jmp", "jne", "jz", "je", "jnz", "jle", "jl", "jge", "jg")):
                 sAddrJumpTo = self.window().txtMultiline.table.item(row, 4).text()
                 if self.isInsideTextSection(sAddrJumpTo):
                     # logDbg(f"IS INSIDE!!!")
@@ -629,7 +715,8 @@ class QControlFlowWidget(QWidget):
         newConnectionNG.radius = radius
         # newConnection.asmTablqe = self.window().txtMultiline.table
 
-        self.connectionsNG.append(newConnectionNG)
+        # self.connectionsNG.append(newConnectionNG)
+        # ctrlFlowConManager
         return newConnectionNG
 
     def draw_flowConnection(self, startRow, endRow, color = QColor("lightblue"), radius = 50, lineWidth = 1, switched = False):

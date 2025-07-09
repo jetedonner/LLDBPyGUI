@@ -133,6 +133,8 @@ g_home = ""
 g_db = ""
 g_dbdata = {}
 
+JMP_MNEMONICS = ("call", "jmp", "jne", "jz", "je", "jnz", "jle", "jl", "jge", "jg")
+
 class ConfigClass():
 	
 	companyName = "DaVe_inc"

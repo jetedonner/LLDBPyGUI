@@ -367,7 +367,8 @@ class DisassemblyTableWidget(BaseTableWidget):
 			lib.utils.setStatusBar(f"Editing data @: {str(self.item(self.selectedItems()[0].row(), 2).text())}")
 		elif col in range(3, 5):
 			if self.item(self.selectedItems()[0].row(), 3) != None:
-				if self.item(self.selectedItems()[0].row(), 3).text().startswith(("call", "jmp", "jne", "jz", "jnz")):
+				# arrJumpMnemonics = ("call", "jmp", "jne", "jz", "je", "jnz", "jle", "jl", "jge", "jg")
+				if self.item(self.selectedItems()[0].row(), 3).text().startswith(JMP_MNEMONICS): #("call", "jmp", "jne", "jz", "je", "jnz", "jle", "jl", "jge", "jg")):
 					jumpAddr = str(self.item(self.selectedItems()[0].row(), 4).text())
 					self.window().txtMultiline.locationStack.pushLocation(str(self.item(self.selectedItems()[0].row(), 2).text()))	
 					self.window().txtMultiline.locationStack.pushLocation(jumpAddr)

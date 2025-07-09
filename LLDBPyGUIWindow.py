@@ -979,8 +979,10 @@ class LLDBPyGUIWindow(QMainWindow):
 
 		if view_rect.intersects(line_rect):
 			logDbg(f"Line item IS VISIBLE in the view.")
+			self.wdtControlFlow.connectionsNG[5].mainLine.setVisible(True)
 		else:
 			logDbg(f"Line item IS NOOOOOTTTTT VISIBLE in the view!!!!")
+			self.wdtControlFlow.connectionsNG[5].mainLine.setVisible(False)
 
 		pass
 
