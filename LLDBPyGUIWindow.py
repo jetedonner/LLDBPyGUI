@@ -1459,7 +1459,12 @@ class LLDBPyGUIWindow(QMainWindow):
 		# self.tabWatchpoints.reloadWatchpoints(True)
 		self.loadStacktrace()
 #		print(f'self.rip => {self.rip}')
+
 		QApplication.processEvents()
+
+		frame = self.driver.getTarget().GetProcess().GetThreadAtIndex(0).GetFrameAtIndex(0)
+		context = frame.GetSymbolContext(lldb.eSymbolContextEverything)
+		self.workerManager.start_loadSourceWorker(self.driver.debugger, ConfigClass.testTargetSource, self.handle_loadSourceFinished, context.GetLineEntry().GetLine())
 
 		logDbg(f"Finished loading disassembly ... loading GUI-FlowControl")
 		# self.wdtControlFlow.loadInstructions()
@@ -1530,6 +1535,7 @@ class LLDBPyGUIWindow(QMainWindow):
 				vertical_value = self.txtSource.verticalScrollBar().value()
 				
 			self.txtSource.setEscapedText(sourceCode)
+			logDbg(f"Sourcecode '{ConfigClass.testTargetSource}' for target '{ConfigClass.testTarget}' reloaded!")
 			currTabIdx = self.tabWidgetDbg.currentIndex()
 			self.tabWidgetDbg.setCurrentWidget(self.txtSource)
 			self.txtSource.horizontalScrollBar().setValue(horizontal_value)

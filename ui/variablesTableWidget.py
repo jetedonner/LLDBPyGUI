@@ -240,7 +240,7 @@ class VariablesTableWidget(BaseTableWidget):
 		self.addItem(currRowCount, 3, str(address))
 		self.addItem(currRowCount, 4, str(data), True if str(datatype) == "int" else False)
 		self.setRowHeight(currRowCount, 14)
-		logDbg(f"rowCount: {self.rowHeight(currRowCount)}")
+		# logDbg(f"rowCount: {self.rowHeight(currRowCount)}")
 		self.ommitCellChanged = False
 		
 	def addItem(self, row, col, txt, editable = False):

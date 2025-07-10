@@ -13,20 +13,22 @@ class DbgOutputWidget(QWidget):
         self.layCtrls = QVBoxLayout()
 
         self.cmdShrink = QPushButton()
-        self.cmdShrink.setToolTip("Hide Debug Output...")
+        # self.cmdShrink.setToolTip("Hide Debug Output...")
         self.cmdShrink.setIcon(ConfigClass.iconShrink)
         self.cmdShrink.setMaximumWidth(18)
         self.cmdShrink.clicked.connect(self.cmdShrink_clicked)
         self.cmdShrink.setContentsMargins(0, 0, 0, 0)
+        self.cmdShrink.setStatusTip(f"Hide debug output console...")
         self.layCtrls.setContentsMargins(10, 0, 0, 0)
         self.layCtrls.addWidget(self.cmdShrink)
 
         self.cmdClear = QPushButton()
-        self.cmdClear.setToolTip("Clear Debug Output...")
+        # self.cmdClear.setToolTip("Clear Debug Output...")
         self.cmdClear.setIcon(ConfigClass.iconClear)
         self.cmdClear.setMaximumWidth(18)
         self.cmdClear.clicked.connect(self.cmdClear_clicked)
         self.cmdClear.setContentsMargins(0, 0, 0, 0)
+        self.cmdShrink.setStatusTip(f"Clear debug output console...")
         # self.layCtrls.setContentsMargins(10, 0, 0, 0)
         self.layCtrls.addWidget(self.cmdClear)
 
@@ -62,7 +64,7 @@ class DbgOutputTextEdit(QTextEdit):
         # self.layHMain = QHBoxLayout()
         # self.wdtHMain = QWidget()
 
-        self.setText("Output: ...")
+        # self.setText("Output: ...")
         self.setReadOnly(True)
         self.setUndoRedoEnabled(False)
         self.setTabChangesFocus(True)

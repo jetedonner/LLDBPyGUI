@@ -53,8 +53,18 @@ def __lldb_init_module(debugger, internal_dict):
 
 	ci.HandleCommand(f"command script add -h '({PROMPT_TEXT}) Display {APP_NAME} banner.' --function LLDBPyGUI.cmd_banner banner", res)
 
+	ci.HandleCommand('command script add -f LLDBPyGUI.feed_input feedinput', res)
+
 	return
-	
+
+def feed_input(debugger, command, result, internal_dict):
+	target = debugger.GetSelectedTarget()
+	process = target.GetProcess()
+
+	# Simulate input for scanf
+	process.PutSTDIN(command + "\n")
+	result.PutCString(f"Injected input: {command}")
+
 def cmd_banner(debugger,command,result,dict): 
 	print(f"" + BOLD + "" + RED + "#=================================================================================#")
 	print(f"| Starting TEST ENVIRONMENT for {APP_NAME} (ver. {APP_VERSION})            |")

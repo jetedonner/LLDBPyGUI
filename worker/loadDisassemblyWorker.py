@@ -112,7 +112,7 @@ class LoadDisassemblyWorker(BaseWorker):
 ##								(50*100)/200
 #								print(f'sym.GetStartAddress().GetFunction() => {sym.GetStartAddress().GetFunction()}')
 								print(f"Analyzing instructions: {len(sym.GetStartAddress().GetFunction().GetInstructions(self.target))}")
-								logDbg(f"Analyzing instructions: {len(sym.GetStartAddress().GetFunction().GetInstructions(self.target))}")
+								# logDbg(f"Analyzing instructions: {len(sym.GetStartAddress().GetFunction().GetInstructions(self.target))}")
 								for instruction in sym.GetStartAddress().GetFunction().GetInstructions(self.target):
 									if symFuncName == instruction.GetAddress().GetFunction().GetName():
 #										print(f"Address: {instruction.GetAddress()}")
