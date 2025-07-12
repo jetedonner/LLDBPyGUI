@@ -62,8 +62,10 @@ class LoadSourceCodeWorker(QRunnable):
 		filespec = lldb.SBFileSpec(self.sourceFile, False)
 		source_mgr = self.debugger.GetSourceManager()
 		# Use a string stream as the destination.
+		linesOfCode = self.count_lines_of_code(self.sourceFile)
+		print(f"linesOfCode: {linesOfCode} / {linesOfCode - self.lineNum}")
 		stream = lldb.SBStream()
-		source_mgr.DisplaySourceLinesWithLineNumbers(filespec, self.lineNum, self.lineNum, 85, '=>', stream)
+		source_mgr.DisplaySourceLinesWithLineNumbers(filespec, self.lineNum, self.lineNum, linesOfCode - self.lineNum, '=>', stream)
 #		print(stream.GetData())
 		
 		
@@ -71,7 +73,17 @@ class LoadSourceCodeWorker(QRunnable):
 		self.signals.finished.emit(stream.GetData())
 		QCoreApplication.processEvents()
 		QApplication.processEvents()
-		
+
+	def count_lines_of_code(self, file_path):
+		with open(file_path, 'r') as file:
+			lines = file.readlines()
+
+		# code_lines = [
+		# 	line for line in lines
+		# 	if line.strip() # and not line.strip().startswith('//') and not line.strip().startswith('/*')
+		# ]
+		return len(lines)
+
 #	def handle_interruptLoadSourceCode(self):
 ##		print(f"Received interrupt in the sysLog worker thread")
 #		interruptLoadSourceCode = True

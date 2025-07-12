@@ -135,7 +135,19 @@ class LLDBListener(QtCore.QObject, Thread):
 		broadcaster.AddListener(self.listener, mask)
 		
 	def _broadcast_process_state(self, process, event = None):
+		print(f"===============>>>>>>>>>>>>>>>> INSIDE _broadcast_process_state")
 		state = 'stopped'
+
+		if event is not None and event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
+			stdout = process.GetSTDOUT(1024)
+			if stdout is not None and len(stdout) > 0:
+				print(f"=============>>>>>>>>>>>>>>>>>> NEW STDOUT: {stdout}")
+			else:
+				print(f"=============>>>>>>>>>>>>>>>>>> NOOOOOOOOO NEW STDOUT!!!!!")
+			return
+		else:
+			print(f"=============>>>>>>>>>>>>>>>>>> NOOOOOOOOO EVENT!!!!!")
+
 		if process.state == eStateStepping or process.state == eStateRunning:
 			state = 'running'
 		elif process.state == eStateExited:
@@ -225,6 +237,10 @@ class LLDBListener(QtCore.QObject, Thread):
 ##             self.signals.event_output.emit("".join(["%02x" % ord(i) for i in stdout]))
 #						QCoreApplication.processEvents()
 				elif SBProcess.EventIsProcessEvent(event):
+					if event is None:
+						print(f"EVEWNT ISSSSSSSSSS NOOOOOOONNNNNNNNEEEEEEE!!!!!!")
+					else:
+						print((f"EVENT IOS OK!!!!!!!"))
 					self._broadcast_process_state(SBProcess.GetProcessFromEvent(event), event)
 #					self.processEvent.emit(SBProcess.GetProcessFromEvent(event))
 #					QCoreApplication.processEvents()

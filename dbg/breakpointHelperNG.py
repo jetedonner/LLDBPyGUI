@@ -60,6 +60,7 @@ class BreakpointHelperNG():
 			# if updateUI:
 			self.txtDis.enableBP(address, enabled)
 			self.treBP.enableBP(address, enabled)
+			return bpRet[0]
 		else:
 			bp = target.BreakpointCreateByAddress(int(address, 16))
 			bp.SetEnabled(enabled)
@@ -67,6 +68,7 @@ class BreakpointHelperNG():
 			self.txtDis.enableBP(address, enabled)
 			if updateUI:
 				self.treBP.addBP(bp)
+			return bp
 
 	def deleteBP(self, address):
 		target = self.driver.getTarget()

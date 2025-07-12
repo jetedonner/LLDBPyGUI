@@ -157,7 +157,15 @@ def feed_input(debugger, command, result, internal_dict):
 
 	# Simulate input for scanf
 	process.PutSTDIN(command + "\n")
-	result.PutCString(f"Injected input: {command}")
+	# process.flush()
+	# result.PutCString(f"Injected input: {command}")
+	# import time
+	# time.sleep(0.1)
+	# stdo = process.GetSTDOUT(1024)
+	# if stdo:
+	# 	print(f"================== >>>>>>>>>>>>>>> STDO: {stdo}")
+	# else:
+	# 	print(f"NO STDOUT AVAILABLE")
 
 def cmd_banner(debugger,command,result,dict): 
 	print(f"" + BOLD + "" + RED + "#=================================================================================#")

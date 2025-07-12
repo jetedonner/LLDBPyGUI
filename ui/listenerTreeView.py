@@ -107,7 +107,7 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 		self.collapseAll()
 		
 	def readSTDOUT(self, proc):
-
+		# pass
 		time.sleep(0.1)  # Give LLDB time to read from PTY
 
 		# stdoutNG = self.driver.getTarget().GetProcess().ReadThreadBytesFromSTDOUT()
@@ -179,30 +179,53 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 		elif SBProcess.EventIsProcessEvent(event):
 			print(f"EventIsProcessEvent => Type: {event.GetType()}")
 			if event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
+
 				sectionNode.setIcon(0, ConfigClass.iconTerminal)
 
+				QCoreApplication.processEvents()
+				QApplication.processEvents()
 
-#				QCoreApplication.processEvents()
-#				QApplication.processEvents()
+				# output = lldb.SBProcess.GetOutput(event)
+				# print(f"===========>>>>>>>>>>>>>>>>> output: {output}")
 
-
-				# print(f"GOT STDOUT EVENT!!!")
-				# print(">>>>> WE GOT STDOUT")
-
-
-#				print(sys.stdout)
-				# Example usage:
-#				with contextlib.redirect_stdout(SBStreamForwarder()):
-#					print("This output will be redirected to an SBStream!")
-#					
-#				# Now you can access the captured output using the SBStream object
-#				output_stream = SBStreamForwarder().sb_stream
-#				if output_stream != None:
-#					for line in output_stream:
-#						print("Captured line:", line)
-				# tmrAppStarted = QtCore.QTimer()
-				# tmrAppStarted.singleShot(1000, self.readSTDOUT)
-				print(f"lldb.SBEvent.GetCStringFromEvent(event): {lldb.SBEvent.GetCStringFromEvent(event)}")
+# 				import sys
+# 				from io import StringIO
+#
+# 				# setup the environment
+# 				backup = sys.stdout
+#
+# 				# ####
+# 				sys.stdout = StringIO()  # capture output
+# 				# write()
+# 				out = sys.stdout.getvalue()  # release output
+# 				# ####
+#
+# 				sys.stdout.close()  # close the stream
+# 				sys.stdout = backup  # restore original stdout
+#
+# 				print(out.upper())  # post processing
+#
+# 				#				QCoreApplication.processEvents()
+# #				QApplication.processEvents()
+#
+#
+# 				# print(f"GOT STDOUT EVENT!!!")
+# 				# print(">>>>> WE GOT STDOUT")
+#
+#
+# 				print(sys.stdout)
+# 				# Example usage:
+# 				with contextlib.redirect_stdout(SBStreamForwarder()):
+# 					print("This output will be redirected to an SBStream!")
+# #
+# #				# Now you can access the captured output using the SBStream object
+# 				output_stream = SBStreamForwarder().sb_stream
+# 				if output_stream != None:
+# 					for line in output_stream:
+# 						print("Captured line:", line)
+# 				# tmrAppStarted = QtCore.QTimer()
+# 				# tmrAppStarted.singleShot(1000, self.readSTDOUT)
+# 				print(f"lldb.SBEvent.GetCStringFromEvent(event): {lldb.SBEvent.GetCStringFromEvent(event)}")
 				process = lldb.SBProcess.GetProcessFromEvent(event)
 				if process.GetState() == lldb.eStateStopped:
 					# output = process.GetSTDOUT(1024)

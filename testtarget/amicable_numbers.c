@@ -1,8 +1,8 @@
 // NO DEBUG-INFO:
-// clang -target x86_64-apple-macos -arch x86_64 -o hello_world_test hello_world_test.c
+// clang -target x86_64-apple-macos -arch x86_64 -o amicable_numbers amicable_numbers.c
 //
 // WITH DEBUG-INFO:
-// clang -g -target x86_64-apple-macos -arch x86_64 -o hello_world_test hello_world_test.c
+// clang -g -target x86_64-apple-macos -arch x86_64 -o amicable_numbers amicable_numbers.c
 //
 // Make executable:
 // chmod u+x hello_world
@@ -60,7 +60,7 @@ int main() {
   printf("|                                                  |\n");
   printf("| v 0.0.1, (c.) 1991-2025 by kimhauser.ch          |\n");
   printf("#==================================================#\n");
-  // fflush(stdout);
+  fflush(stdout);
 
   // int nVar3 = dividerSum(283);
   // int nVar1 = dividerSum(220);
@@ -75,9 +75,11 @@ int main() {
     int nStart = 0;
     int nEnd = 0;
     printf("\nStart of search range:");
+    fflush(stdout);
     scanf("%d", &nStart);
 
     printf("\nEnd of search range:");
+    fflush(stdout);
     scanf("%d", &nEnd);
 
     if(nStart >= 0 && nEnd > nStart){
@@ -89,7 +91,7 @@ int main() {
           
           // This msg will prompt the user to enter his / her secret
           printf("Do you want to continue your search? [Y/n]:");
-          
+          fflush(stdout);
           // Will wait for user input and store the input in the variable "input"
           scanf("%s", input);
           if(strcmp(input, "Y") != 0 && strcmp(input, "y") != 0){
@@ -100,14 +102,17 @@ int main() {
         int nDivSum = dividerSum(i);
         if(dividerSum(nDivSum) == i && i < nDivSum){
             printf("\nFound amicable number pair: %d / %d ...", i, nDivSum);
+            fflush(stdout);
         }
       }
       searching = 0;
     }else{
       printf("\nThe numbers for the search range are invalid!");
+      fflush(stdout);
     }
   }
   printf("\nApp exited normally!");
+  fflush(stdout);
   
 //   while(1)
 //     {

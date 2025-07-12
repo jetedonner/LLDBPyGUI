@@ -481,7 +481,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 			
 	def contextMenuEvent(self, event):
 		if len(self.selectedItems()) <= 0:
-			return 
+			return
 		if self.item(self.selectedItems()[0].row(), 1) != None:
 			if self.item(self.selectedItems()[0].row(), 1).isBPEnabled:
 				self.actionEnableBP.setText("Disable Breakpoint")

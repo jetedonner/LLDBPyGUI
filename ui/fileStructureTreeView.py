@@ -7,8 +7,11 @@ from PyQt6.QtWidgets import *
 from PyQt6 import uic, QtWidgets
 from ui.baseTreeWidget import *
 from dbg.fileInfos import *
+from lib.utils import *
 
 from config import *
+from ui.helper.dbgOutputHelper import logDbg
+
 
 class FileStructureTreeWidget(BaseTreeWidget):
 	
@@ -73,19 +76,26 @@ class FileStructureWidget(QWidget):
 	def loadFileStruct(self, index):
 		# self.thread.GetFrameAtIndex(1)
 		target = self.driver.getTarget()
+		logDbg(f"loadFileStruct => target: {target}")
 		process = target.GetProcess()
+		logDbg(f"loadFileStruct => process: {process}")
+		logDbg(f"loadFileStruct => process.num_threads: {process.num_threads}")
 		self.thread = process.GetThreadAtIndex(0)
 		self.treFile.clear()
-		module = self.thread.GetFrameAtIndex(index).GetModule()
-		for sec in module.section_iter():
-			sectionNode = QTreeWidgetItem(self.treFile, [sec.GetName(), str(hex(sec.GetFileAddress())), str(hex(sec.GetFileAddress() + sec.GetByteSize())), hex(sec.GetFileByteSize()), hex(sec.GetByteSize()), SectionTypeString(sec.GetSectionType()) + " (" + str(sec.GetSectionType()) + ")"])
-			
-			for idx3 in range(sec.GetNumSubSections()):
-	#									print(sec.GetSubSectionAtIndex(idx3).GetName())
-				
-				subSec = sec.GetSubSectionAtIndex(idx3)
-				
-				subSectionNode = QTreeWidgetItem(sectionNode, [subSec.GetName(), str(hex(subSec.GetFileAddress())), str(hex(subSec.GetFileAddress() + subSec.GetByteSize())), hex(subSec.GetFileByteSize()), hex(subSec.GetByteSize()), SectionTypeString(subSec.GetSectionType()) + " (" + str(subSec.GetSectionType()) + ")"])
-				
-				for sym in module.symbol_in_section_iter(subSec):
-					subSectionNode2 = QTreeWidgetItem(subSectionNode, [sym.GetName(), str(hex(sym.GetStartAddress().GetFileAddress())), str(hex(sym.GetEndAddress().GetFileAddress())), hex(sym.GetSize()), '', f'{SymbolTypeString(sym.GetType())} ({sym.GetType()})'])
+		logDbg(f"loadFileStruct => thread: {self.thread}")
+		logDbg(f"loadFileStruct => thread.num_frames: {self.thread.num_frames}")
+
+		for i in range(self.thread.num_frames):
+			module = self.thread.GetFrameAtIndex(i).GetModule()
+			for sec in module.section_iter():
+				sectionNode = QTreeWidgetItem(self.treFile, [sec.GetName(), str(hex(sec.GetFileAddress())), str(hex(sec.GetFileAddress() + sec.GetByteSize())), hex(sec.GetFileByteSize()), hex(sec.GetByteSize()), SectionTypeString(sec.GetSectionType()) + " (" + str(sec.GetSectionType()) + ")"])
+
+				for idx3 in range(sec.GetNumSubSections()):
+		#									print(sec.GetSubSectionAtIndex(idx3).GetName())
+
+					subSec = sec.GetSubSectionAtIndex(idx3)
+
+					subSectionNode = QTreeWidgetItem(sectionNode, [subSec.GetName(), str(hex(subSec.GetFileAddress())), str(hex(subSec.GetFileAddress() + subSec.GetByteSize())), hex(subSec.GetFileByteSize()), hex(subSec.GetByteSize()), SectionTypeString(subSec.GetSectionType()) + " (" + str(subSec.GetSectionType()) + ")"])
+
+					for sym in module.symbol_in_section_iter(subSec):
+						subSectionNode2 = QTreeWidgetItem(subSectionNode, [sym.GetName(), str(hex(sym.GetStartAddress().GetFileAddress())), str(hex(sym.GetEndAddress().GetFileAddress())), hex(sym.GetSize()), '', f'{SymbolTypeString(sym.GetType())} ({sym.GetType()})'])
