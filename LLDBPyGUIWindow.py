@@ -256,6 +256,13 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.goep2_action.setShortcut('Ctrl+E')
 		self.goep2_action.triggered.connect(self.goep2_clicked)
 
+		self.goep3_action = QAction(ConfigClass.iconBug, 'Go OEP 3', self)
+		self.goep3_action.setStatusTip('Goto OEP - GOTO CURRENT POS')
+		self.goep3_action.setShortcut('Ctrl+C')
+		self.goep3_action.triggered.connect(self.goep3_clicked)
+
+
+
 		self.attach_action = QAction(ConfigClass.iconGears, '&Attach Process', self)
 		self.attach_action.setStatusTip('Attach Process')
 		self.attach_action.setShortcut('Ctrl+A')
@@ -369,6 +376,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.file_menu.addMenu(self.oep_menu)
 		self.oep_menu.addAction(self.goep_action)
 		self.oep_menu.addAction(self.goep2_action)
+		self.oep_menu.addAction(self.goep3_action)
 #		file_menu.addAction(self.settings_action)
 
 #		self.help_action = QAction(ConfigClass.iconInfo, '&Show Help', self)
@@ -786,6 +794,13 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.txtMultiline.viewAddress(addrObj2Hex)
 		pass
 
+	def goep3_clicked(self):
+		logDbg(f"Goto OEP 3 clickediclicked!")
+		self.txtMultiline.viewCurrentAddress()
+		pass
+
+
+
 	def load_clicked(self):
 		filename = showOpenFileDialog()
 		if filename != None and filename != "":
@@ -1055,6 +1070,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			
 	def loadNewExecutableFile(self, filename):
 #		self.resetGUI()
+		logDbg(f"loadNewExecutableFile({filename})...")
 		self.targetBasename = os.path.basename(filename)
 		# import pdb; pdb.set_trace()
 #		if self.driver.getTarget().GetProcess(): #pymobiledevice3GUIWindow.process:
@@ -1088,12 +1104,19 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.driver.signals.event_queued.connect(self.handle_event_queued)
 		self.driver.start()
 		self.driver.createTarget(filename)
+		logDbg(f"self.driver.createTarget({filename}) => self.driver.debugger.GetNumTargets() = {self.driver.debugger.GetNumTargets()}")
 		if self.driver.debugger.GetNumTargets() > 0:
 			target = self.driver.getTarget()
 			print(target)
 			if self.setHelper.getValue(SettingsValues.BreakAtMainFunc):
 				main_bp = self.bpHelper.addBPByName(self.setHelper.getValue(SettingsValues.MainFuncName))
 				print(main_bp)
+
+			# setHelper = SettingsHelper()
+			# if self.setHelper.getChecked(SettingsValues.BreakpointAtMainFunc):
+			# 	addrObj2 = find_main(self.driver.debugger)
+			# 	logDbg(f"Enabling EntryPoint Breakpoint @ {hex(addrObj2)}")
+			# 	self.bpHelper.enableBP(hex(addrObj2), True, True)
 
 			launch_info = target.GetLaunchInfo()
 
@@ -1113,8 +1136,15 @@ class LLDBPyGUIWindow(QMainWindow):
 			# launch_info.SetStandardOutput(write_fd)  # Redirect stdout
 			# launch_info.SetStandardError(write_fd)  # (optional) Redirect stderr too
 
+			# if self.setHelper.getValue(SettingsValues.StopAtEntry):
+			# 	launch_info.SetLaunchFlags(lldb.eLaunchFlagDisableASLR + lldb.eLaunchFlagStopAtEntry)# lldb.eLaunchFlagDisableASLR +
+			# 	logDbg(f"launch_info.SetLaunchFlags(lldb.eLaunchFlagDisableASLR + lldb.eLaunchFlagStopAtEntry)")
+			# else:
+			# 	launch_info.SetLaunchFlags(lldb.eLaunchFlagDebug)
+			# 	logDbg(f"launch_info.SetLaunchFlags(lldb.eLaunchFlagDebug)")
+
 			if self.setHelper.getValue(SettingsValues.StopAtEntry):
-				launch_info.SetLaunchFlags(lldb.eLaunchFlagDisableASLR + lldb.eLaunchFlagStopAtEntry)# lldb.eLaunchFlagDisableASLR + 
+				launch_info.SetLaunchFlags(lldb.eLaunchFlagDisableASLR + lldb.eLaunchFlagStopAtEntry)# lldb.eLaunchFlagDisableASLR +
 			error = lldb.SBError()
 			# SBProcess
 			self.process = target.Launch(launch_info, error)
@@ -1238,6 +1268,8 @@ class LLDBPyGUIWindow(QMainWindow):
 		if process.state == eStateStepping or process.state == eStateRunning:
 			state = 'running'
 		elif process.state == eStateExited:
+			logDbg(f"PROCESS EXITED!!!!!")
+			self.setWinTitleWithState("Exited")
 			state = 'exited'
 			self.should_quit = True
 		thread = process.selected_thread
@@ -1471,6 +1503,18 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.wdtControlFlow.loadConnections()
 #		self.txtMulriline.locationStack.pushLocation(hex(self.driver.getPC()).lower())
 #		print(f"self.txtMultiline.table.rowCount() => {self.txtMultiline.table.rowCount()}")
+
+		addrObj2 = find_main(self.driver.debugger)
+		# addrObj2Hex = f"{hex(addrObj2)}"
+
+
+		# setHelper = SettingsHelper()
+		logDbg(f"addrObj2: {hex(addrObj2)}")
+		if self.setHelper.getChecked(SettingsValues.BreakpointAtMainFunc):
+			self.bpHelper.enableBP(hex(addrObj2), True, False)
+		self.txtMultiline.viewAddress(hex(addrObj2))
+		self.window().wdtControlFlow.view.verticalScrollBar().setValue(self.window().txtMultiline.table.verticalScrollBar().value())
+		# self.window().txtMultiline.table.verticalScrollBar().setValue(scrollOrig)
 		
 	def handle_loadRegisterFinished(self):
 		self.setProgressValue(100)

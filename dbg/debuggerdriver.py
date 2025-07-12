@@ -142,6 +142,7 @@ class DebuggerDriver(Thread):
   #		print(f"Removed Listener with {success} / self.broadcasterTarget => {self.broadcasterTarget} / self.listenerTarget  => {self.listenerTarget} / self.maskTarget => {self.maskTarget}")
 
     def createTarget(self, target_image, args=None):
+        print(f"createTarget({target_image})....")
         self.handleCommand("target create %s" % target_image)
         if args is not None:
             self.handleCommand("settings set target.run-args %s" % args)

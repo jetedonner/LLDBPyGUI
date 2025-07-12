@@ -54,6 +54,7 @@ def __lldb_init_module(debugger, internal_dict):
 	ci.HandleCommand(f"command script add -h '({PROMPT_TEXT}) Display {APP_NAME} banner.' --function LLDBPyGUI.cmd_banner banner", res)
 
 	ci.HandleCommand('command script add -f LLDBPyGUI.feed_input feedinput', res)
+	ci.HandleCommand('command script add -f seperatescript.launchtest launchtest', res)
 
 	return
 

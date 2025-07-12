@@ -609,7 +609,19 @@ class AssemblerTextEdit(QWidget):
 		addrSel = self.getAddressFromSelected()
 		if addrSel != None:
 			self.locationStack.pushLocation(addrSel)
-		
+
+	def viewCurrentAddress(self):
+		# for row in range(self.table.rowCount()):
+		# 	if self.table.item(row, 2) != None:
+		# 		if self.table.item(row, 2).text().lower() == address.lower():
+					#					self.table.item(row, 0).setText('>')
+		self.table.setFocus(Qt.FocusReason.NoFocusReason)
+		self.table.selectRow(self.currentPCRow)
+		self.table.scrollToRow(self.currentPCRow)
+		# break
+		# if pushLocation:
+		# 	self.locationStack.pushLocation(address.lower())
+
 	def viewAddress(self, address, pushLocation = True):
 		for row in range(self.table.rowCount()):
 			if self.table.item(row, 2) != None:

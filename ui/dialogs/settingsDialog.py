@@ -1,22 +1,5 @@
 #!/usr/bin/env python3
 
-import os
-import sys
-
-from enum import Enum
-#import re	
-	
-from os.path import abspath
-from os.path import dirname, realpath
-from os import getcwd, path
-
-from PyQt6.QtGui import *
-from PyQt6.QtCore import *
-
-from PyQt6.QtWidgets import *
-from PyQt6 import uic, QtWidgets
-
-from config import *
 from lib.settings import *
 from ui.dialogs.dialogHelper import *
 
@@ -41,9 +24,6 @@ class BrowseWidget(QWidget):
 		if filename:
 			print(f"Setting: '{filename} as test target")
 			pass
-#		color = QColorDialog.getColor(self.parent().getColor())
-#		if color.isValid():
-#			self.parent().setColor(color)
 			
 class ColorTableWidgetItem(QTableWidgetItem):
 	def __init__(self, color=None, parent=None):
@@ -76,17 +56,16 @@ class SettingsDialog(QDialog):
 		self.settings.setValue(SettingsValues.HexGrouping.value[0], 1)
 		self.settings.setValue(SettingsValues.StatusBarMsgTimeout.value[0], 1500)
 		
-		
-		
 		self.settings.setValue(SettingsValues.LoadTestTarget.value[0], True)
 		self.settings.setValue(SettingsValues.LoadTestBPs.value[0], True)
 		self.settings.setValue(SettingsValues.StopAtEntry.value[0], False)
 		self.settings.setValue(SettingsValues.BreakAtMainFunc.value[0], True)
 		self.settings.setValue(SettingsValues.MainFuncName.value[0], "main")
+		self.settings.setValue(SettingsValues.BreakpointAtMainFunc.value[0], True)
 	
 	def __init__(self, settingsHelper = None):
 		super().__init__()
-		# loading the ui file with uic module
+
 		project_root = dirname(realpath(__file__))
 		settingsDialogPath = os.path.join(project_root, '..', '..', 'resources', 'designer', 'settingsDialog.ui')
 		
@@ -103,8 +82,7 @@ class SettingsDialog(QDialog):
 		
 		self.cmdLoadDefaults.clicked.connect(self.click_loadDefaults)
 		self.cmdTest.clicked.connect(self.click_test)
-		
-#		log(f"Loading settings from file: '{self.settings.fileName()}'")
+
 		self.accepted.connect(self.click_saveSettings)
 		
 		self.tblGeneral.cellClicked.connect(self.on_table_cell_clicked)
@@ -134,7 +112,6 @@ class SettingsDialog(QDialog):
 		item = ColorTableWidgetItem(QColor(0, 255, 0, 128))
 		
 		self.tblGeneral.setItem(7, 1, item)
-#		self.tblGeneral.setCellWidget(7, 1, item)
 		self.tblGeneral.item(8, 1).setText(self.setHelper.getValue(SettingsValues.EventListenerTimestampFormat))
 		
 		self.tblDeveloper.item(0, 0).setCheckState(self.setHelper.getChecked(SettingsValues.LoadTestTarget))
@@ -142,6 +119,7 @@ class SettingsDialog(QDialog):
 		self.tblDeveloper.item(2, 1).setCheckState(self.setHelper.getChecked(SettingsValues.StopAtEntry))
 		self.tblDeveloper.item(3, 1).setCheckState(self.setHelper.getChecked(SettingsValues.BreakAtMainFunc))
 		self.tblDeveloper.item(3, 1).setText(self.setHelper.getValue(SettingsValues.MainFuncName))
+		self.tblDeveloper.item(4, 1).setCheckState(self.setHelper.getChecked(SettingsValues.BreakpointAtMainFunc))
 		self.browse_widget = BrowseWidget()
 		
 		# ...
@@ -194,6 +172,7 @@ class SettingsDialog(QDialog):
 		self.setHelper.setChecked(SettingsValues.StopAtEntry, self.tblDeveloper.item(2, 1))
 		self.setHelper.setChecked(SettingsValues.BreakAtMainFunc, self.tblDeveloper.item(3, 1))
 		self.setHelper.setValue(SettingsValues.MainFuncName, self.tblDeveloper.item(3, 1).text())
+		self.setHelper.setChecked(SettingsValues.BreakpointAtMainFunc, self.tblDeveloper.item(4, 1))
 		
 class MarginDelegate(QStyledItemDelegate):
 	def __init__(self, margin_size=5, parent=None):

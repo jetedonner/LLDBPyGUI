@@ -6,8 +6,7 @@ import enum
 import os
 
 from ctypes import *
-from struct import *
-from binascii import *
+from lib.settings import *
 
 exec2Dbg = None
 debugger = None
@@ -404,6 +403,9 @@ def find_main(debugger):
 	symbol_context = main_symbol.GetContextAtIndex(0)
 	address = symbol_context.GetSymbol().GetStartAddress()
 	print(f"Main entry point address: {address.GetLoadAddress(target)}")
+	# setHelper = SettingsHelper()
+	# if setHelper.getChecked(SettingsValues.BreakpointAtMainFunc):
+	#
 
 	return address.GetLoadAddress(target)
 
