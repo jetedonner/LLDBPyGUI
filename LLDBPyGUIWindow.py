@@ -1111,6 +1111,12 @@ class LLDBPyGUIWindow(QMainWindow):
 			if self.setHelper.getValue(SettingsValues.BreakAtMainFunc):
 				main_bp = self.bpHelper.addBPByName(self.setHelper.getValue(SettingsValues.MainFuncName))
 				print(main_bp)
+				logDbg(f"main_bp: {main_bp}")
+			if self.setHelper.getValue(SettingsValues.BreakpointAtMainFunc):
+				addrObj2 = find_main(self.driver.debugger)
+				main_bp2 = self.bpHelper.enableBP(hex(addrObj2), True, False)
+				# print(f"main_bp2 (@{addrObj2}): {main_bp2}")
+				logDbgC(f"main_bp2 (@{addrObj2}): {main_bp2}")
 
 			# setHelper = SettingsHelper()
 			# if self.setHelper.getChecked(SettingsValues.BreakpointAtMainFunc):
@@ -1475,15 +1481,21 @@ class LLDBPyGUIWindow(QMainWindow):
 		if  idx != -1:
 			daHex = daData[:idx]
 			daDataNg = daData[idx:]
+		else:
+			print(f"idx == -1")
+			daHex = ""
+			daDataNg = ""
 #		self.txtMultiline.appendAsmText(hex(int(str(instruction.GetAddress().GetLoadAddress(target)), 10)), instruction.GetMnemonic(target),  instruction.GetOperands(target), instruction.GetComment(target), str(instruction.GetData(target)).replace("                             ", "\t\t").replace("		            ", "\t\t\t").replace("		         ", "\t\t").replace("		      ", "\t\t").replace("			   ", "\t\t\t"), True)
 			
-			self.txtMultiline.appendAsmText(hex(int(str(instruction.GetAddress().GetLoadAddress(target)), 10)), instruction.GetMnemonic(target),  instruction.GetOperands(target), instruction.GetComment(target), daHex, "".join(str(daDataNg).split()), True)
+		self.txtMultiline.appendAsmText(hex(int(str(instruction.GetAddress().GetLoadAddress(target)), 10)), instruction.GetMnemonic(target),  instruction.GetOperands(target), instruction.GetComment(target), daHex, "".join(str(daDataNg).split()), True)
+
 		pass
 		
 	def handle_workerFinished(self):
 #		print(f"Current RIP: {self.rip} / {hex(self.rip)} / DRIVER: {self.driver.getPC()} / {self.driver.getPC(True)}")
 		QApplication.processEvents()
 		self.txtMultiline.setPC(self.driver.getPC(), True)
+		logDbg(f"self.driver.getPC(): {self.driver.getPC()}")
 		self.start_loadRegisterWorker()
 #		self.reloadBreakpoints(True)
 		self.wdtBPsWPs.treBPs.clear()

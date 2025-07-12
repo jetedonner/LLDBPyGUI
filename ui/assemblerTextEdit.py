@@ -529,6 +529,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 		self.addItem(currRowCount, 7, comment)
 		
 		self.setRowHeight(currRowCount, 14)
+		print(f"address: {address}")
 		return item
 		
 		

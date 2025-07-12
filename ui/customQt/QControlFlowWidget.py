@@ -442,7 +442,7 @@ class QControlFlowWidget(QWidget):
         pass
 
     def loadConnections(self):
-        radius = 75
+        radius = 140
         scrollOrig = self.window().txtMultiline.table.verticalScrollBar().value()
         self.window().txtMultiline.table.verticalScrollBar().setValue(0)
         for row in range(self.window().txtMultiline.table.rowCount()):
@@ -465,12 +465,12 @@ class QControlFlowWidget(QWidget):
                     newConObj.parentControlFlow = self
                     self.addConnection(newConObj)
                     # newConObj.setToolTip(f"Branch from {sAddrJumpFrom} to {sAddrJumpTo}")
-                    if radius >= 20:
+                    if radius >= 10:
                         radius -= 10
         self.connections.sort(key=lambda x: abs(x.jumpDist), reverse=True)
 
         idx = 1
-        radius = 75
+        radius = 140
         for con in self.connections:
             # logDbg(f"Connection {idx} dist: {abs(con.jumpDist)}")
             y_position = self.window().txtMultiline.table.rowViewportPosition(con.origRow)
@@ -482,7 +482,7 @@ class QControlFlowWidget(QWidget):
             nRowHeight = 21
             nOffsetAdd = 23
             # xOffset = 65 + radius + xOffset
-            xOffset = controlFlowWidth + (((controlFlowWidth - radius) / 2))  # + (radius / 2)
+            xOffset = (controlFlowWidth / 2) + (((controlFlowWidth - radius) / 2)) # + (radius / 2)
 
             # logDbg(f"xOffset: {xOffset} / radius: {radius}")
             # 45
@@ -552,7 +552,9 @@ class QControlFlowWidget(QWidget):
                                    y_position2 + (nRowHeight / 2))  # ellipse_rect.topRight()
                 # newConnection.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
                 con.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
-            if radius >= 20:
+
+            con.setToolTip(f"Branch from {hex(con.origAddr)} to {hex(con.destAddr)}, distance: {hex(con.jumpDist)}")
+            if radius >= 10:
                 radius -= 10
             idx += 1
 

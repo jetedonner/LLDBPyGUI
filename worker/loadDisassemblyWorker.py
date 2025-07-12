@@ -114,12 +114,19 @@ class LoadDisassemblyWorker(BaseWorker):
 								print(f"Analyzing instructions: {len(sym.GetStartAddress().GetFunction().GetInstructions(self.target))}")
 								# logDbg(f"Analyzing instructions: {len(sym.GetStartAddress().GetFunction().GetInstructions(self.target))}")
 								for instruction in sym.GetStartAddress().GetFunction().GetInstructions(self.target):
+									print(f"{instruction}")
+
+									if (hex(instruction.GetAddress().GetLoadAddress(target)) == "0x100000d39"):
+										print(f"IS ATTTT THHHHHEEEEEEE PPPPPOOOOOOIIIIINNNNTTTTTT  !!!!!!!!!!!!!")
+
 									if symFuncName == instruction.GetAddress().GetFunction().GetName():
 #										print(f"Address: {instruction.GetAddress()}")
 #										print(f"Instruction: {instruction}")
 #										print(f'sym.GetName() => {sym.GetName()} / instruction.GetAddress().GetFunction().GetName() => {instruction.GetAddress().GetFunction().GetName()}')
 #										print(f'COMMENT => {instruction.GetComment(self.target)}')
 										self.signals.loadInstruction.emit(instruction)
+									else:
+										print(f"symFuncName != instr....GetName()")
 								idxSym += 1
 								self.sendProgressUpdate((idxSym * 100) / secLen, "Disassembling executable ...")
 							break
