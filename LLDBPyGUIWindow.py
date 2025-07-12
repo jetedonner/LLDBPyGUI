@@ -246,19 +246,19 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.load_action.triggered.connect(self.load_clicked)
 		self.toolbar.addAction(self.load_action)
 
-		self.goep_action = QAction(ConfigClass.iconBug, 'Go OE&P', self)
-		self.goep_action.setStatusTip('Goto OEP (original entry point)')
-		self.goep_action.setShortcut('Ctrl+E')
-		self.goep_action.triggered.connect(self.goep_clicked)
+		# self.goep_action = QAction(ConfigClass.iconBug, 'Go OE&P', self)
+		# self.goep_action.setStatusTip('Goto OEP (original entry point)')
+		# self.goep_action.setShortcut('Ctrl+E')
+		# self.goep_action.triggered.connect(self.goep_clicked)
 
-		self.goep2_action = QAction(ConfigClass.iconBug, 'Go OE&P 2', self)
+		self.goep2_action = QAction(ConfigClass.iconBug, 'Goto OE&P', self)
 		self.goep2_action.setStatusTip('Goto OEP (original entry point)')
 		self.goep2_action.setShortcut('Ctrl+E')
 		self.goep2_action.triggered.connect(self.goep2_clicked)
 
-		self.goep3_action = QAction(ConfigClass.iconBug, 'Go OEP 3', self)
-		self.goep3_action.setStatusTip('Goto OEP - GOTO CURRENT POS')
-		self.goep3_action.setShortcut('Ctrl+C')
+		self.goep3_action = QAction(ConfigClass.iconBug, 'Goto current PC', self)
+		self.goep3_action.setStatusTip('Goto current PC (Current instruction)')
+		self.goep3_action.setShortcut('Ctrl+I')
 		self.goep3_action.triggered.connect(self.goep3_clicked)
 
 
@@ -371,10 +371,11 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.file_menu = self.menu.addMenu("&Load Action")
 		self.file_menu.addAction(self.load_action)
 		# self.file_menu.addAction(self.goep_action)
-		self.oep_menu = self.menu.addMenu("&OEP")
+
 		self.file_menu.addSeparator()
-		self.file_menu.addMenu(self.oep_menu)
-		self.oep_menu.addAction(self.goep_action)
+		self.oep_menu = self.file_menu.addMenu("&GoTo ...")
+		# self.file_menu.addMenu(self.oep_menu)
+		# self.oep_menu.addAction(self.goep_action)
 		self.oep_menu.addAction(self.goep2_action)
 		self.oep_menu.addAction(self.goep3_action)
 #		file_menu.addAction(self.settings_action)
@@ -689,12 +690,25 @@ class LLDBPyGUIWindow(QMainWindow):
 		else:
 			event.accept()
 			
-	def clearCompleteUI(self):
-		self.tblVariables.resetContent()
-		pass
+	# def clearCompleteUI(self):
+	# 	logDbg(f"clearCompleteUI....")
+	# 	self.txtMultiline.table.resetContent()
+	# 	self.tabWatchpoints.tblWatchpoints.resetContent()
+	# 	self.tblVariables.resetContent()
+	# 	self.wdtBPsWPs.treBPs.clear()
+	# 	self.txtSource.clear()
+	# 	for tblReg in self.tblRegs:
+	# 		tblReg.resetContent()
+	# 	self.treThreads.clear()
+	# 	self.treListener.treEventLog.clear()
+	# 	self.treStats.clear()
+	# 	self.tabWidgetStruct.resetContent()
+	# 	self.tblFileInfos.resetContent()
+	# 	self.wdtDbg.cmdClear_clicked()
+	# 	pass
 
 	def testSTDOUT(self, strOut):
-		# print(f'HEEEEEELLLLLLLOOOOOO FROM STDOUT => {strOut}')
+		print(f'HEEEEEELLLLLLLOOOOOO FROM STDOUT => {strOut}')
 		self.output_text_edit.append(f'{strOut}\n')
 
 
@@ -856,15 +870,24 @@ class LLDBPyGUIWindow(QMainWindow):
 		pass
 
 	def stop_clicked(self):
+		logDbg(f"Trying to kill debugged app ...")
 		target = self.driver.getTarget()
 		if target:
 			process = target.GetProcess()
 			if process:
 				errKill = process.Kill()
-				if errKill:
-					print(f'{errKill}')
+				if not errKill.Success():
+					logDbgC(f'Error killing process: {errKill}')
 				else:
-					self.clearCompleteUI()
+					logDbg(f"Debugged app killed, cleaning up ...")
+					self.resetGUI()
+			else:
+				logDbg(f"No valid process found ...")
+				pass
+		else:
+			logDbg(f"No valid target found ...")
+			pass
+
 
 
 		# if self.isProcessRunning:
@@ -980,6 +1003,9 @@ class LLDBPyGUIWindow(QMainWindow):
 		# self.wdtControlFlow.worker.quit()
 		# self.wdtControlFlow.worker.wait()
 		# self.wdtControlFlow.toggleTestTimer()
+		if len(self.wdtControlFlow.connectionsNG) <= 0:
+			return
+
 		scene_rect = self.wdtControlFlow.scene.sceneRect()
 		line_rect = self.wdtControlFlow.connectionsNG[5].mainLine.mapToScene(self.wdtControlFlow.connectionsNG[0].mainLine.boundingRect()).boundingRect()
 
@@ -1111,12 +1137,19 @@ class LLDBPyGUIWindow(QMainWindow):
 			if self.setHelper.getValue(SettingsValues.BreakAtMainFunc):
 				main_bp = self.bpHelper.addBPByName(self.setHelper.getValue(SettingsValues.MainFuncName))
 				print(main_bp)
+				for bl in main_bp:
+					logDbg(f"bl.GetAddress(): {hex(bl.GetAddress().GetLoadAddress(target))}")
 				logDbg(f"main_bp: {main_bp}")
+
 			if self.setHelper.getValue(SettingsValues.BreakpointAtMainFunc):
+				self.driver.debugger.HandleCommand("process launch --stop-at-entry")
 				addrObj2 = find_main(self.driver.debugger)
 				main_bp2 = self.bpHelper.enableBP(hex(addrObj2), True, False)
 				# print(f"main_bp2 (@{addrObj2}): {main_bp2}")
 				logDbgC(f"main_bp2 (@{addrObj2}): {main_bp2}")
+				target.GetProcess().Continue()
+
+
 
 			# setHelper = SettingsHelper()
 			# if self.setHelper.getChecked(SettingsValues.BreakpointAtMainFunc):
@@ -1124,7 +1157,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			# 	logDbg(f"Enabling EntryPoint Breakpoint @ {hex(addrObj2)}")
 			# 	self.bpHelper.enableBP(hex(addrObj2), True, True)
 
-			launch_info = target.GetLaunchInfo()
+			# launch_info = target.GetLaunchInfo()
 
 			#########
 			# print("AFTER GETLAUNCHINFO!!!!")
@@ -1149,12 +1182,19 @@ class LLDBPyGUIWindow(QMainWindow):
 			# 	launch_info.SetLaunchFlags(lldb.eLaunchFlagDebug)
 			# 	logDbg(f"launch_info.SetLaunchFlags(lldb.eLaunchFlagDebug)")
 
-			if self.setHelper.getValue(SettingsValues.StopAtEntry):
-				launch_info.SetLaunchFlags(lldb.eLaunchFlagDisableASLR + lldb.eLaunchFlagStopAtEntry)# lldb.eLaunchFlagDisableASLR +
-			error = lldb.SBError()
-			# SBProcess
-			self.process = target.Launch(launch_info, error)
-			output = io.StringIO()
+			# if self.setHelper.getValue(SettingsValues.StopAtEntry):
+			# 	launch_info.SetLaunchFlags(lldb.eLaunchFlagDisableASLR and lldb.eLaunchFlagStopAtEntry)# lldb.eLaunchFlagDisableASLR +
+			# # else:
+			# # 	launch_info.SetLaunchFlags(lldb.eLaunchFlagStopAtEntry)
+			# # 	launch_info.SetLaunchFlags(lldb.eLaunchFlagDisableASLR and lldb.eLaunchFlagStopAtEntry and lldb.eLaunchFlagDebug)
+
+			# error = lldb.SBError()
+			# # SBProcess
+			# self.break_at_main(self.driver.debugger, "", "", "")
+			# self.process = target.Launch(stop_at_entry=True, error=error)
+			# self.break_at_main(self.driver.debugger, "", "", "")
+			# self.process.Stop()
+			# # output = io.StringIO()
 
 			#########
 			# Close the write end in your script so you can read from the read end
@@ -1176,10 +1216,30 @@ class LLDBPyGUIWindow(QMainWindow):
 ##			'/tmp/stdout.txt'
 			self.loadTarget()
 			self.setWinTitleWithState("Target loaded")
-			
-			
-		
-		
+
+	# def break_at_main(self, debugger, command, result, internal_dict):
+	# 	target = debugger.GetSelectedTarget()
+	# 	if not target:
+	# 		# result.PutCString("No target loaded.")
+	# 		print("No target loaded.")
+	# 		return
+	#
+	# 	# Find the symbol context for 'main'
+	# 	matches = target.FindFunctions("main")
+	# 	if matches.GetSize() == 0:
+	# 		# result.PutCString("Could not find 'main' function.")
+	# 		print("Could not find 'main' function.")
+	# 		return
+	#
+	# 	# Get the start address of the first match
+	# 	symbol_context = matches.GetContextAtIndex(0)
+	# 	start_addr = symbol_context.GetSymbol().GetStartAddress()
+	# 	load_addr = start_addr.GetLoadAddress(target)
+	#
+	# 	# Create a breakpoint at the exact address
+	# 	bp = target.BreakpointCreateByAddress(load_addr)
+	# 	print(f"Breakpoint set at main's first instruction: 0x{load_addr:x}")
+
 	def handle_event_queued(self, event):
 		# print(f"EVENT-QUEUED: {event}")
 		# print(f'GUI-GOT-EVENT: {event} / {event.GetType()} ====>>> THATS DA ONE')
@@ -1261,12 +1321,11 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.tblVariables.resetContent()
 		self.wdtBPsWPs.treBPs.clear()
 		self.tabWatchpoints.tblWatchpoints.resetContent()
-#		self.wdtBPsWPs.tblWPs.resetContent()
-#		self.txtSource.setText("")
-#		self.treThreads.clear()
-#		self.wdtSearch.resetContent()
 		self.tblHex.resetContent()
-##		self.wdtBPsWPs.treWPs.clear()
+		self.txtSource.clear()
+		self.treThreads.clear()
+		self.treListener.treEventLog.clear()
+		self.wdtDbg.cmdClear_clicked()
 		
 	inited = False
 	def handle_processEvent(self, process):
@@ -1482,7 +1541,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			daHex = daData[:idx]
 			daDataNg = daData[idx:]
 		else:
-			print(f"idx == -1")
+			# print(f"idx == -1")
 			daHex = ""
 			daDataNg = ""
 #		self.txtMultiline.appendAsmText(hex(int(str(instruction.GetAddress().GetLoadAddress(target)), 10)), instruction.GetMnemonic(target),  instruction.GetOperands(target), instruction.GetComment(target), str(instruction.GetData(target)).replace("                             ", "\t\t").replace("		            ", "\t\t\t").replace("		         ", "\t\t").replace("		      ", "\t\t").replace("			   ", "\t\t\t"), True)

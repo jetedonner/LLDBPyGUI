@@ -147,15 +147,15 @@ class DebuggerDriver(Thread):
         if args is not None:
             self.handleCommand("settings set target.run-args %s" % args)
 
-        # Define paths for stdout and stderr redirection
-        stdout_path = "/tmp/console_app_stdout.log"
-        stderr_path = "/tmp/console_app_stderr.log"
-
-        # Set the standard output and error paths for the target
-        self.handleCommand(f"settings set target.standard-output-path {stdout_path}")
-        self.handleCommand(f"settings set target.standard-error-path {stderr_path}")
-        # print(f"Stdout redirected to: {stdout_path}")
-        # print(f"Stderr redirected to: {stderr_path}")
+        # # Define paths for stdout and stderr redirection
+        # stdout_path = "/tmp/console_app_stdout.log"
+        # stderr_path = "/tmp/console_app_stderr.log"
+        #
+        # # Set the standard output and error paths for the target
+        # self.handleCommand(f"settings set target.standard-output-path {stdout_path}")
+        # self.handleCommand(f"settings set target.standard-error-path {stderr_path}")
+        # # print(f"Stdout redirected to: {stdout_path}")
+        # # print(f"Stderr redirected to: {stderr_path}")
 
     def attachProcess(self, pid):
         self.handleCommand("process attach -p %d" % pid)

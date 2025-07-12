@@ -35,10 +35,7 @@ class LoadDisassemblyWorker(BaseWorker):
 		"""
 		
 		thread = self.target.GetProcess().GetSelectedThread()
-#		print(f'thread.GetFrameAtIndex(0) => {thread.GetFrameAtIndex(0)}')
-		
 		idxOuter = 0
-		# import pdb; pdb.set_trace()
 		for module in self.target.module_iter():
 			if idxOuter != 0:
 				idxOuter += 1
@@ -48,27 +45,42 @@ class LoadDisassemblyWorker(BaseWorker):
 				# Check if the section is readable
 #				if not section.IsReadable():
 #					continue
-				
+				print(f"section.GetName(): {section.GetName()}")
 				if section.GetName() == "__TEXT":# or  section.GetName() == "__PAGEZERO":
-#					print(f'section => {section}')
-					# Get section start and size
-#					start_address = section.GetLoadAddress(self.target)
-#					print(f'start_address => {start_address} / {hex(start_address)}')
-#					size = section.GetByteSize()
-					if idx != 1:
-						idx += 1
-						continue
-					
-#					print('Number of subsections: %d' % section.GetNumSubSections())
+					# if idx != 1:
+					# 	idx += 1
+					# 	continue
+
 					for subsec in section:
-#						print(repr(subsec))
+						print(f"subsec.GetName(): {subsec.GetName()}")
 						if subsec.GetName() == "__text" or subsec.GetName() == "__stubs":
-#							print("GOTIT!!!!!")
-							
+
 							idxSym = 0
 							lstSym = module.symbol_in_section_iter(subsec)
+							# {len(lstSym)}
+							print(f"lstSym: {lstSym} / subsec.GetName(): {subsec.GetName()}")
+
+							if subsec.GetName() == "__stubs":
+								start_addr = subsec.GetLoadAddress(target)
+								size = subsec.GetByteSize()
+								logDbgC(f"size of __stubs: {hex(size)} / {hex(start_addr)}")
+								# Disassemble instructions
+								end_addr = start_addr + size
+								# func_start = subsec.GetStartAddress()
+								# func_end = subsec.GetEndAddress()
+								estimated_count = size // 6
+								insts = target.ReadInstructions(lldb.SBAddress(start_addr, target), int(estimated_count))
+								# insts = target.ReadInstructions(lldb.SBAddress(start_addr, target), lldb.SBAddress(end_addr, target))
+								for inst in insts:
+									# result.PutCString(str(inst))
+									print(str(inst))
+									self.signals.loadInstruction.emit(inst)
+								continue
+								# return
+
 							secLen = module.num_symbols #len(lstSym)
 							for sym in lstSym:
+								print(f"sym: {sym}")
 #								print(f'get_instructions_from_current_target => {sym.get_instructions_from_current_target()}')
 #								if idxSym != 0:
 #									idxSym += 1
@@ -112,12 +124,15 @@ class LoadDisassemblyWorker(BaseWorker):
 ##								(50*100)/200
 #								print(f'sym.GetStartAddress().GetFunction() => {sym.GetStartAddress().GetFunction()}')
 								print(f"Analyzing instructions: {len(sym.GetStartAddress().GetFunction().GetInstructions(self.target))}")
+								if len(sym.GetStartAddress().GetFunction().GetInstructions(self.target)) <= 0:
+									print(f"{sym.GetStartAddress().GetFunction()}")
+
 								# logDbg(f"Analyzing instructions: {len(sym.GetStartAddress().GetFunction().GetInstructions(self.target))}")
 								for instruction in sym.GetStartAddress().GetFunction().GetInstructions(self.target):
-									print(f"{instruction}")
-
-									if (hex(instruction.GetAddress().GetLoadAddress(target)) == "0x100000d39"):
-										print(f"IS ATTTT THHHHHEEEEEEE PPPPPOOOOOOIIIIINNNNTTTTTT  !!!!!!!!!!!!!")
+									# print(f"{instruction}")
+									#
+									# if (hex(instruction.GetAddress().GetLoadAddress(target)) == "0x100000d39"):
+									# 	print(f"IS ATTTT THHHHHEEEEEEE PPPPPOOOOOOIIIIINNNNTTTTTT  !!!!!!!!!!!!!")
 
 									if symFuncName == instruction.GetAddress().GetFunction().GetName():
 #										print(f"Address: {instruction.GetAddress()}")
@@ -125,11 +140,11 @@ class LoadDisassemblyWorker(BaseWorker):
 #										print(f'sym.GetName() => {sym.GetName()} / instruction.GetAddress().GetFunction().GetName() => {instruction.GetAddress().GetFunction().GetName()}')
 #										print(f'COMMENT => {instruction.GetComment(self.target)}')
 										self.signals.loadInstruction.emit(instruction)
-									else:
-										print(f"symFuncName != instr....GetName()")
+									# else:
+									# 	print(f"symFuncName != instr....GetName()")
 								idxSym += 1
 								self.sendProgressUpdate((idxSym * 100) / secLen, "Disassembling executable ...")
-							break
+							# break
 					break
 				idx += 1
 			idxOuter += 1

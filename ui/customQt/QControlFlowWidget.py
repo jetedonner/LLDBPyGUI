@@ -449,6 +449,9 @@ class QControlFlowWidget(QWidget):
             # self.window().txtMultiline.table.rowAt(row).
             if self.window().txtMultiline.table.item(row, 3) is not None and self.window().txtMultiline.table.item(row,
                                                                                                                    3).text().startswith(JMP_MNEMONICS): #"call", "jmp", "jne", "jz", "je", "jnz", "jle", "jl", "jge", "jg")):
+                if self.window().txtMultiline.table.item(row, 3).text().startswith("jmpq"):
+                    continue
+
                 sAddrJumpTo = self.window().txtMultiline.table.item(row, 4).text()
                 if self.isInsideTextSection(sAddrJumpTo):
                     # logDbg(f"IS INSIDE!!!")
@@ -553,7 +556,7 @@ class QControlFlowWidget(QWidget):
                 # newConnection.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
                 con.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
 
-            con.setToolTip(f"Branch from {hex(con.origAddr)} to {hex(con.destAddr)}, distance: {hex(con.jumpDist)}")
+            con.setToolTip(f"Branch\n-from: {hex(con.origAddr)}\n-to: {hex(con.destAddr)}\n-distance: {hex(con.jumpDist)}")
             if radius >= 10:
                 radius -= 10
             idx += 1

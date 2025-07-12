@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
@@ -27,7 +27,7 @@
        <item>
         <widget class="QTableWidget" name="tblGeneral">
          <property name="textElideMode">
-          <enum>Qt::ElideRight</enum>
+          <enum>Qt::TextElideMode::ElideRight</enum>
          </property>
          <property name="showGrid">
           <bool>false</bool>
@@ -381,6 +381,11 @@
            <string>Break at main function</string>
           </property>
          </row>
+         <row>
+          <property name="text">
+           <string>Set Breakpoint at main function</string>
+          </property>
+         </row>
          <column>
           <property name="text">
            <string>Key</string>
@@ -455,6 +460,19 @@
            <enum>Checked</enum>
           </property>
          </item>
+         <item row="4" column="0">
+          <property name="text">
+           <string>Set Breakpoint at main function</string>
+          </property>
+         </item>
+         <item row="4" column="1">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+         </item>
         </widget>
        </item>
       </layout>
@@ -464,10 +482,10 @@
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
      </property>
      <property name="centerButtons">
       <bool>false</bool>

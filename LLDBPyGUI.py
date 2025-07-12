@@ -43,6 +43,8 @@ def __lldb_init_module(debugger, internal_dict):
 	ci.HandleCommand("settings set target.x86-disassembly-flavor " + CONFIG_FLAVOR, res)
 	ci.HandleCommand(f'settings set prompt \"({PROMPT_TEXT}) \"', res)
 	ci.HandleCommand("settings set stop-disassembly-count 0", res)
+
+	ci.HandleCommand(f'settings set target.process.stop-on-exec true', res)
 	# set the log level - must be done on startup?
 #   ci.HandleCommand("settings set target.process.extra-startup-command QSetLogging:bitmask=" + CONFIG_LOG_LEVEL + ";", res)
 	if CONFIG_USE_CUSTOM_DISASSEMBLY_FORMAT == 1:
@@ -54,9 +56,100 @@ def __lldb_init_module(debugger, internal_dict):
 	ci.HandleCommand(f"command script add -h '({PROMPT_TEXT}) Display {APP_NAME} banner.' --function LLDBPyGUI.cmd_banner banner", res)
 
 	ci.HandleCommand('command script add -f LLDBPyGUI.feed_input feedinput', res)
-	ci.HandleCommand('command script add -f seperatescript.launchtest launchtest', res)
+	ci.HandleCommand('command script add -f LLDBPyGUI.launchtest launchtest', res)
+	ci.HandleCommand("process launch --stop-at-entry", res)
+
 
 	return
+
+def break_at_main(debugger, command, result, internal_dict):
+	target = debugger.GetSelectedTarget()
+	if not target:
+		result.PutCString("No target loaded.")
+		return
+
+	# Find the symbol context for 'main'
+	matches = target.FindFunctions("main")
+	if matches.GetSize() == 0:
+		result.PutCString("Could not find 'main' function.")
+		return
+
+	# Get the start address of the first match
+	symbol_context = matches.GetContextAtIndex(0)
+	start_addr = symbol_context.GetSymbol().GetStartAddress()
+	load_addr = start_addr.GetLoadAddress(target)
+
+	# Create a breakpoint at the exact address
+	bp = target.BreakpointCreateByAddress(load_addr)
+	result.PutCString(f"Breakpoint set at main's first instruction: 0x{load_addr:x}")
+
+def find_main(debugger):
+	target = debugger.GetSelectedTarget()
+	if not target:
+		print("No target loaded.")
+		return
+
+	main_symbol = target.FindFunctions("main")
+	if main_symbol.GetSize() == 0:
+		print("Could not find 'main' function.")
+		return
+
+	symbol_context = main_symbol.GetContextAtIndex(0)
+	address = symbol_context.GetSymbol().GetStartAddress()
+	print(f"Main entry point address: {address.GetLoadAddress(target)}")
+	# setHelper = SettingsHelper()
+	# if setHelper.getChecked(SettingsValues.BreakpointAtMainFunc):
+	#
+
+	return address.GetLoadAddress(target)
+
+def launchtest(debugger, command, result, internal_dict):
+	# debugger = lldb.SBDebugger.Create()
+	print(f"HELLO FROM SCRIPT!!!!")
+	# debugger.SetAsync(False)
+	#
+	# target = debugger.CreateTarget("./testtarget/amicable_numbers")
+	# main_func = find_main(debugger)
+	# print(f"MAIN FUNCTION: {hex(main_func)}")
+	# launch_info = lldb.SBLaunchInfo([])
+	# # launch_info.SetStopAtEntry(True)
+	# # launch_info.SetLaunchFlags(lldb.eLaunchFlagDisableASLR and lldb.eLaunchFlagStopAtEntry)# and lldb.eLaunchFlagDebug) #lldb.eLaunchFlagStopAtEntry)
+	# error = lldb.SBError()
+	# process = target.Launch(launch_info, error)
+	# import lldb
+
+	# debugger = lldb.SBDebugger.Create()
+	debugger.SetAsync(False)
+
+	# Step 1: Create target from executable
+	target = debugger.CreateTarget("./testtarget/amicable_numbers")
+	if not target.IsValid():
+		print("Failed to create target.")
+		exit(1)
+
+	debugger.HandleCommand("process launch --stop-at-entry")
+
+	# Step 2: Find the 'main' function symbol
+	matches = target.FindFunctions("main")
+	if matches.GetSize() == 0:
+		print("Could not find 'main' function.")
+		exit(1)
+
+	# Step 3: Get the start address of 'main'
+	symbol_context = matches.GetContextAtIndex(0)
+	start_addr = symbol_context.GetSymbol().GetStartAddress()
+	load_addr = start_addr.GetLoadAddress(target)
+
+	# Step 4: Set breakpoint at exact address
+	bp = target.BreakpointCreateByAddress(load_addr)
+	print(f"Breakpoint set at main: 0x{load_addr:x}")
+
+	# Step 5: Launch the process
+	# launch_info = lldb.SBLaunchInfo([])
+	launch_info = lldb.SBLaunchInfo(["--stop-at-entry"])  # Pass as launch argument
+	# process = target.Launch(launch_info, lldb.SBError())
+	# debugger.HandleCommand("process launch --stop-at-entry")
+
 
 def feed_input(debugger, command, result, internal_dict):
 	target = debugger.GetSelectedTarget()

@@ -15,6 +15,7 @@ except ImportError:
 	import Queue as queue
 	
 import datetime
+import time
 import sys
 import os
 import subprocess
@@ -105,9 +106,18 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 	def collapseAll_clicked(self):
 		self.collapseAll()
 		
-	def readSTDOUT(self):
+	def readSTDOUT(self, proc):
 
-		stdout = self.driver.getTarget().GetProcess().GetSTDOUT(1024)
+		time.sleep(0.1)  # Give LLDB time to read from PTY
+
+		# stdoutNG = self.driver.getTarget().GetProcess().ReadThreadBytesFromSTDOUT()
+		# if stdoutNG is not None and len(stdoutNG) > 0:
+		# 	logDbgC(f"stdoutNG: {stdoutNG}")
+		# else:
+		# 	logDbgC(f"stdoutNG IS NONE")
+
+		# self.driver.getTarget().GetProcess()
+		stdout = proc.GetSTDOUT(1024)
 		if stdout is not None and len(stdout) > 0:
 
 			# print(stdout)
@@ -170,6 +180,8 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 			print(f"EventIsProcessEvent => Type: {event.GetType()}")
 			if event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
 				sectionNode.setIcon(0, ConfigClass.iconTerminal)
+
+
 #				QCoreApplication.processEvents()
 #				QApplication.processEvents()
 
@@ -190,7 +202,19 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 #						print("Captured line:", line)
 				# tmrAppStarted = QtCore.QTimer()
 				# tmrAppStarted.singleShot(1000, self.readSTDOUT)
-				self.readSTDOUT()
+				print(f"lldb.SBEvent.GetCStringFromEvent(event): {lldb.SBEvent.GetCStringFromEvent(event)}")
+				process = lldb.SBProcess.GetProcessFromEvent(event)
+				if process.GetState() == lldb.eStateStopped:
+					# output = process.GetSTDOUT(1024)
+					self.readSTDOUT(process)
+				else:
+					print(f"APP NOT STOOOOOOOOOOOOOOOPPPPPPPPPPPEEEEEEEEEEDDDDDDDDDD!!!!!!!!")
+					# process.Stop()
+					# if process.GetState() == lldb.eStateStopped:
+					# 	# output = process.GetSTDOUT(1024)
+					# 	self.readSTDOUT(process)
+					# else:
+					# 	print(f"APP NOT STOOOOOOOOOOOOOOOPPPPPPPPPPPEEEEEEEEEEDDDDDDDDDD 123 ????? !!!!!!!!")
 #				QCoreApplication.processEvents()
 #				QApplication.processEvents()
 				

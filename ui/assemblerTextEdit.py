@@ -10,7 +10,7 @@ from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import QBrush, QPixmap, QImage
-from PyQt6 import uic, QtWidgets
+from PyQt6 import uic, QtWidgets, QtGui
 
 from ui.customQt.QControlFlowWidget import FixedScrollBar
 from ui.helper.quickToolTip import *
@@ -24,9 +24,25 @@ from  ui.dialogs.dialogHelper import *
 from dbg.breakpointHelper import *
 from ui.helper.dbgOutputHelper import *
 # from dbg.breakpointHelper import *
+# from PyQt6.QtWidgets import QStyleFactory
+
+
+from PyQt6.QtWidgets import QStyledItemDelegate
+from PyQt6.QtGui import QBrush, QPalette, QColor
+from PyQt6.QtCore import Qt
+
+
+# class ForegroundFixDelegate(QStyledItemDelegate):
+# 	def initStyleOption(self, option, index):
+# 		super().initStyleOption(option, index)
+# 		fg = index.data(Qt.ItemDataRole.ForegroundRole)
+# 		if isinstance(fg, QBrush):
+# 			option.palette.setBrush(QPalette.ColorRole.Text, fg)
+# 		elif isinstance(fg, QColor) and fg.isValid():
+# 			option.palette.setColor(QPalette.ColorRole.Text, fg)
+
 
 class DisassemblyImageTableWidgetItem(QTableWidgetItem):
-	
 	iconStd = None
 	iconBPEnabled = None
 	iconBPDisabled = None
@@ -59,23 +75,88 @@ class DisassemblyImageTableWidgetItem(QTableWidgetItem):
 			self.setIcon(self.iconBPDisabled)
 
 class CustomStyledItemDelegate(QStyledItemDelegate):
+
+	def initStyleOption(self, option, index):
+		super(CustomStyledItemDelegate, self).initStyleOption(option, index)
+
+		color = QtGui.QColor("#FFFFFF")
+
+		# if index.column() == 1:
+		# 	color = QtGui.QColor("#34ebc6")
+		# elif index.column() == 2:
+		# 	color = QtGui.QColor("#FFFFFF")
+		# elif index.column() == 3:
+		# 	color = QtGui.QColor("#9546c7")
+		if index.column() == 0:
+			color = QtGui.QColor("#000000")
+
+			cg = (
+				QtGui.QPalette.ColorGroup.Normal
+				if option.state & QtWidgets.QStyle.StateFlag.State_Enabled
+				else QtGui.QPalette.ColorGroup.Disabled
+			)
+			if option.text == "I" or option.text == ">I":
+				option.palette.setColor(cg, QtGui.QPalette.ColorRole.HighlightedText, color)
+				option.palette.setColor(cg, QtGui.QPalette.ColorRole.Text, color)
+				option.palette.setBrush(QtGui.QPalette.ColorRole.Text, QBrush(color))
+		# if option.state & QtWidgets.QStyle.StateFlag.State_Selected:
+		# 	option.palette.setColor(cg, QtGui.QPalette.ColorRole.HighlightedText, color)
+
+		# option.palette.setBrush(QtGui.QPalette.ColorRole.Text, color)
+	# def initStyleOption(self, option, index):
+	# 	super().initStyleOption(option, index)
+	# 	print(f"CustomDelegate initStyleOption()....")
+	# 	fg = index.data(Qt.ItemDataRole.ForegroundRole)
+	# 	if isinstance(fg, QBrush):
+	# 		fg.setColor(QColor("black"))
+	# 		option.palette.setBrush(QPalette.ColorRole.Text, fg)
+	# 	elif isinstance(fg, QColor) and fg.isValid():
+	# 		fg.setNamedColor("black") #= QColor("black")
+	# 		option.palette.setColor(QPalette.ColorRole.Text, fg)
+
 	def paint(self, painter, option, index):
+		if index.column() == 0:
+			color = QtGui.QColor("#000000")
+			painter._color = color
+
 		super().paint(painter, option, index)
-		
+		# print(f"CustomDelegate paint() / index: {dir(index)}....")
 		if option.state & QStyle.StateFlag.State_Selected:# Qt.State_Selected:
-			
+			# option.palette.setColor(QPalette.ColorRole.Text, QColor("black"))
+
 			brush = QBrush(Qt.GlobalColor.darkYellow)
 			# Set custom background color for selected rows
 			option.backgroundBrush = brush # Adjust color as desired
+
+
 		else:
+			# option.palette.setColor(QPalette.ColorRole.Text, QColor("black"))
 			# Create a temporary QPixmap and fill it with the brush color
 			pixmap = QPixmap(option.rect.size())  # Adjust dimensions as needed
+			# logDbg(f"index.column: {index.column()}")
 			pixmap.fill(Qt.GlobalColor.transparent)
-			
+			# if index.column() != 1:
+			# 	return
+			# 	# pixmap.fill(Qt.GlobalColor.black)
+			# 	# painter.setBrush(QColor("black"))
+			# 	pass
+			# else:
+			# 	pixmap.fill(Qt.GlobalColor.transparent)
+
+			# if index.column == 0:
+			# 	pixmap.fill(Qt.GlobalColor.black)
+
 			# Convert the QPixmap to a QImage
 			image = pixmap.toImage()
 			
 			painter.drawImage(option.rect, image)#option.background())
+
+
+
+
+
+		# painter.setBrush(QBrush(QColor("black")))
+		# painter.end()
 		
 class DisassemblyTableWidget(BaseTableWidget):
 	
@@ -239,7 +320,10 @@ class DisassemblyTableWidget(BaseTableWidget):
 		
 		self.driver = driver
 		self.bpHelper = bpHelper
-		
+
+		# self.setStyle(QStyleFactory.create("Fusion"))
+		# self.setItemDelegate(ForegroundFixDelegate(self))
+
 		self.context_menu = QMenu(self)
 		
 		self.actionEnableBP = self.context_menu.addAction("Enable / Disable Breakpoint")
@@ -277,6 +361,8 @@ class DisassemblyTableWidget(BaseTableWidget):
 		self.context_menu.addSeparator()
 		self.actionRememberLoc = self.context_menu.addAction("Remember Location")
 		self.actionRememberLoc.triggered.connect(self.handle_RememberLoc)
+		self.actionRememberLocBlack = self.context_menu.addAction("Remember Location BLACK")
+		self.actionRememberLocBlack.triggered.connect(self.handle_RememberLocBlack)
 		
 		self.setColumnCount(8)
 		self.setColumnWidth(0, 42)
@@ -323,7 +409,23 @@ class DisassemblyTableWidget(BaseTableWidget):
 		self.setVerticalScrollBar(FixedScrollBar())
 		self.verticalScrollBar().valueChanged.connect(self.on_scroll)
 
+	def keyPressEvent(self, event):
+		if event.key() == Qt.Key.Key_Left:
+			# self.label.setText("Left arrow pressed!")
+			self.handle_left_arrow()
+		elif event.key() == Qt.Key.Key_Right:
+			# self.label.setText("Left arrow pressed!")
+			self.handle_right_arrow()
 
+	def handle_left_arrow(self):
+		# 🔧 Insert your LLDB Python API logic here
+		print("Executing LLDB action for left arrow...")
+		self.window().back_clicked()
+
+	def handle_right_arrow(self):
+		# 🔧 Insert your LLDB Python API logic here
+		print("Executing LLDB action for right arrow...")
+		self.window().forward_clicked()
 
 	itemOld = None
 	
@@ -378,6 +480,8 @@ class DisassemblyTableWidget(BaseTableWidget):
 					# self.window().txtMultiline.viewAddress(newPC)
 			
 	def contextMenuEvent(self, event):
+		if len(self.selectedItems()) <= 0:
+			return 
 		if self.item(self.selectedItems()[0].row(), 1) != None:
 			if self.item(self.selectedItems()[0].row(), 1).isBPEnabled:
 				self.actionEnableBP.setText("Disable Breakpoint")
@@ -438,6 +542,12 @@ class DisassemblyTableWidget(BaseTableWidget):
 		# self.window().updateStatusBar(f"Showing memory for: 0x{addr:X} ...")
 		self.doReadMemory(addr)
 #		print(f"Triggering QAction: {action.text()}")
+
+	def handle_RememberLocBlack(self):
+		if self.item(self.selectedItems()[0].row(), 2) != None:
+			self.item(self.selectedItems()[0].row(), 0).setForeground(QBrush(QColor("black")))
+
+			logDbgC(f"Foreground: {self.item(self.selectedItems()[0].row(), 0).foreground()} / {self.item(self.selectedItems()[0].row(), 0).foreground().color().name()}")
 
 	def handle_RememberLoc(self):
 		if self.item(self.selectedItems()[0].row(), 2) != None:
@@ -529,7 +639,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 		self.addItem(currRowCount, 7, comment)
 		
 		self.setRowHeight(currRowCount, 14)
-		print(f"address: {address}")
+		# print(f"address: {address}")
 		return item
 		
 		
@@ -573,7 +683,7 @@ class AssemblerTextEdit(QWidget):
 		table_widget.insertRow(row_count)
 		
 		# Create a spanning cell item
-		item = QTableWidgetItem(f'function: {text}')
+		item = QTableWidgetItem(f'{text}')
 		item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
 		item.setBackground(QColor(64, 0, 255, 96))
 		item.setForeground(QColor("black"))

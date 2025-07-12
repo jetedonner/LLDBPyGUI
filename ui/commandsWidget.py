@@ -30,7 +30,7 @@ class CommandsWidget(QWidget):
 #		self.wdgCommands = QWidget()
 		self.layCmdParent = QVBoxLayout()
 		self.layCmdParent.setContentsMargins(0, 0, 0, 0)
-		self.layCmdParent.setSpacing(5)
+		# self.layCmdParent.setSpacing(5)
 		self.layCmd = QHBoxLayout()
 		self.layCmd.setContentsMargins(0, 0, 0, 0)
 		self.wdgCmd.setLayout(self.layCmd)

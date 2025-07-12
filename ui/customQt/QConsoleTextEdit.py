@@ -19,6 +19,8 @@ from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 from PyQt6 import uic, QtWidgets
 
+from config import ConfigClass
+
 APP_NAME = "ConsoleTextEditWindow-TEST"
 WINDOW_SIZE = 720
 
@@ -44,6 +46,7 @@ class QConsoleTextEdit(QTextEdit):
 				font: 12px 'Courier New';
 			}
 		""")
+		self.setFont(ConfigClass.font)
 
 	def setEscapedText(self, text):
 		formattedText = self.formatText(text)

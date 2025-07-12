@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import lldb 
+import lldb
 from itertools import islice
 
 from PyQt6.QtGui import *
@@ -23,6 +23,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, QObject, pyqtSignal
 
+
 # 1. Custom Stream for Redirecting Output
 # This class acts as a file-like object that redirects write calls to a PyQt signal.
 class ConsoleStream(QObject):
@@ -38,13 +39,15 @@ class ConsoleStream(QObject):
         """
         self.new_text.emit(text)
         # Optional: Keep the original stdout/stderr for debugging the console itself
-        sys.__stdout__.write(text) # Uncomment for console debugging
+        sys.__stdout__.write(text)  # Uncomment for console debugging
 
     def flush(self):
         """
         No-op for this stream, but required for file-like object compatibility.
         """
+        sys.__stdout__.flush()
         pass
+
 
 # 2. Custom Interactive Console for PyQt
 # This class integrates Python's InteractiveConsole with our custom stream.
@@ -53,6 +56,7 @@ class PyQtInteractiveConsole(code.InteractiveConsole):
     A custom InteractiveConsole that directs its output to a QTextEdit via ConsoleStream.
     It takes an initial namespace (globals/locals) to operate within.
     """
+
     def __init__(self, output_stream, locals=None):
         """
         Initializes the interactive console.
@@ -71,6 +75,12 @@ class PyQtInteractiveConsole(code.InteractiveConsole):
         """
         self.output_stream.write(data)
 
+    def flush(self):
+        """
+        Overrides the default write method to send data to our output_stream.
+        """
+        self.output_stream.flush()
+
     def run_command(self, command):
         """
         Executes a single Python command.
@@ -85,11 +95,11 @@ class PyQtInteractiveConsole(code.InteractiveConsole):
         old_stderr = sys.stderr
         sys.stdout = self.output_stream
         sys.stderr = self.output_stream
-
+        print(f"ConsoleWidget => CHANGING STDOUT!!!!")
         try:
             # Use 'push' for multi-line input handling, though for single-line
             # QLineEdit, it behaves like 'runsource'.
-            self.output_stream.write(f">>> {command}\n") # Echo command
+            self.output_stream.write(f">>> {command}\n")  # Echo command
             self.push(command)
         except Exception as e:
             # Catch any unexpected errors from the interpreter itself
@@ -115,7 +125,8 @@ class PyQtInteractiveConsole(code.InteractiveConsole):
         if self.history_index < len(self.history):
             return self.history[self.history_index]
         else:
-            return "" # Return empty for "past" last command
+            return ""  # Return empty for "past" last command
+
 
 # 3. The PyQt Widget for the Console
 class PyQtConsoleWidget(QWidget):
@@ -123,6 +134,7 @@ class PyQtConsoleWidget(QWidget):
     A PyQt widget that provides an interactive Python console interface.
     It consists of an output QTextEdit and an input QLineEdit.
     """
+
     def __init__(self, locals_dict=None, parent=None):
         """
         Initializes the console widget.
@@ -140,8 +152,8 @@ class PyQtConsoleWidget(QWidget):
         Sets up the graphical user interface for the console.
         """
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(10, 10, 10, 10)
-        main_layout.setSpacing(5)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        # main_layout.setSpacing(5)
 
         # Output TextEdit
         self.output_text_edit = QTextEdit()
@@ -164,7 +176,7 @@ class PyQtConsoleWidget(QWidget):
         self.input_line_edit = QLineEdit()
         # self.input_line_edit.setFontPointSize(12)
         self.input_line_edit.setPlaceholderText("Enter Python command here...")
-        self.input_line_edit.returnPressed.connect(self._execute_command) # Connect Enter key
+        self.input_line_edit.returnPressed.connect(self._execute_command)  # Connect Enter key
         self.input_line_edit.setStyleSheet("""
             QLineEdit {
                 background-color: #3e4452; /* Slightly lighter dark */
@@ -211,7 +223,8 @@ class PyQtConsoleWidget(QWidget):
         )
 
         # Display a welcome message
-        self.output_text_edit.append("Python Interactive Console (Type 'exit()' to close this window)")
+        # (Type 'exit()' to close this window)
+        self.output_text_edit.append("Python Interactive Console")
         self.output_text_edit.append("Access app variables using 'app_object.<variable_name>' if exposed.")
         self.output_text_edit.append("------------------------------------------------------------------\n")
 
@@ -230,105 +243,106 @@ class PyQtConsoleWidget(QWidget):
         # Execute the command using the interactive console
         self.console.run_command(command)
 
+
 class ConsoleWidget(QWidget):
-	
-#	actionShowMemory = None
-	workerManager = None
-	def __init__(self, workerManager):
-		super().__init__()
-		
-		self.workerManager = workerManager
-		
-		self.setHelper = SettingsHelper()
-		
-		self.wdgCmd = QWidget()
-#		self.wdgCommands = QWidget()
-		self.layCmdParent = QVBoxLayout()
-		self.layCmd = QHBoxLayout()
-		self.wdgCmd.setLayout(self.layCmd)
-		self.setLayout(self.layCmdParent)
-		
-		# self.lblCmd = QLabel("Command: ")
-		# self.lblCmd.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
-		#
-		# self.txtCmd = QHistoryLineEdit(self.setHelper.getValue(SettingsValues.CmdHistory))
-		# self.txtCmd.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
-		# self.txtCmd.setText(ConfigClass.initialCommand)
-		# self.txtCmd.returnPressed.connect(self.execCommand_clicked)
-		# self.txtCmd.availCompletitions.connect(self.handle_availCompletitions)
-		# self.txtCmd.setFocus(Qt.FocusReason.NoFocusReason)
-		#
-		# self.swtAutoscroll = QSwitch("Autoscroll")
-		# self.swtAutoscroll.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
-		# self.swtAutoscroll.setChecked(True)
-		#
-		# self.cmdExecuteCmd = QPushButton("Execute")
-		# self.cmdExecuteCmd.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
-		# self.cmdExecuteCmd.clicked.connect(self.execCommand_clicked)
-		#
-		# self.cmdClear = QPushButton()
-		# self.cmdClear.setIcon(ConfigClass.iconTrash)
-		# self.cmdClear.setToolTip("Clear the Commands log")
-		# self.cmdClear.setIconSize(QSize(16, 16))
-		# self.cmdClear.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
-		# self.cmdClear.clicked.connect(self.clear_clicked)
-		#
-		# self.layCmd.addWidget(self.lblCmd)
-		# self.layCmd.addWidget(self.txtCmd)
-		# self.layCmd.addWidget(self.cmdExecuteCmd)
-		# self.layCmd.addWidget(self.swtAutoscroll)
-		# self.layCmd.addWidget(self.cmdClear)
-		# self.wdgCmd.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
-		
-		self.txtConsole = QConsoleTextEdit()
-		# self.txtConsole.setReadOnly(True)
-		self.txtConsole.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
-		self.txtConsole.setFont(ConfigClass.font)
-		# self.txtConsole.setText("Here you can run LLDB commands. Type 'help' for a list of available commands.\n")
-		self.txtConsole.setText("dave@Mia testtarget %")
-		self.layCmdParent.addWidget(self.txtConsole)
-		# self.layCmdParent.addWidget(self.wdgCmd)
-		
-	def handle_availCompletitions(self, compl):
-		
-		self.txtCommands.append("Available Completions:")
-#		self.win.scroll(1)
-		for m in islice(compl, 1, None):
-			self.txtCommands.append(m)
-		pass
-		
-	def clear_clicked(self):
-		self.txtCommands.setText("")
-#		command_interpreter = self.debugger.GetCommandInterpreter()
-		
-#		self.data = self.txtCmd.text()
-#		matches = lldb.SBStringList()
-#		commandinterpreter = self.workerManager.driver.debugger.GetCommandInterpreter()
-#		commandinterpreter.HandleCompletion(
-#			self.data, len(self.data), 0, -1, matches)
-#		if len(matches) > 0:
-#			self.txtCmd.insert(matches.GetStringAtIndex(0))
-#		for match in matches:
-#			print(match)
-		
-	def execCommand_clicked(self):
-		if self.setHelper.getValue(SettingsValues.CmdHistory):
-			self.txtCmd.addCommandToHistory()
-			
-		self.txtCommands.append(f"({PROMPT_TEXT}) {self.txtCmd.text().strip()}")
-		if self.txtCmd.text().strip().lower() in ["clear", "clr"]:
-			self.clear_clicked()
-		else:
-			self.workerManager.start_execCommandWorker(self.txtCmd.text(), self.handle_commandFinished)
-		
-	def handle_commandFinished(self, res):
-		if res.Succeeded():
-			self.txtCommands.appendEscapedText(res.GetOutput())
-		else:
-			self.txtCommands.appendEscapedText(f"{res.GetError()}")
-			
-		if self.swtAutoscroll.isChecked():
-			self.sb = self.txtCommands.verticalScrollBar()
-			self.sb.setValue(self.sb.maximum())
-			
-	
+    #	actionShowMemory = None
+    workerManager = None
+
+    def __init__(self, workerManager):
+        super().__init__()
+
+        self.workerManager = workerManager
+
+        self.setHelper = SettingsHelper()
+
+        self.wdgCmd = QWidget()
+        #		self.wdgCommands = QWidget()
+        self.layCmdParent = QVBoxLayout()
+        self.layCmd = QHBoxLayout()
+        self.wdgCmd.setLayout(self.layCmd)
+        self.setLayout(self.layCmdParent)
+
+        # self.lblCmd = QLabel("Command: ")
+        # self.lblCmd.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
+        #
+        # self.txtCmd = QHistoryLineEdit(self.setHelper.getValue(SettingsValues.CmdHistory))
+        # self.txtCmd.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        # self.txtCmd.setText(ConfigClass.initialCommand)
+        # self.txtCmd.returnPressed.connect(self.execCommand_clicked)
+        # self.txtCmd.availCompletitions.connect(self.handle_availCompletitions)
+        # self.txtCmd.setFocus(Qt.FocusReason.NoFocusReason)
+        #
+        # self.swtAutoscroll = QSwitch("Autoscroll")
+        # self.swtAutoscroll.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
+        # self.swtAutoscroll.setChecked(True)
+        #
+        # self.cmdExecuteCmd = QPushButton("Execute")
+        # self.cmdExecuteCmd.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
+        # self.cmdExecuteCmd.clicked.connect(self.execCommand_clicked)
+        #
+        # self.cmdClear = QPushButton()
+        # self.cmdClear.setIcon(ConfigClass.iconTrash)
+        # self.cmdClear.setToolTip("Clear the Commands log")
+        # self.cmdClear.setIconSize(QSize(16, 16))
+        # self.cmdClear.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
+        # self.cmdClear.clicked.connect(self.clear_clicked)
+        #
+        # self.layCmd.addWidget(self.lblCmd)
+        # self.layCmd.addWidget(self.txtCmd)
+        # self.layCmd.addWidget(self.cmdExecuteCmd)
+        # self.layCmd.addWidget(self.swtAutoscroll)
+        # self.layCmd.addWidget(self.cmdClear)
+        # self.wdgCmd.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
+
+        self.txtConsole = QConsoleTextEdit()
+        # self.txtConsole.setReadOnly(True)
+        self.txtConsole.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        self.txtConsole.setFont(ConfigClass.font)
+        # self.txtConsole.setText("Here you can run LLDB commands. Type 'help' for a list of available commands.\n")
+        self.txtConsole.setText("dave@Mia testtarget %")
+        self.layCmdParent.addWidget(self.txtConsole)
+
+    # self.layCmdParent.addWidget(self.wdgCmd)
+
+    def handle_availCompletitions(self, compl):
+
+        self.txtCommands.append("Available Completions:")
+        #		self.win.scroll(1)
+        for m in islice(compl, 1, None):
+            self.txtCommands.append(m)
+        pass
+
+    def clear_clicked(self):
+        self.txtCommands.setText("")
+
+    #		command_interpreter = self.debugger.GetCommandInterpreter()
+
+    #		self.data = self.txtCmd.text()
+    #		matches = lldb.SBStringList()
+    #		commandinterpreter = self.workerManager.driver.debugger.GetCommandInterpreter()
+    #		commandinterpreter.HandleCompletion(
+    #			self.data, len(self.data), 0, -1, matches)
+    #		if len(matches) > 0:
+    #			self.txtCmd.insert(matches.GetStringAtIndex(0))
+    #		for match in matches:
+    #			print(match)
+
+    def execCommand_clicked(self):
+        if self.setHelper.getValue(SettingsValues.CmdHistory):
+            self.txtCmd.addCommandToHistory()
+
+        self.txtCommands.append(f"({PROMPT_TEXT}) {self.txtCmd.text().strip()}")
+        if self.txtCmd.text().strip().lower() in ["clear", "clr"]:
+            self.clear_clicked()
+        else:
+            self.workerManager.start_execCommandWorker(self.txtCmd.text(), self.handle_commandFinished)
+
+    def handle_commandFinished(self, res):
+        if res.Succeeded():
+            self.txtCommands.appendEscapedText(res.GetOutput())
+        else:
+            self.txtCommands.appendEscapedText(f"{res.GetError()}")
+
+        if self.swtAutoscroll.isChecked():
+            self.sb = self.txtCommands.verticalScrollBar()
+            self.sb.setValue(self.sb.maximum())
