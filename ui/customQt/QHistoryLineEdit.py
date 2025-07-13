@@ -93,5 +93,11 @@ class QHistoryLineEdit(QLineEdit):
 			else:
 				self.lstCommands.append(newCommand)
 				self.currCmd = len(self.lstCommands) - 1
+
+	def clearCommandText(self, clearCommandHistory=False):
+		self.setText("")
+		if clearCommandHistory:
+			self.lstCommands.clear()
+
 				
 			

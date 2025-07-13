@@ -52,94 +52,84 @@ class DebuggerDriver(Thread):
         self.initialize(debugger)
 
     def initialize(self, debugger):
-        # print("INITIALISING DRIVER!!!")
-        self.done = False
-        self.debugger = debugger
-        self.listener = debugger.GetListener()
-        if not self.listener.IsValid():
-            raise "Invalid listener"
+        if debugger is not None: # and not debugger.GetListener().should_quit:
+            # print("INITIALISING DRIVER!!!")
+            self.done = False
+            self.debugger = debugger
+            self.listener = debugger.GetListener()
+            if not self.listener.IsValid():
+                raise "Invalid listener"
 
-        # print(f"=====================>>>>>>>>> self.debugger (ADD): {self.debugger} / {self.listener}")
-        self.listener.StartListeningForEventClass(self.debugger,
-                                                  lldb.SBTarget.GetBroadcasterClassName(),
-                                                  lldb.SBTarget.eBroadcastBitBreakpointChanged
-                                                  #| lldb.SBTarget.eBroadcastBitModuleLoaded
-                                                  #| lldb.SBTarget.eBroadcastBitModuleUnloaded
-                                                  #| lldb.SBTarget.eBroadcastBitWatchpointChanged
-                                                  #| lldb.SBTarget.eBroadcastBitSymbolLoaded
-                                                  )
+            # print(f"=====================>>>>>>>>> self.debugger (ADD): {self.debugger} / {self.listener}")
+            self.listener.StartListeningForEventClass(self.debugger,
+                                                      lldb.SBTarget.GetBroadcasterClassName(),
+                                                      lldb.SBTarget.eBroadcastBitBreakpointChanged
+                                                      #| lldb.SBTarget.eBroadcastBitModuleLoaded
+                                                      #| lldb.SBTarget.eBroadcastBitModuleUnloaded
+                                                      #| lldb.SBTarget.eBroadcastBitWatchpointChanged
+                                                      #| lldb.SBTarget.eBroadcastBitSymbolLoaded
+                                                      )
 
-        self.listener.StartListeningForEventClass(self.debugger,
-                                                  lldb.SBThread.GetBroadcasterClassName(),
-                                                  lldb.SBThread.eBroadcastBitStackChanged
-                                                  #  lldb.SBThread.eBroadcastBitBreakpointChanged
-                                                  | lldb.SBThread.eBroadcastBitThreadSuspended
-                                                  | lldb.SBThread.eBroadcastBitThreadResumed
-                                                  | lldb.SBThread.eBroadcastBitSelectedFrameChanged
-                                                  | lldb.SBThread.eBroadcastBitThreadSelected
-                                                  )
+            self.listener.StartListeningForEventClass(self.debugger,
+                                                      lldb.SBThread.GetBroadcasterClassName(),
+                                                      lldb.SBThread.eBroadcastBitStackChanged
+                                                      #  lldb.SBThread.eBroadcastBitBreakpointChanged
+                                                      | lldb.SBThread.eBroadcastBitThreadSuspended
+                                                      | lldb.SBThread.eBroadcastBitThreadResumed
+                                                      | lldb.SBThread.eBroadcastBitSelectedFrameChanged
+                                                      | lldb.SBThread.eBroadcastBitThreadSelected
+                                                      )
 
-        self.listener.StartListeningForEventClass(self.debugger,
-                                                  lldb.SBProcess.GetBroadcasterClassName(),
-                                                  lldb.SBProcess.eBroadcastBitStateChanged
-                                                  | lldb.SBProcess.eBroadcastBitInterrupt
-                                                  | lldb.SBProcess.eBroadcastBitSTDOUT
-                                                  | lldb.SBProcess.eBroadcastBitSTDERR
-                                                  | lldb.SBProcess.eBroadcastBitProfileData
-                                                  )
-        self.listener.StartListeningForEventClass(self.debugger,
-                                                  lldb.SBCommandInterpreter.GetBroadcasterClass(),
-                                                  lldb.SBCommandInterpreter.eBroadcastBitThreadShouldExit
-                                                  | lldb.SBCommandInterpreter.eBroadcastBitResetPrompt
-                                                  | lldb.SBCommandInterpreter.eBroadcastBitQuitCommandReceived
-                                                  | lldb.SBCommandInterpreter.eBroadcastBitAsynchronousOutputData
-                                                  | lldb.SBCommandInterpreter.eBroadcastBitAsynchronousErrorData
-                                                )
+            self.listener.StartListeningForEventClass(self.debugger,
+                                                      lldb.SBProcess.GetBroadcasterClassName(),
+                                                      lldb.SBProcess.eBroadcastBitStateChanged
+                                                      | lldb.SBProcess.eBroadcastBitInterrupt
+                                                      | lldb.SBProcess.eBroadcastBitSTDOUT
+                                                      | lldb.SBProcess.eBroadcastBitSTDERR
+                                                      | lldb.SBProcess.eBroadcastBitProfileData
+                                                      )
+            self.listener.StartListeningForEventClass(self.debugger,
+                                                      lldb.SBCommandInterpreter.GetBroadcasterClass(),
+                                                      lldb.SBCommandInterpreter.eBroadcastBitThreadShouldExit
+                                                      | lldb.SBCommandInterpreter.eBroadcastBitResetPrompt
+                                                      | lldb.SBCommandInterpreter.eBroadcastBitQuitCommandReceived
+                                                      | lldb.SBCommandInterpreter.eBroadcastBitAsynchronousOutputData
+                                                      | lldb.SBCommandInterpreter.eBroadcastBitAsynchronousErrorData
+                                                    )
     
     def addListener(self, type = lldb.SBTarget, bitMask = SBTarget.eBroadcastBitWatchpointChanged):
-  #		self.target = self.debugger.GetSelectedTarget()
-  #		self.process = self.target.GetProcess()
-  #		print(f"self.target => {self.target}")
-  #		self.broadcasterTarget = self.target.GetBroadcaster()
-  #		global bt
-  #		self.broadcasterTarget = bt
-  #		print(f"self.target => {self.target} / self.process => {self.process} / self.broadcasterTarget => {self.broadcasterTarget}")
-  #		self.maskTarget = bitMask # SBTarget.eBroadcastBitBreakpointChanged # | SBTarget.eBroadcastBitWatchpointChanged | SBTarget.eBroadcastBitModulesLoaded | SBThread.eBroadcastBitThreadSuspended 
-  #		global lt
-  #		self.listenerTarget = lt
-      # print(f"==============>>>>>>>>>>>>> ADDING LISTENER: {self.debugger} / {self.listener}")
-      self.listener.StopListeningForEventClass(self.debugger,                                                  lldb.SBTarget.GetBroadcasterClassName(),
-        lldb.SBTarget.eBroadcastBitBreakpointChanged
-        #| lldb.SBTarget.eBroadcastBitModuleLoaded
-        #| lldb.SBTarget.eBroadcastBitModuleUnloaded
-        | lldb.SBTarget.eBroadcastBitWatchpointChanged)
+        self.listener.StopListeningForEventClass(self.debugger,                                                  lldb.SBTarget.GetBroadcasterClassName(),
+            lldb.SBTarget.eBroadcastBitBreakpointChanged
+            #| lldb.SBTarget.eBroadcastBitModuleLoaded
+            #| lldb.SBTarget.eBroadcastBitModuleUnloaded
+            | lldb.SBTarget.eBroadcastBitWatchpointChanged)
 #     success = self.broadcasterTarget.AddListener(self.listenerTarget, bitMask)
   #		print(f"Added Listener with {success} / self.broadcasterTarget => {self.broadcasterTarget} / self.listenerTarget  => {self.listenerTarget} / self.maskTarget => {self.maskTarget}")
-      pass
+        pass
   
     def removeListener(self, type = lldb.SBTarget, bitMask = SBTarget.eBroadcastBitWatchpointChanged):
-  #		self.target = self.debugger.GetSelectedTarget()
-  #		self.process = self.target.GetProcess()
-  #		print(f"self.target => {self.target}")
-  #		self.broadcasterTarget = self.target.GetBroadcaster()
-  #		global bt
-  #		self.broadcasterTarget = bt
-  #		print(f"self.target => {self.target} / self.process => {self.process} / self.broadcasterTarget => {self.broadcasterTarget}")
-  #		self.maskTarget = bitMask #SBTarget.eBroadcastBitBreakpointChanged # | SBTarget.eBroadcastBitWatchpointChanged | SBTarget.eBroadcastBitModulesLoaded | SBThread.eBroadcastBitThreadSuspended 
-  #		global lt
-  #		self.listenerTarget = lt
-      # print(f"=====================>>>>>>>>> self.debugger (REMOVE): {self.debugger} / {self.listener}")
+      #		self.target = self.debugger.GetSelectedTarget()
+      #		self.process = self.target.GetProcess()
+      #		print(f"self.target => {self.target}")
+      #		self.broadcasterTarget = self.target.GetBroadcaster()
+      #		global bt
+      #		self.broadcasterTarget = bt
+      #		print(f"self.target => {self.target} / self.process => {self.process} / self.broadcasterTarget => {self.broadcasterTarget}")
+      #		self.maskTarget = bitMask #SBTarget.eBroadcastBitBreakpointChanged # | SBTarget.eBroadcastBitWatchpointChanged | SBTarget.eBroadcastBitModulesLoaded | SBThread.eBroadcastBitThreadSuspended
+      #		global lt
+      #		self.listenerTarget = lt
+          # print(f"=====================>>>>>>>>> self.debugger (REMOVE): {self.debugger} / {self.listener}")
       self.listener.StopListeningForEventClass(self.debugger,                                                  lldb.SBTarget.GetBroadcasterClassName(),
         lldb.SBTarget.eBroadcastBitBreakpointChanged
         #| lldb.SBTarget.eBroadcastBitModuleLoaded
         #| lldb.SBTarget.eBroadcastBitModuleUnloaded
         #| lldb.SBTarget.eBroadcastBitWatchpointChanged)
       )
-      
+
       success = self.debugger.GetSelectedTarget().GetBroadcaster().RemoveListener(self.listener, bitMask)
-      # print(f"Removed Listener with {success}")
-      #.RemoveListener(self.listenerTarget, bitMask)
-  #		print(f"Removed Listener with {success} / self.broadcasterTarget => {self.broadcasterTarget} / self.listenerTarget  => {self.listenerTarget} / self.maskTarget => {self.maskTarget}")
+          # print(f"Removed Listener with {success}")
+          #.RemoveListener(self.listenerTarget, bitMask)
+      #		print(f"Removed Listener with {success} / self.broadcasterTarget => {self.broadcasterTarget} / self.listenerTarget  => {self.listenerTarget} / self.maskTarget => {self.maskTarget}")
 
     def createTarget(self, target_image, args=None):
         print(f"createTarget({target_image})....")
@@ -195,7 +185,7 @@ class DebuggerDriver(Thread):
   
     def eventLoop(self):
 #       global process
-        while not self.isDone() and not self.aborted:
+        while not self.isDone() and not self.aborted:# and not self.listener.should_quit:
             event = lldb.SBEvent()
             got_event = self.listener.WaitForEvent(lldb.UINT32_MAX, event)
             # print(f'GOT-EVENT: {event} / {event.GetType()} ====>>> THATS DA ONE')

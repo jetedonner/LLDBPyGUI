@@ -1168,8 +1168,8 @@ class LLDBPyGUIWindow(QMainWindow):
 #					self.rip = ""
 #					self.start_loadDisassemblyWorker(True)
 		pass
-	def setResumeActionIcon(self, icon):
-		self.load_resume.setIcon(icon)
+	def setResumeActionIcon(self, iconResume=True):
+		# self.load_resume.setIcon(icon)
 		pass
 
 	def start_findReferencesWorker(self, address):
@@ -1291,10 +1291,10 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.txtMultiline.clearPC()
 		if self.workerManager.start_debugWorker(driver, kind, self.handle_debugStepCompleted):
 			self.setWinTitleWithState("Running")
-			self.setResumeActionIcon(ConfigClass.iconPause)
+			self.setResumeActionIcon()
 			self.isProcessRunning = True
 		else:
-			self.setResumeActionIcon(ConfigClass.iconResume)
+			self.setResumeActionIcon()
 			self.isProcessRunning = False
 
 	rip = ""
@@ -1311,12 +1311,12 @@ class LLDBPyGUIWindow(QMainWindow):
 			
 			context = frm.GetSymbolContext(lldb.eSymbolContextEverything)
 			self.workerManager.start_loadSourceWorker(self.driver.debugger, ConfigClass.testTargetSource, self.handle_loadSourceFinished, context.GetLineEntry().GetLine())
-#			self.setResumeActionIcon(ConfigClass.iconResume)
+#			self.setResumeActionIcon()
 			self.setWinTitleWithState("Interrupted")
-			self.setResumeActionIcon(ConfigClass.iconResume)
+			self.setResumeActionIcon()
 		else:
 			# print(f"Debug STEP ({kind}) FAILED!!!")
-			self.setResumeActionIcon(ConfigClass.iconResume)
+			self.setResumeActionIcon()
 		self.isProcessRunning = False
 		pass
 		

@@ -149,5 +149,10 @@ class CommandsWidget(QWidget):
 		if self.swtAutoscroll.isChecked():
 			self.sb = self.txtCommands.verticalScrollBar()
 			self.sb.setValue(self.sb.maximum())
+
+	def resetContent(self, resetCommandHistory=False, resetConsole=False):
+		self.txtCmd.clearCommandText(resetCommandHistory)
+		if resetConsole:
+			self.txtCommands.setText("")
 			
 	

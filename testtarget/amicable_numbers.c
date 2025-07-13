@@ -55,11 +55,12 @@ int main() {
   // This msg will prompt the user to enter his / her secret
   //printf("Welc0me to calc test!\nPlease solve the following calculations:");
   printf("#==================================================#\n");
-  printf("| Welc0me to AMICABLE NUMBER GENERATOR             |\n");
+  printf("| W3lc0m4 to AMICABLE NUMBER GENERATOR             |\n");
   printf("| This app lets you generate amicable number pairs |\n");
   printf("|                                                  |\n");
   printf("| v 0.0.1, (c.) 1991-2025 by kimhauser.ch          |\n");
   printf("#==================================================#\n");
+  printf("\n");
   fflush(stdout);
 
   // int nVar3 = dividerSum(283);

@@ -31,6 +31,7 @@ class SettingsValues(Enum):
 	BreakAtMainFunc = ("Break at main function", True, bool)
 	MainFuncName = ("Main function name", "main", str)
 	BreakpointAtMainFunc = ("Set breakpoint at main function", True, bool)
+	ClearConsoleComplete = ("Clear console complete with 1 click", True, bool)
 
 	WindowSize = ("Window Size", QSize(1024, 800), QSize)
 	
@@ -74,6 +75,8 @@ class SettingsHelper(QObject):
 		self.settings.setValue(SettingsValues.BreakAtMainFunc.value[0], True)
 		self.settings.setValue(SettingsValues.MainFuncName.value[0], "main")
 		self.settings.setValue(SettingsValues.BreakpointAtMainFunc.value[0], True)
+		self.settings.setValue(SettingsValues.ClearConsoleComplete.value[0], True)
+
 
 	def beginWriteArray(self, prefix):
 		self.settings.beginWriteArray(prefix)

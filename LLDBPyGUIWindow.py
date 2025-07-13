@@ -54,13 +54,10 @@ from ui.consoleTextEdit import *
 from ui.customQt.QHexTableWidget import *
 from ui.customQt.QMemoryViewer import *
 from ui.dbgOutputTextEdit import *
-
-
+from ui.dialogs.spinnerOverlay import *
 from worker.workerManager import *
-
 from config import *
 
-# main.py
 from lib import utils
 
 
@@ -77,7 +74,6 @@ from lib import utils
 #			self.truncate(0)  # Clear the buffer for subsequent writes
 
 
-# myfile.py
 def wpcallbackng(frame, wp, dict):
 	# print(f"================>>>>>>>>>>>>> YES WATCHPOINT HIT <<<<<<<<<<<=================")
 	# wp.SetEnabled(True)
@@ -223,6 +219,15 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.driver.debugger.SetLoggingCallback(self.my_custom_log_callback)
 
 		self.targetBasename = "NG"
+
+		# self.spinner_overlay = SpinnerOverlay(self)
+		# self.spinner_overlay.show()
+
+		self.dialog = SpinnerDialog()
+		self.dialog.show()
+
+		# QTimer.singleShot(3000, self.finish_startup)  # Simulate startup delay
+
 
 		self.setHelper = SettingsHelper()
 		self.workerManager = WorkerManager(self.driver)
@@ -370,15 +375,11 @@ class LLDBPyGUIWindow(QMainWindow):
 
 		self.file_menu = self.menu.addMenu("&Load Action")
 		self.file_menu.addAction(self.load_action)
-		# self.file_menu.addAction(self.goep_action)
 
 		self.file_menu.addSeparator()
 		self.oep_menu = self.file_menu.addMenu("&GoTo ...")
-		# self.file_menu.addMenu(self.oep_menu)
-		# self.oep_menu.addAction(self.goep_action)
 		self.oep_menu.addAction(self.goep2_action)
 		self.oep_menu.addAction(self.goep3_action)
-#		file_menu.addAction(self.settings_action)
 
 #		self.help_action = QAction(ConfigClass.iconInfo, '&Show Help', self)
 #		self.help_action.setStatusTip('Show Help')
@@ -401,9 +402,6 @@ class LLDBPyGUIWindow(QMainWindow):
 
 		self.statusBar.addPermanentWidget(self.progressbar)
 
-		# self.layout = QVBoxLayout()
-		# self.layout.setContentsMargins(0, 0, 0, 0)
-
 		self.splitterAsm = QSplitter()
 		self.splitterAsm.setContentsMargins(0, 0, 0, 0)
 		self.splitterAsm.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -414,20 +412,15 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.wdtControlFlow.setContentsMargins(0, 0, 0, 0)
 		self.wdtControlFlowLeft = QWidget()
 		self.wdtControlFlowLeft.setContentsMargins(0, 30, 0, 0)
-		# self.wdtControlFlowLeft.setMin
 		self.layControlFlowLeft = QVBoxLayout(self.wdtControlFlowLeft)
 		self.layControlFlowLeft.setContentsMargins(0, 0, 0, 0)
-		# self.layControlFlowLeft.addStretch(1)
 		self.layControlFlowLeft.addWidget(self.wdtControlFlow)
 		self.splitterAsm.addWidget(self.wdtControlFlowLeft)
-		# self.splitterAsm.set
+
 		self.wdtControlFlowLeft.setMaximumWidth(80)
 		self.wdtControlFlow.setMaximumWidth(80)
 
-
 		self.splitterAsm.addWidget(self.txtMultiline)
-#		self.txtMultiline.table.sigEnableBP.connect(self.handle_enableBP)
-#		self.txtMultiline.table.sigBPOn.connect(self.handle_BPOn)
 
 		self.txtMultiline.setContentsMargins(0, 0, 0, 0)
 
@@ -473,7 +466,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.treListener = ListenerWidget(self.driver, self.setHelper)
 		self.treListener.treEventLog.sigSTDOUT.connect(self.testSTDOUT)
 		self.treListener.setContentsMargins(0, 0, 0, 0)
-#		self.treListener.listener.signals.processEvent.connect(self.handle_processEvent)
+		# self.treListener.listener.signals.processEvent.connect(self.handle_processEvent)
 
 		self.tabWidgetDbg.addTab(self.treListener, "Listeners")
 
@@ -486,12 +479,6 @@ class LLDBPyGUIWindow(QMainWindow):
 		# self.consoleWidget = ConsoleWidget(self.workerManager)
 		# self.consoleWidget.setContentsMargins(0, 0, 0, 0)
 		self.tabWidgetConsole.layout().setContentsMargins(0, 0, 0, 0)
-		# self.tabWidgetConsoles.addTab(self.tabWidgetConsole, "Python Console")
-		# self.tabWidgetConsole.layout().addWidget(self.consoleWidget)
-		# --- IMPORTANT: Expose application variables/objects to the console ---
-		# Create a dictionary to pass as the interpreter's local namespace.
-		# This makes 'app_object' available in the console's scope.
-		# You can add any variables or objects you want to expose.
 		exposed_variables = {
 			'app_object': self,  # Expose the MainWindow instance itself
 			'QApplication': QApplication,  # Expose QApplication if needed
@@ -507,30 +494,9 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.main_layout.setContentsMargins(10, 10, 10, 10)
 		self.main_layout.setSpacing(5)
 
-		# Output TextEdit
 		# self.output_text_edit = QTextEdit()
 		# ConsoleWidget()
 		self.output_text_edit = ConsoleWidget() #.setReadOnly(True)
-		# self.output_text_edit.setFontPointSize(12)
-		# self.output_text_edit.setLineWrapMode(QTextEdit.LineWrapMode.WidgetWidth)
-		# self.output_text_edit.setStyleSheet("""
-		#             QTextEdit {
-		#                 background-color: #282c34; /* Dark background */
-		#                 color: #abb2bf; /* Light grey text */
-		#                 border: 1px solid #3e4452;
-		#                 border-radius: 5px;
-		#                 padding: 10px;
-		#             }
-		#         """)
-		# self.output_text_edit.setText("dave@Mia /:")
-		# self.main_layout.addWidget(self.output_text_edit)
-
-		#self.tabWidgetMain.addTab(self.wdtCommands, "Commands")
-		#self.tabWidgetConsoles.addTab(self.wdtCommands, "Commands")
-		self.tabWidgetConsoles.addTab(self.output_text_edit, "System shell")
-		self.tabWidgetConsoles.addTab(self.tabWidgetConsole, "Python")
-
-
 
 		# self.tabWidgetConsolePrompt.setLayout(QVBoxLayout())
 		# self.tabWidgetConsoles.addTab(self.tabWidgetConsolePrompt, "Prompt")
@@ -539,9 +505,6 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.console_widget = PyQtConsoleWidget(locals_dict=exposed_variables)
 		self.tabWidgetConsole.layout().addWidget(self.console_widget)
 		# self.tabWidgetDbg.addTab(self.tabWidgetConsoles, "Consoles")
-
-		# self.tabWidgetDbg.addTab(self.wdtSearch, "Search")
-
 
 		self.tabWidgetMain = QTabWidget()
 		self.tabWidgetMain.setContentsMargins(0, 0, 0, 0)
@@ -587,6 +550,9 @@ class LLDBPyGUIWindow(QMainWindow):
 
 		self.wdtCommands = CommandsWidget(self.workerManager)
 		self.tabWidgetConsoles.addTab(self.wdtCommands, "LLDB")
+		self.tabWidgetConsoles.addTab(self.tabWidgetConsole, "Python")
+		self.tabWidgetConsoles.addTab(self.output_text_edit, "System shell")
+
 
 		self.tabWidgetDbg.addTab(self.tabWidgetConsoles, "Consoles")
 		# self.tabWidgetMain.addTab(self.wdtCommands, "Commands")
@@ -605,21 +571,6 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.dbgWidgetMain.setContentsMargins(0, 0, 0, 0)
 		# self.dbgWidgetMain.layout().addWidget(self.tabWidgetMain)
 		self.wdtDbg = DbgOutputWidget()
-		# self.dbgTxt = DbgOutputTextEdit()
-		# self.dbgTxt.setStyleSheet("""
-		# 			QTextEdit {
-		# 				/* background-color: #f0f0f0;
-		# 				gridline-color: #ccc;
-		# 				font: 12px 'Courier New';*/
-		# 				background-color: #282c34; /* Dark background */
-		# 				color: #abb2bf; /* Light grey text */
-		# 				font: 12px 'Courier New';
-		# 				/*border: 1px solid #3e4452;*/
-		# 				border-radius: 5px;
-		# 				/*padding: 10px;*/
-		# 			}
-		# 		""")
-		# self.dbgWidgetMain.layout().addWidget(self.dbgTxt)
 
 		self.splitterDbgMain = QSplitter()
 		self.splitterDbgMain.setContentsMargins(0, 0, 0, 0)
@@ -632,13 +583,6 @@ class LLDBPyGUIWindow(QMainWindow):
 
 		self.threadpool = QThreadPool()
 
-	#	tmrResetStatusBarActive = False
-
-#		def updateStatusBar(self, msg):
-#		self.statusBar.showMessage(msg)
-#		if self.tmrResetStatusBar.isActive():
-#			self.tmrResetStatusBar.stop()
-#		self.tmrResetStatusBar = QtCore.QTimer()
 		self.tmrResetStatusBar.setInterval(int(self.setHelper.getValue(SettingsValues.StatusBarMsgTimeout)))
 		self.tmrResetStatusBar.setSingleShot(True)
 		self.tmrResetStatusBar.timeout.connect(self.resetStatusBar)
@@ -651,7 +595,12 @@ class LLDBPyGUIWindow(QMainWindow):
 
 		self._restore_size()
 
-		# import pdb; pdb.set_trace()
+	def finish_startup(self):
+		# self.spinner_overlay.close()
+		self.dialog.close()
+
+	# Continue initializing your app
+
 
 	def closeEvent(self, event):
 		# reply = QMessageBox.question(self,
@@ -689,23 +638,6 @@ class LLDBPyGUIWindow(QMainWindow):
 				event.ignore()
 		else:
 			event.accept()
-
-	# def clearCompleteUI(self):
-	# 	logDbg(f"clearCompleteUI....")
-	# 	self.txtMultiline.table.resetContent()
-	# 	self.tabWatchpoints.tblWatchpoints.resetContent()
-	# 	self.tblVariables.resetContent()
-	# 	self.wdtBPsWPs.treBPs.clear()
-	# 	self.txtSource.clear()
-	# 	for tblReg in self.tblRegs:
-	# 		tblReg.resetContent()
-	# 	self.treThreads.clear()
-	# 	self.treListener.treEventLog.clear()
-	# 	self.treStats.clear()
-	# 	self.tabWidgetStruct.resetContent()
-	# 	self.tblFileInfos.resetContent()
-	# 	self.wdtDbg.cmdClear_clicked()
-	# 	pass
 
 	def testSTDOUT(self, strOut):
 		print(f'HEEEEEELLLLLLLOOOOOO FROM STDOUT => {strOut}')
@@ -895,11 +827,12 @@ class LLDBPyGUIWindow(QMainWindow):
 				# 		print(f"=============>>>>>>>>>>>> STDERR: {process_stderr}")
 				# 		print(process_stderr)
 				# # process.Kill()  # kill the process
-
+				lldb.debugger.Terminate()
 				errKill = process.Kill()
 				if not errKill.Success():
 					logDbgC(f'Error killing process: {errKill}')
 				else:
+					# lldb.debugger.Terminate()
 					logDbg(f"Debugged app killed, cleaning up ...")
 					self.resetGUI()
 			else:
@@ -1021,30 +954,39 @@ class LLDBPyGUIWindow(QMainWindow):
 		pass
 
 	def test2_clicked(self):
-		# self.wdtControlFlow.worker.quit()
-		# self.wdtControlFlow.worker.wait()
-		# self.wdtControlFlow.toggleTestTimer()
-		if len(self.wdtControlFlow.connectionsNG) <= 0:
-			return
+		os.system('clear')  # Unix/Linux/macOS
+		statusTxt = "Console cleared"
+		if self.setHelper.getChecked(SettingsValues.ClearConsoleComplete):
+			os.system('clear')  # Unix/Linux/macOS
+			statusTxt += " (completely)"
 
-		scene_rect = self.wdtControlFlow.scene.sceneRect()
-		line_rect = self.wdtControlFlow.connectionsNG[5].mainLine.mapToScene(self.wdtControlFlow.connectionsNG[0].mainLine.boundingRect()).boundingRect()
+		self.updateStatusBar(statusTxt)
+		# print("\033c", end="")  # Resets the terminal
 
-		if scene_rect.intersects(line_rect):
-			print("Line item is within the visible scene area.")
-			logDbg(f"CONNECTION IS VISIBLE")
-		else:
-			print(f"NOT INSIDE!!!!")
-
-		view_rect = self.wdtControlFlow.view.mapToScene(self.wdtControlFlow.view.viewport().rect()).boundingRect()
-		line_rect = self.wdtControlFlow.connectionsNG[5].mainLine.mapToScene(self.wdtControlFlow.connectionsNG[5].mainLine.boundingRect()).boundingRect()
-
-		if view_rect.intersects(line_rect):
-			logDbg(f"Line item IS VISIBLE in the view.")
-			self.wdtControlFlow.connectionsNG[5].mainLine.setVisible(True)
-		else:
-			logDbg(f"Line item IS NOOOOOTTTTT VISIBLE in the view!!!!")
-			self.wdtControlFlow.connectionsNG[5].mainLine.setVisible(False)
+		# # self.wdtControlFlow.worker.quit()
+		# # self.wdtControlFlow.worker.wait()
+		# # self.wdtControlFlow.toggleTestTimer()
+		# if len(self.wdtControlFlow.connectionsNG) <= 0:
+		# 	return
+		#
+		# scene_rect = self.wdtControlFlow.scene.sceneRect()
+		# line_rect = self.wdtControlFlow.connectionsNG[5].mainLine.mapToScene(self.wdtControlFlow.connectionsNG[0].mainLine.boundingRect()).boundingRect()
+		#
+		# if scene_rect.intersects(line_rect):
+		# 	print("Line item is within the visible scene area.")
+		# 	logDbg(f"CONNECTION IS VISIBLE")
+		# else:
+		# 	print(f"NOT INSIDE!!!!")
+		#
+		# view_rect = self.wdtControlFlow.view.mapToScene(self.wdtControlFlow.view.viewport().rect()).boundingRect()
+		# line_rect = self.wdtControlFlow.connectionsNG[5].mainLine.mapToScene(self.wdtControlFlow.connectionsNG[5].mainLine.boundingRect()).boundingRect()
+		#
+		# if view_rect.intersects(line_rect):
+		# 	logDbg(f"Line item IS VISIBLE in the view.")
+		# 	self.wdtControlFlow.connectionsNG[5].mainLine.setVisible(True)
+		# else:
+		# 	logDbg(f"Line item IS NOOOOOTTTTT VISIBLE in the view!!!!")
+		# 	self.wdtControlFlow.connectionsNG[5].mainLine.setVisible(False)
 
 		pass
 
@@ -1060,8 +1002,8 @@ class LLDBPyGUIWindow(QMainWindow):
 #			self.dialog = None
 #		else:
 
-#		self.dialog = SpinnerDialog()
-#		self.dialog.show()
+		self.dialog = SpinnerDialog()
+		self.dialog.show()
 #		self.driver.removeListener(lldb.SBTarget, SBTarget.eBroadcastBitBreakpointChanged)
 
 
@@ -1074,7 +1016,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		# self.tabWidgetMain.setCurrentIndex(2)
 		# target = lldb.debugger.GetSelectedTarget()
 		# self.target
-		self.wdtControlFlow.loadInstructions()
+		# self.wdtControlFlow.loadInstructions()
 		# objCon = self.wdtControlFlow.draw_flowConnection(0, 45)
 		# objCon.setToolTip(f"FIRST TOOLTIP!!!")
 		# objCon2 = self.wdtControlFlow.draw_flowConnection(37, 57, QColor("orange"), 25, 1, 21)
@@ -1285,7 +1227,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		desc = get_description(event)
 		# print('GUI-Event description:', desc)
 		# print('GUI-Event data flavor:', event.GetDataFlavor())
-		if str(event.GetDataFlavor()) == "ProgressEventData":
+		if str(event.GetDataFlavor()) == "ProgressEventData" and not self.listener.should_quit:
 			self.treListener.handle_gotNewEvent(event)
 			pass
 
@@ -1314,8 +1256,8 @@ class LLDBPyGUIWindow(QMainWindow):
 					self.listener.setHelper = self.setHelper
 					self.listener.breakpointEvent.connect(self.handle_breakpointEvent)
 					self.listener.processEvent.connect(self.handle_processEvent)
-					# self.listener.gotEvent.connect(self.treListener.handle_gotNewEvent)
-					# self.listener.addListenerCalls()
+					self.listener.gotEvent.connect(self.treListener.handle_gotNewEvent)
+					self.listener.addListenerCalls()
 					self.listener.start()
 
 #
@@ -1351,7 +1293,8 @@ class LLDBPyGUIWindow(QMainWindow):
 	def resetGUI(self):
 #		print(f"Resetting GUI")
 		self.updateStatusBar(f"Resetting GUI ...")
-		self.txtMultiline.resetContent()
+		# self.txtMultiline.resetContent()
+		self.txtMultiline.clearPC()
 		self.tblFileInfos.resetContent()
 		self.tabWidgetStruct.resetContent()
 		self.treStats.clear()
@@ -1368,6 +1311,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.treThreads.clear()
 		self.treListener.treEventLog.clear()
 		self.wdtDbg.cmdClear_clicked()
+		self.wdtCommands.resetContent(False, True)
 
 	inited = False
 	def handle_processEvent(self, process):
@@ -1380,6 +1324,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			self.resetGUI()
 			state = 'exited'
 			self.should_quit = True
+			return
 		thread = process.selected_thread
 		# print('Process event: %s, reason: %d' % (state, thread.GetStopReason()))
 		if thread.GetStopReason() == lldb.eStopReasonBreakpoint:
@@ -1399,8 +1344,12 @@ class LLDBPyGUIWindow(QMainWindow):
 #					self.rip = ""
 #					self.start_loadDisassemblyWorker(True)
 		pass
-	def setResumeActionIcon(self, icon):
-		self.load_resume.setIcon(icon)
+	def setResumeActionIcon(self, iconResume=True):
+		if iconResume:
+			iconToUse = ConfigClass.iconResume
+		else:
+			iconToUse = ConfigClass.iconPause
+		self.load_resume.setIcon(iconToUse)
 		pass
 
 	def start_findReferencesWorker(self, address):
@@ -1522,10 +1471,10 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.txtMultiline.clearPC()
 		if self.workerManager.start_debugWorker(driver, kind, self.handle_debugStepCompleted):
 			self.setWinTitleWithState("Running")
-			self.setResumeActionIcon(ConfigClass.iconPause)
+			self.setResumeActionIcon(False)
 			self.isProcessRunning = True
 		else:
-			self.setResumeActionIcon(ConfigClass.iconResume)
+			self.setResumeActionIcon()
 			self.isProcessRunning = False
 
 	rip = ""
@@ -1542,12 +1491,12 @@ class LLDBPyGUIWindow(QMainWindow):
 
 			context = frm.GetSymbolContext(lldb.eSymbolContextEverything)
 			self.workerManager.start_loadSourceWorker(self.driver.debugger, ConfigClass.testTargetSource, self.handle_loadSourceFinished, context.GetLineEntry().GetLine())
-#			self.setResumeActionIcon(ConfigClass.iconResume)
+#			self.setResumeActionIcon()
 			self.setWinTitleWithState("Interrupted")
-			self.setResumeActionIcon(ConfigClass.iconResume)
+			self.setResumeActionIcon()
 		else:
 			# print(f"Debug STEP ({kind}) FAILED!!!")
-			self.setResumeActionIcon(ConfigClass.iconResume)
+			self.setResumeActionIcon()
 		self.isProcessRunning = False
 		pass
 
@@ -1627,6 +1576,8 @@ class LLDBPyGUIWindow(QMainWindow):
 		addrObj2 = find_main(self.driver.debugger)
 		# addrObj2Hex = f"{hex(addrObj2)}"
 
+		if self.setHelper.getChecked(SettingsValues.LoadTestBPs):
+			self.bpHelper.enableBP(f"0x100000a40", True, False)
 
 		# setHelper = SettingsHelper()
 		# logDbg(f"addrObj2: {hex(addrObj2)}")
@@ -1637,6 +1588,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		QApplication.processEvents()
 		self.window().wdtControlFlow.view.verticalScrollBar().setValue(self.window().txtMultiline.table.verticalScrollBar().value())
 		# self.window().txtMultiline.table.verticalScrollBar().setValue(scrollOrig)
+		self.finish_startup()
 
 	def handle_loadRegisterFinished(self):
 		self.setProgressValue(100)

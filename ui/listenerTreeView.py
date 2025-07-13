@@ -106,8 +106,11 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 	def collapseAll_clicked(self):
 		self.collapseAll()
 		
-	def readSTDOUT(self, proc):
+	def readSTDOUT(self, proc = None):
 		# pass
+		# proc.SendAsyncInterrupt()
+		if proc is None:
+			proc = self.driver.getTarget().GetProcess()
 		time.sleep(0.1)  # Give LLDB time to read from PTY
 
 		# stdoutNG = self.driver.getTarget().GetProcess().ReadThreadBytesFromSTDOUT()
@@ -223,15 +226,18 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 # 				if output_stream != None:
 # 					for line in output_stream:
 # 						print("Captured line:", line)
-# 				# tmrAppStarted = QtCore.QTimer()
-# 				# tmrAppStarted.singleShot(1000, self.readSTDOUT)
+				tmrAppStarted = QtCore.QTimer()
+				tmrAppStarted.singleShot(1000, self.readSTDOUT)
+				return
 # 				print(f"lldb.SBEvent.GetCStringFromEvent(event): {lldb.SBEvent.GetCStringFromEvent(event)}")
-				process = lldb.SBProcess.GetProcessFromEvent(event)
+				process = self.driver.getTarget().GetProcess() # lldb.SBProcess.GetProcessFromEvent(event)
 				if process.GetState() == lldb.eStateStopped:
 					# output = process.GetSTDOUT(1024)
 					self.readSTDOUT(process)
 				else:
 					print(f"APP NOT STOOOOOOOOOOOOOOOPPPPPPPPPPPEEEEEEEEEEDDDDDDDDDD!!!!!!!!")
+					# process.Stop()
+					self.readSTDOUT(process)
 					# process.Stop()
 					# if process.GetState() == lldb.eStateStopped:
 					# 	# output = process.GetSTDOUT(1024)
@@ -293,7 +299,7 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 				
 				self.window().txtMultiline.setPC(self.driver.getPC(), True)
 				self.window().updateStatusBar("Watchpoint hit ...", True, 3000)
-				self.window().setResumeActionIcon(ConfigClass.iconResume)
+				self.window().setResumeActionIcon()
 #				GetWatchpointEventTypeFromEvent(*args)
 #				GetWatchpointEventTypeFromEvent(SBEvent event) -> lldb::WatchpointEventType	source code
 #				
@@ -610,6 +616,7 @@ class ListenerTreeWidget(BaseTreeWidget):
 class ListenerWidget(QWidget):
 	
 	def handle_gotNewEvent(self, event, extObj=None):
+		# if not self.should_quit
 		print(f"Got new event: {event} => {get_description(event)}")
 		if extObj == None:
 			extObj = self.driver.getTarget().GetProcess()
