@@ -96,7 +96,7 @@ def find_main(debugger):
 
 	symbol_context = main_symbol.GetContextAtIndex(0)
 	address = symbol_context.GetSymbol().GetStartAddress()
-	print(f"Main entry point address: {address.GetLoadAddress(target)}")
+	print(f"Main entry point address: {address.GetLoadAddress(target)} / 0x{hex(address.GetLoadAddress(target))}")
 	# setHelper = SettingsHelper()
 	# if setHelper.getChecked(SettingsValues.BreakpointAtMainFunc):
 	#

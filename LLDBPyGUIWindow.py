@@ -231,6 +231,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.worker.show_dialog.connect(self.start_operation)
 		self.worker.finished.connect(self.stopWorkerAndQuitThread)
 
+
 		# self.threadLoad.start()
 
 		lib.utils.main_window = self  # inside MainWindow __init__
@@ -612,6 +613,11 @@ class LLDBPyGUIWindow(QMainWindow):
 		# Setup CALLBACKS
 		self.worker.loadFileInfosCallback.connect(self.loadFileInfosCallback)
 		self.worker.loadJSONCallback.connect(self.treStats.loadJSONCallback)
+		self.worker.loadModulesCallback.connect(self.loadModulesCallback)
+		self.worker.enableBPCallback.connect(self.enableBPCallback)
+
+
+
 
 		# ======== DEV CMDs ##########
 		self.tabWidgetDbg.setCurrentIndex(2)
@@ -1290,6 +1296,14 @@ class LLDBPyGUIWindow(QMainWindow):
 		pass
 
 	#################################### START NEW CALLBACKS ########################################
+
+	def enableBPCallback(self, address, enabled=True, updateUI=True):
+		main_bp2 = self.bpHelper.enableBP(address, enabled, updateUI)
+		return main_bp2
+
+	def loadModulesCallback(self, frame):
+		self.tabWidgetStruct.cmbModules.addItem(frame.GetModule().GetFileSpec().GetFilename() + " (" + str(frame.GetFrameID()) + ")")
+		pass
 
 	def loadFileInfosCallback(self, mach_header, targetRet):
 

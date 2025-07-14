@@ -50,8 +50,9 @@ class BreakpointHelperNG():
 		return bp
 		
 	def enableBP(self, address, enabled = True, updateUI = True):
-		print(f'enableBP: {address} => {enabled}')
 		target = self.driver.getTarget()
+		print(f'enableBP: {address} => {enabled}, target: {target}')
+
 		found = False
 		bpRet = self.checkBPExists(address)
 		if bpRet[0] != None:
