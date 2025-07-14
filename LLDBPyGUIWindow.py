@@ -616,7 +616,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.worker.loadJSONCallback.connect(self.treStats.loadJSONCallback)
 		self.worker.loadModulesCallback.connect(self.loadModulesCallback)
 		self.worker.enableBPCallback.connect(self.enableBPCallback)
-		# self.worker.loadInstructionCallback.connect(self.handle_loadInstruction)
+		self.worker.loadInstructionCallback.connect(self.handle_loadInstruction)
 		# self.worker.finishedLoadInstructionsCallback.connect(self.handle_workerFinished)
 
 		# ======== DEV CMDs ##########

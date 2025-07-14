@@ -28,7 +28,7 @@ class Worker(QObject):
 	loadJSONCallback = pyqtSignal(str)
 	loadModulesCallback = pyqtSignal(object)
 	enableBPCallback = pyqtSignal(str, bool, bool)
-	# loadInstructionCallback = pyqtSignal(object)
+	loadInstructionCallback = pyqtSignal(object)
 	# finishedLoadInstructionsCallback = pyqtSignal()
 	# # handle_loadInstruction handle_workerFinished
 
@@ -119,7 +119,7 @@ class Worker(QObject):
 							print(f"lstSym: {lstSym} / subsec.GetName(): {subsec.GetName()}")
 
 							if subsec.GetName() == "__stubs":
-								start_addr = subsec.GetLoadAddress(target)
+								start_addr = subsec.GetLoadAddress(self.target)
 								size = subsec.GetByteSize()
 								self.logDbg.emit(f"size of __stubs: {hex(size)} / {hex(start_addr)}")
 								# Disassemble instructions
@@ -127,7 +127,7 @@ class Worker(QObject):
 								# func_start = subsec.GetStartAddress()
 								# func_end = subsec.GetEndAddress()
 								estimated_count = size // 6
-								insts = self.target.ReadInstructions(lldb.SBAddress(start_addr, target),
+								insts = self.target.ReadInstructions(lldb.SBAddress(start_addr, self.target),
 																int(estimated_count))
 								# insts = target.ReadInstructions(lldb.SBAddress(start_addr, target), lldb.SBAddress(end_addr, target))
 								for inst in insts:
@@ -316,15 +316,23 @@ class Worker(QObject):
 			#     logDbg(f"main_bp: {main_bp}")
 			#
 			if self.mainWin.setHelper.getValue(SettingsValues.BreakpointAtMainFunc):
-				self.driver.debugger.SetAsync(True)
-				main_bp2 = self.enableBPCallback.emit("0x100000ac0", True, False)
-				self.driver.debugger.HandleCommand("process launch")
+				# self.driver.debugger.SetAsync(True)
+
+				# self.driver.debugger.HandleCommand("process launch --stop-at-entry")
+				self.driver.debugger.HandleCommand('process launch --stop-at-entry')
+
+				# main_bp2 = self.enableBPCallback.emit("0x100000ac0", True, False)
+
 				addrObj2 = find_main(self.driver.debugger)
 				# main_bp2 = self.bpHelper.enableBP(hex(addrObj2), True, False)
 
-				# main_bp2 = self.enableBPCallback.emit(hex(addrObj2), True, False)
-				# # print(f"main_bp2 (@{addrObj2}): {main_bp2}")
-				# self.logDbg.emit(f"main_bp2 (@{hex(addrObj2)}): {main_bp2}")
+				main_bp2 = self.enableBPCallback.emit(hex(addrObj2), True, False)
+				print(f"main_bp2 (@{addrObj2}): {main_bp2}")
+				self.logDbg.emit(f"main_bp2 (@{hex(addrObj2)}): {main_bp2}")
+
+				self.driver.debugger.HandleCommand('breakpoint set --name main')
+				self.driver.debugger.HandleCommand('process continue')
+
 
 				# import time
 				# time.sleep(5)

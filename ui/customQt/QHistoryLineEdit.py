@@ -33,7 +33,9 @@ class QHistoryLineEdit(QLineEdit):
 	def load_history(self):
 		if HISTORY_FILE.exists():
 			with open(HISTORY_FILE, "r") as f:
-				return json.load(f)
+				fileComtent = f.read()
+				if fileComtent is not None and fileComtent != "":
+					return json.loads(fileComtent)
 		return []
 
 	def __init__(self, doAddCmdToHist=True, persistentHistory=False):
