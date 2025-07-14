@@ -430,7 +430,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 #		print(f"Triggering QAction: {action.text()}")
 
 	def handle_RememberLoc(self, row = -1):
-
+		logDbgC(f"handle_RememberLoc for row: {row}")
 		if row != -1:
 			daRow = row
 			self.selectRow(daRow)

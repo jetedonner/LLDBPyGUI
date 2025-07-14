@@ -14,33 +14,48 @@ except ImportError:
 
 import dbg.debuggerdriver
 from dbg.fileInfos import *
+from dbg.memoryHelper import *
 
 class Worker(QObject):
 
 	finished = pyqtSignal()
 	show_dialog = pyqtSignal()
 	logDbg = pyqtSignal(str)
+	logDbgC = pyqtSignal(str)
 
 	# updateProgress = pyqtSignal(int)
 
-	# Load-Callbacks
+	# Load Callbacks
 	loadFileInfosCallback = pyqtSignal(object, object)
 	loadJSONCallback = pyqtSignal(str)
 	loadModulesCallback = pyqtSignal(object)
 	enableBPCallback = pyqtSignal(str, bool, bool)
 	loadInstructionCallback = pyqtSignal(object)
-	# finishedLoadInstructionsCallback = pyqtSignal()
-	# # handle_loadInstruction handle_workerFinished
+	finishedLoadInstructionsCallback = pyqtSignal()
+	loadRegisterCallback = pyqtSignal(str)
+	loadRegisterValueCallback = pyqtSignal(int, str, str, str)
+	loadVariableValueCallback = pyqtSignal(str, str, str, str, str)
+	# loadBreakpointsValueCallback = pyqtSignal(str, str, str, str, str)
+	loadBreakpointsValueCallback = pyqtSignal(object, bool)
+	updateBreakpointsValueCallback = pyqtSignal(object)
+	loadWatchpointsValueCallback = pyqtSignal(object)
+	updateWatchpointsValueCallback = pyqtSignal(object)
+
+	# Load Listener
+	handle_breakpointEvent = None
+	handle_processEvent = None
+	handle_gotNewEvent = None
 
 	# Main Vars
 	mainWin = None
 	fileToLoad = ""
 	targetBasename = ""
 
-	def __init__(self, mainWinToUse, filename):
+	def __init__(self, mainWinToUse, filename, initTable=True):
 		super().__init__()
 
 		# self.threadpool = QThreadPool(self)
+		self.initTable = initTable
 		self._should_stop = False
 		self.mainWin = mainWinToUse
 		self.fileToLoad = filename
@@ -81,6 +96,133 @@ class Worker(QObject):
 	def stop(self):
 		self._should_stop = True
 
+	def loadBPsWPs(self):
+		# super(LoadBreakpointsWorker, self).workerFunc()
+
+		# self.sendStatusBarUpdate("Reloading breakpoints ...")
+		# target = self.driver.getTarget()
+		idx = 0
+		for i in range(self.target.GetNumBreakpoints()):
+			idx += 1
+			bp_cur = self.target.GetBreakpointAtIndex(i)
+			# Make sure the name list has the remaining name:
+			name_list = lldb.SBStringList()
+			bp_cur.GetNames(name_list)
+			num_names = name_list.GetSize()
+			name = name_list.GetStringAtIndex(0)
+
+			if self.initTable:
+				self.loadBreakpointsValueCallback.emit(bp_cur, self.initTable)
+			else:
+				self.updateBreakpointsValueCallback.emit(bp_cur)
+
+		for wp_loc in self.target.watchpoint_iter():
+			if self.initTable:
+				self.loadWatchpointsValueCallback.emit(wp_loc)  # , self.initTable)
+			else:
+				self.updateWatchpointsValueCallback.emit(wp_loc)
+
+#		pass
+
+	def loadRegisters(self):
+		# super(LoadRegisterWorker, self).workerFunc()
+
+		# self.sendStatusBarUpdate("Reloading registers ...")
+		# target = self.driver.getTarget()
+		# process = target.GetProcess()
+		if self.process:
+			# thread = process.GetThreadAtIndex(0)
+			if self.thread:
+				frame = self.driver.getFrame()
+				#				frame = thread.GetFrameAtIndex(0)
+				if frame:
+					registerList = self.thread.GetFrameAtIndex(0).GetRegisters()
+					numRegisters = registerList.GetSize()
+					numRegSeg = 100 / numRegisters
+					currReg = 0
+					for value in registerList:
+						currReg += 1
+						currRegSeg = 100 / numRegisters * currReg
+						# self.sendProgressUpdate(100 / numRegisters * currReg,
+						# 						f'Loading registers for {value.GetName()} ...')
+						if self.initTable:
+							self.loadRegisterCallback.emit(value.GetName())
+
+						numChilds = len(value)
+						idx = 0
+						for child in value:
+							idx += 1
+							# self.sendProgressUpdate((100 / numRegisters * currReg) + (numRegSeg / numChilds * idx),
+							# 						f'Loading registers value {child.GetName()} ...')
+							if self.initTable:
+								self.loadRegisterValueCallback.emit(currReg - 1, child.GetName(), child.GetValue(),
+																	getMemoryValueAtAddress(target, process,
+																							child.GetValue()))
+								# self.loadRegisterValue.emit(currReg - 1, child.GetName(), child.GetValue(),
+								# 									getMemoryValueAtAddress(target, process,
+								# 															child.GetValue()))
+							# else:
+							# 	self.signals.updateRegisterValue.emit(currReg - 1, child.GetName(),
+							# 										  child.GetValue(),
+							# 										  getMemoryValueAtAddress(target, process,
+							# 																  child.GetValue()))
+						# continue
+					# QCoreApplication.processEvents()
+
+					# Load VARIABLES
+					idx = 0
+					vars = frame.GetVariables(True, True, True, False)  # type of SBValueList
+					#					print(f"GETTING VARIABLES: vars => {vars}")
+					for var in vars:
+						#						hexVal = ""
+						#						print(dir(var))
+						#						print(var)
+						#						print(hex(var.GetLoadAddress()))
+						#						if not var.IsValid():
+						#							print(f'{var.GetName()} var.IsValid() ==> FALSE!!!!')
+
+						data = ""
+						#						if var.GetValue() == None:
+						#							print(f'{var.GetName()} var.GetValue() ==> NONE!!!!')
+						#							string_value = "<Not initialized>"
+						#						else:
+						string_value = var.GetValue()
+						if var.GetTypeName() == "int":
+							if (var.GetValue() == None):
+								continue
+							string_value = str(string_value)
+							# print(dir(var))
+							# print(var)
+							# print(var.GetValue())
+							data = hex(int(var.GetValue()))
+						#							hexVal = " (" + hex(int(var.GetValue())) + ")"
+						if var.GetTypeName().startswith("char"):
+							string_value = self.char_array_to_string(var)
+							data = var.GetPointeeData(0, var.GetByteSize())
+
+						if self.initTable:
+							#							if idx == 2:
+							#								error = lldb.SBError()
+							#								wp = var.Watch(False, True, False, error)
+							#								print(f'wp({idx}) => {wp}')
+
+							self.loadVariableValueCallback.emit(str(var.GetName()), str(string_value), str(data),
+																str(var.GetTypeName()), hex(var.GetLoadAddress()))
+						# else:
+						# 	self.signals.updateVariableValue.emit(str(var.GetName()), str(string_value), str(data),
+						# 										  str(var.GetTypeName()), hex(var.GetLoadAddress()))
+						idx += 1
+
+					# QCoreApplication.processEvents()
+		self.loadBPsWPs()
+		pass
+
+	def char_array_to_string(self, char_array_value):
+		byte_array = char_array_value.GetPointeeData(0, char_array_value.GetByteSize())
+		error = lldb.SBError()
+		sRet = byte_array.GetString(error, 0)
+		return "" if sRet == 0 else sRet
+
 	def disassemble_entire_target(self):
 		"""Disassembles instructions for the entire target.
 
@@ -89,39 +231,39 @@ class Worker(QObject):
 		"""
 
 		# self.thread = self.target.GetProcess().GetSelectedThread()
-		self.logDbg.emit(f"Starting to disassemble => continuing ...")
-		print(f"Starting to disassemble => continuing ...")
+		self.logDbgC.emit(f"Starting to disassemble => continuing ...")
+		# print(f"Starting to disassemble => continuing ...")
 		idxOuter = 0
 		for module in self.target.module_iter():
 			if idxOuter != 0:
 				idxOuter += 1
-				self.logDbg.emit(f"Starting to disassemble => idxOuter != 0 continuing ...")
-				print(f"Starting to disassemble => idxOuter != 0 continuing ...")
+				# self.logDbg.emit(f"Starting to disassemble => idxOuter != 0 continuing ...")
+				# print(f"Starting to disassemble => idxOuter != 0 continuing ...")
 				continue
 			idx = 0
 			for section in module.section_iter():
 				# Check if the section is readable
 				#				if not section.IsReadable():
 				#					continue
-				print(f"section.GetName(): {section.GetName()}")
+				self.logDbgC.emit(f"section.GetName(): {section.GetName()}")
 				if section.GetName() == "__TEXT":  # or  section.GetName() == "__PAGEZERO":
 					# if idx != 1:
 					# 	idx += 1
 					# 	continue
 
 					for subsec in section:
-						print(f"subsec.GetName(): {subsec.GetName()}")
+						self.logDbgC.emit(f"subsec.GetName(): {subsec.GetName()}")
 						if subsec.GetName() == "__text" or subsec.GetName() == "__stubs":
 
 							idxSym = 0
 							lstSym = module.symbol_in_section_iter(subsec)
 							# {len(lstSym)}
-							print(f"lstSym: {lstSym} / subsec.GetName(): {subsec.GetName()}")
+							self.logDbgC.emit(f"lstSym: {lstSym} / subsec.GetName(): {subsec.GetName()}")
 
 							if subsec.GetName() == "__stubs":
 								start_addr = subsec.GetLoadAddress(self.target)
 								size = subsec.GetByteSize()
-								self.logDbg.emit(f"size of __stubs: {hex(size)} / {hex(start_addr)}")
+								self.logDbgC.emit(f"size of __stubs: {hex(size)} / {hex(start_addr)}")
 								# Disassemble instructions
 								end_addr = start_addr + size
 								# func_start = subsec.GetStartAddress()
@@ -132,14 +274,14 @@ class Worker(QObject):
 								# insts = target.ReadInstructions(lldb.SBAddress(start_addr, target), lldb.SBAddress(end_addr, target))
 								for inst in insts:
 									# result.PutCString(str(inst))
-									print(str(inst))
+									self.logDbgC.emit(str(inst))
 									self.loadInstructionCallback.emit(inst)
 								continue
 							# return
 
 							secLen = module.num_symbols  # len(lstSym)
 							for sym in lstSym:
-								print(f"sym: {sym}")
+								self.logDbgC.emit(f"sym: {sym}")
 								#								print(f'get_instructions_from_current_target => {sym.get_instructions_from_current_target()}')
 								#								if idxSym != 0:
 								#									idxSym += 1
@@ -182,10 +324,10 @@ class Worker(QObject):
 								#									print(f'start_address => {start_address} / remaining_bytes => {remaining_bytes} / data_size => {data_size}')
 								##								(50*100)/200
 								#								print(f'sym.GetStartAddress().GetFunction() => {sym.GetStartAddress().GetFunction()}')
-								print(
+								self.logDbgC.emit(
 									f"Analyzing instructions: {len(sym.GetStartAddress().GetFunction().GetInstructions(self.target))}")
 								if len(sym.GetStartAddress().GetFunction().GetInstructions(self.target)) <= 0:
-									print(f"{sym.GetStartAddress().GetFunction()}")
+									self.logDbgC.emit(f"{sym.GetStartAddress().GetFunction()}")
 
 								# logDbg(f"Analyzing instructions: {len(sym.GetStartAddress().GetFunction().GetInstructions(self.target))}")
 								for instruction in sym.GetStartAddress().GetFunction().GetInstructions(self.target):
@@ -208,6 +350,8 @@ class Worker(QObject):
 					break
 				idx += 1
 			idxOuter += 1
+		self.finishedLoadInstructionsCallback.emit()
+		self.loadRegisters()
 
 	# def start_loadDisassemblyWorker(self, handle_loadInstruction, handle_workerFinished, initTable=True):
 	# 	self.loadDisassemblyWorker = LoadDisassemblyWorker(self.driver, initTable, self.mainWin)
@@ -240,11 +384,11 @@ class Worker(QObject):
 			if self.process:
 				self.listener = LLDBListener(self.process, self.driver.debugger)
 				self.listener.setHelper = self.mainWin.setHelper
-				# self.listener.breakpointEvent.connect(self.handle_breakpointEvent)
-				# self.listener.processEvent.connect(self.handle_processEvent)
-				# self.listener.gotEvent.connect(self.treListener.handle_gotNewEvent)
-				# self.listener.addListenerCalls()
-				# self.listener.start()
+				self.listener.breakpointEvent.connect(self.handle_breakpointEvent)
+				self.listener.processEvent.connect(self.handle_processEvent)
+				self.listener.gotEvent.connect(self.handle_gotNewEvent)
+				self.listener.addListenerCalls()
+				self.listener.start()
 
 				self.thread = self.process.GetThreadAtIndex(0)
 				self.logDbg.emit(f"loadTarget() => Thread: {self.thread} ...")
@@ -327,6 +471,7 @@ class Worker(QObject):
 				# main_bp2 = self.bpHelper.enableBP(hex(addrObj2), True, False)
 
 				main_bp2 = self.enableBPCallback.emit(hex(addrObj2), True, False)
+				# self.enableBPCallback.emit(hex(addrObj2), True, False)
 				print(f"main_bp2 (@{addrObj2}): {main_bp2}")
 				self.logDbg.emit(f"main_bp2 (@{hex(addrObj2)}): {main_bp2}")
 

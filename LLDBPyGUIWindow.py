@@ -223,6 +223,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.threadLoad = QThread()
 		self.worker = Worker(self, ConfigClass.testTarget)
 		self.worker.logDbg.connect(logDbg)
+		self.worker.logDbgC.connect(logDbgC)
 		# self.worker.logDbgC.connect(logDbgC)
 		# self.worker.loadFileInfosCallback.connect(self.loadFileInfosCallback)
 		# self.worker.loadJSONCallback.connect(self.treStats.loadJSONCallback)
@@ -617,7 +618,26 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.worker.loadModulesCallback.connect(self.loadModulesCallback)
 		self.worker.enableBPCallback.connect(self.enableBPCallback)
 		self.worker.loadInstructionCallback.connect(self.handle_loadInstruction)
-		# self.worker.finishedLoadInstructionsCallback.connect(self.handle_workerFinished)
+		self.worker.finishedLoadInstructionsCallback.connect(self.handle_workerFinished)
+		self.worker.handle_breakpointEvent = self.handle_breakpointEvent
+		self.worker.handle_processEvent = self.handle_processEvent
+		self.worker.handle_gotNewEvent = self.treListener.handle_gotNewEvent
+		self.worker.loadRegisterCallback.connect(self.handle_loadRegister)
+		self.worker.loadRegisterValueCallback.connect(self.handle_loadRegisterValue)
+		self.worker.loadVariableValueCallback.connect(self.handle_loadVariableValue)
+
+		self.worker.loadBreakpointsValueCallback.connect(self.wdtBPsWPs.handle_loadBreakpointValue)
+		self.worker.updateBreakpointsValueCallback.connect(self.wdtBPsWPs.handle_updateBreakpointValue)
+		self.worker.loadWatchpointsValueCallback.connect(self.tabWatchpoints.tblWatchpoints.handle_loadWatchpointValue)
+		self.worker.updateWatchpointsValueCallback.connect(self.tabWatchpoints.tblWatchpoints.handle_updateWatchpointValue)
+
+		# loadBreakpointsValueCallback = pyqtSignal(object, bool)
+		# updateBreakpointsValueCallback = pyqtSignal(object)
+		# loadWatchpointsValueCallback = pyqtSignal(object)
+		# updateWatchpointsValueCallback = pyqtSignal(object)
+
+
+
 
 		# ======== DEV CMDs ##########
 		self.tabWidgetDbg.setCurrentIndex(2)
@@ -1644,6 +1664,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		QApplication.processEvents()
 		self.txtMultiline.setPC(self.driver.getPC(), True)
 		logDbg(f"self.driver.getPC(): {self.driver.getPC()}")
+		return
 		self.start_loadRegisterWorker()
 		self.setProgressValue(50)
 		QApplication.processEvents()

@@ -262,7 +262,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 				if frame:
 					newPC = int(str(dlg.txtInput.text()), 16)
 					frame.SetPC(newPC)
-					self.window().txtMultiline.setPC(newPC)
+					self.parent.setPC(newPC)
 #					self.setPC(newPC)
 
 	def get_total_table_height(self):
@@ -279,7 +279,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 				# lib.utils.setStatusBar(f"Go to address to clipboard instruction: {gotoDlg.txtInput.text()} {temOps.text()}")
 				newPC = str(gotoDlg.txtInput.text())
 				lib.utils.setStatusBar(f"Go to address: {newPC}")
-				self.window().txtMultiline.viewAddress(newPC)
+				self.parent.viewAddress(newPC)
 			pass
 		
 	driver = None
@@ -315,11 +315,12 @@ class DisassemblyTableWidget(BaseTableWidget):
 			# self.scroll()
 			# self.view.verticalScrollBar().scroll(0, 0.783171521)
 
-	def __init__(self, driver, bpHelper):
+	def __init__(self, driver, bpHelper, parent):
 		super().__init__()
 		
 		self.driver = driver
 		self.bpHelper = bpHelper
+		self.parent = parent
 
 		# self.setStyle(QStyleFactory.create("Fusion"))
 		# self.setItemDelegate(ForegroundFixDelegate(self))
@@ -472,9 +473,9 @@ class DisassemblyTableWidget(BaseTableWidget):
 				# arrJumpMnemonics = ("call", "jmp", "jne", "jz", "je", "jnz", "jle", "jl", "jge", "jg")
 				if self.item(self.selectedItems()[0].row(), 3).text().startswith(JMP_MNEMONICS): #("call", "jmp", "jne", "jz", "je", "jnz", "jle", "jl", "jge", "jg")):
 					jumpAddr = str(self.item(self.selectedItems()[0].row(), 4).text())
-					self.window().txtMultiline.locationStack.pushLocation(str(self.item(self.selectedItems()[0].row(), 2).text()))	
-					self.window().txtMultiline.locationStack.pushLocation(jumpAddr)
-					self.window().txtMultiline.viewAddress(jumpAddr)
+					self.parent.locationStack.pushLocation(str(self.item(self.selectedItems()[0].row(), 2).text()))
+					self.parent.locationStack.pushLocation(jumpAddr)
+					self.parent.viewAddress(jumpAddr)
 					# newPC = str(gotoDlg.txtInput.text())
 					# lib.utils.setStatusBar(f"Go to address: {newPC}")
 					# self.window().txtMultiline.viewAddress(newPC)
@@ -550,6 +551,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 			logDbgC(f"Foreground: {self.item(self.selectedItems()[0].row(), 0).foreground()} / {self.item(self.selectedItems()[0].row(), 0).foreground().color().name()}")
 
 	def handle_RememberLoc(self):
+		logDbgC(f"handle_RememberLoc ...")
 		if self.item(self.selectedItems()[0].row(), 2) != None:
 			arrRememberedLocs[self.getSelItemText(2)] = {"id": len(arrRememberedLocs), "address": self.getSelItemText(2), "opcode": self.getSelItemText(3), "params": self.getSelItemText(4), "hex": self.getSelItemText(5), "data": self.getSelItemText(6), "comment": self.getSelItemText(7)}
 			self.setBGColor(self.selectedItems()[0].row(), True, QColor("yellow"), range(1), QColor("black"))
@@ -629,7 +631,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 		
 		item = DisassemblyImageTableWidgetItem()
 		
-		self.addItem(currRowCount, 0, ('>' if rip == address else '') + ('I' if True else ''))
+		self.addItem(currRowCount, 0, ('>' if rip == address else '') + ('I' if False else ''))
 		self.setItem(currRowCount, 1, item)
 		self.addItem(currRowCount, 2, address)
 		self.addItem(currRowCount, 3, instr)
@@ -747,6 +749,7 @@ class AssemblerTextEdit(QWidget):
 	
 	currentPCRow = -1
 	def clearPC(self):
+		logDbgC(f"clearPC ...")
 		if self.table.item(self.currentPCRow, 0) != None:
 			if self.table.item(self.currentPCRow, 0).text().endswith("I"):
 				self.table.item(self.currentPCRow, 0).setText('I')
@@ -762,12 +765,18 @@ class AssemblerTextEdit(QWidget):
 		
 	def setPC(self, pc, pushLocation = False):
 		currentPC = hex(pc).lower()
+		logDbgC(f"setPC ({currentPC} / {pc})...")
 		for row in range(self.table.rowCount()):
 			if self.table.item(row, 2) != None:
 				if self.table.item(row, 2).text().lower() == currentPC:
 					self.currentPCRow = row
 					self.table.item(row, 0).setText('>')
+					logDbgC(f"setPC => row: {row}...")
+					self.table.setFocus(Qt.FocusReason.NoFocusReason)
+					self.table.selectRow(row)
 					self.table.scrollToRow(row)
+
+					# self.viewAddress()
 					self.table.setBGColor(row, True)
 				else:
 					self.table.item(row, 0).setText('')
@@ -806,7 +815,7 @@ class AssemblerTextEdit(QWidget):
 		self.vlayout = QHBoxLayout()
 		self.frame.setLayout(self.vlayout)
 		
-		self.table = DisassemblyTableWidget(self.driver, bpHelper)
+		self.table = DisassemblyTableWidget(self.driver, bpHelper, self)
 		self.table.setContentsMargins(0, 0, 0, 0)
 		self.vlayout.addWidget(self.table)
 		

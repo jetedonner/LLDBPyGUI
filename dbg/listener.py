@@ -30,7 +30,7 @@ class LLDBListener(QtCore.QObject, Thread):
 		super(LLDBListener, self).__init__()
 		Thread.__init__(self)
 		# print('INITING LISTENER!!!!')
-		self.listener = lldb.SBListener('Chrome Dev Tools Listener')
+		self.listener = lldb.SBListener('LLDBPyGUI event listener')
 		self.process = process
 		self.debugger = debugger
 		
