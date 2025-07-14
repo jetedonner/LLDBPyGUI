@@ -14,15 +14,15 @@ class LoadDisassemblyWorkerSignals(BaseWorkerSignals):
 	
 class LoadDisassemblyWorker(BaseWorker):
 	
-	def __init__(self, driver, initTable = True):
+	def __init__(self, driver, initTable = True, parent=None):
 		super(LoadDisassemblyWorker, self).__init__(driver)
 		self.initTable = initTable
-		self.signals = LoadDisassemblyWorkerSignals()
+		self.signals = LoadDisassemblyWorkerSignals(parent)
 		
 	def workerFunc(self):
 		super(LoadDisassemblyWorker, self).workerFunc()
 		
-		self.sendStatusBarUpdate("Reloading disassembly ...")
+		# self.sendStatusBarUpdate("Reloading disassembly ...")
 		self.target = self.driver.getTarget()
 		
 		self.disassemble_entire_target(self.target)
