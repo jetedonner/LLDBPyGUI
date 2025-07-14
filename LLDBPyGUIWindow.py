@@ -212,6 +212,7 @@ class LLDBPyGUIWindow(QMainWindow):
 	def stopWorkerAndQuitThread(self):
 		self.worker.stop()
 		self.threadLoad.quit()
+		self.finish_startup()
 		pass
 
 	def __init__(self, driver = None):
@@ -220,7 +221,11 @@ class LLDBPyGUIWindow(QMainWindow):
 		# self.start_operation()
 
 		self.threadLoad = QThread()
-		self.worker = Worker(self)
+		self.worker = Worker(self, ConfigClass.testTarget)
+		self.worker.logDbg.connect(logDbg)
+		# self.worker.loadFileInfosCallback.connect(self.loadFileInfosCallback)
+		# self.worker.loadJSONCallback.connect(self.treStats.loadJSONCallback)
+
 		self.worker.moveToThread(self.threadLoad)
 		self.threadLoad.started.connect(self.worker.run)
 		self.worker.show_dialog.connect(self.start_operation)
@@ -604,6 +609,10 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.tmrResetStatusBar.timeout.connect(self.resetStatusBar)
 #		self.tmrResetStatusBar.start()
 
+		# Setup CALLBACKS
+		self.worker.loadFileInfosCallback.connect(self.loadFileInfosCallback)
+		self.worker.loadJSONCallback.connect(self.treStats.loadJSONCallback)
+
 		# ======== DEV CMDs ##########
 		self.tabWidgetDbg.setCurrentIndex(2)
 
@@ -612,16 +621,21 @@ class LLDBPyGUIWindow(QMainWindow):
 		self._restore_size()
 
 	def start_operation(self):
-		num_steps = 10
-		self.progress = QProgressDialog("Processing...", "Cancel", 0, num_steps, self)
-		self.progress.setWindowModality(Qt.WindowModality.WindowModal)
-		self.progress.setMinimumDuration(0)  # Show immediately
-		self.progress.setValue(0)
 
-		self.current_step = 0
-		self.timer = QTimer()
-		self.timer.timeout.connect(self.perform_step)
-		self.timer.start(500)  # Simulate work every 500ms
+		self.dialog = SpinnerDialog()
+		self.dialog.show()
+
+		# num_steps = 100
+		# self.progress = QProgressDialog("Processing...", "Cancel", 0, num_steps, self)
+		# self.progress.setWindowModality(Qt.WindowModality.WindowModal)
+		# self.progress.setMinimumDuration(0)  # Show immediately
+		# # self.progress.setValue(0)
+		# self.progress.setValue(5)
+		#
+		# # self.current_step = 0
+		# self.timer = QTimer()
+		# self.timer.timeout.connect(self.perform_step)
+		# self.timer.start(500)  # Simulate work every 500ms
 
 	def perform_step(self):
 		if self.progress.wasCanceled():
@@ -629,16 +643,23 @@ class LLDBPyGUIWindow(QMainWindow):
 			print("Operation canceled.")
 			return
 
-		self.current_step += 1
-		self.progress.setValue(self.current_step)
+		# self.current_step += 1
+		# self.progress.setValue(self.current_step)
 
-		if self.current_step >= self.progress.maximum():
-			self.timer.stop()
-			print("Operation completed.")
+		# if self.current_step >= self.progress.maximum():
+		# 	self.timer.stop()
+		# 	print("Operation completed.")
 
 	def finish_startup(self):
-		# self.spinner_overlay.close()
 		self.dialog.close()
+		# self.spinner_overlay.close()
+		# self.dialog.close()
+		# self.timer.stop()
+		# self.progress.cancel()
+		# self.timer.stop()
+		logDbg(f"finish_startup called ... trying to close progress dialog ...")
+		# self.progress.setValue(10)
+		# self.progress.hide()
 
 	# Continue initializing your app
 
@@ -1120,29 +1141,15 @@ class LLDBPyGUIWindow(QMainWindow):
 		if self.setHelper.getValue(SettingsValues.LoadTestTarget):
 			# print(f"Loading target: {ConfigClass.testTarget}")
 			# self.loadNewExecutableFile(ConfigClass.testTarget)
+			# self.loadNewExecutableFile(ConfigClass.testTarget)
 			self.threadLoad.start()
 
 	def loadNewExecutableFile(self, filename):
-#		self.resetGUI()
-		logDbg(f"loadNewExecutableFile({filename})...")
-		self.targetBasename = os.path.basename(filename)
-		# import pdb; pdb.set_trace()
-#		if self.driver.getTarget().GetProcess(): #pymobiledevice3GUIWindow.process:
-#			print("KILLING PROCESS")
-#
-#			self.driver.aborted = True
-#			print("Aborted sent")
-#			#					os._exit(1)
-#			#       sys.exit(0)
-#			#       pymobiledevice3GUIWindow.process.Kill()
-#			#       global driver
-#			#       driver.terminate()
-#			#       pymobiledevice3GUIWindow.driver.getTarget().GetProcess().Stop()
-#			#       print("Process stopped")
-#			self.driver.getTarget().GetProcess().Kill()
-#			print("Process killed")
-#			self.resetGUI()
-		self.stopTarget()
+		return
+
+		# logDbg(f"loadNewExecutableFile({filename})...")
+		# self.targetBasename = os.path.basename(filename)
+		# self.stopTarget()
 
 		global event_queue
 		event_queue = queue.Queue()
@@ -1158,10 +1165,12 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.driver.signals.event_queued.connect(self.handle_event_queued)
 		self.driver.start()
 		self.driver.createTarget(filename)
-		logDbg(f"self.driver.createTarget({filename}) => self.driver.debugger.GetNumTargets() = {self.driver.debugger.GetNumTargets()}")
+		# logDbg(f"self.driver.createTarget({filename}) => self.driver.debugger.GetNumTargets() = {self.driver.debugger.GetNumTargets()}")
 		if self.driver.debugger.GetNumTargets() > 0:
 			target = self.driver.getTarget()
 			print(target)
+			return
+
 			if self.setHelper.getValue(SettingsValues.BreakAtMainFunc):
 				main_bp = self.bpHelper.addBPByName(self.setHelper.getValue(SettingsValues.MainFuncName))
 				print(main_bp)
@@ -1280,8 +1289,30 @@ class LLDBPyGUIWindow(QMainWindow):
 		# print(f"handle_breakpointEvent: {event}")
 		pass
 
-	def loadTarget(self):
+	#################################### START NEW CALLBACKS ########################################
 
+	def loadFileInfosCallback(self, mach_header, targetRet):
+
+		self.tblFileInfos.addRow("Magic", MachoMagic.to_str(MachoMagic.create_magic_value(mach_header.magic)),
+					 hex(mach_header.magic))
+		self.tblFileInfos.addRow("CPU Type", MachoCPUType.to_str(MachoCPUType.create_cputype_value(mach_header.cputype)),
+					 hex(mach_header.cputype))
+		self.tblFileInfos.addRow("CPU SubType", str(mach_header.cpusubtype), hex(mach_header.cpusubtype))
+		self.tblFileInfos.addRow("File Type", MachoFileType.to_str(MachoFileType.create_filetype_value(mach_header.filetype)),
+					 hex(mach_header.filetype))
+		self.tblFileInfos.addRow("Num CMDs", str(mach_header.ncmds), hex(mach_header.ncmds))
+		self.tblFileInfos.addRow("Size CMDs", str(mach_header.sizeofcmds), hex(mach_header.sizeofcmds))
+		self.tblFileInfos.addRow("Flags", MachoFlag.to_str(MachoFlag.create_flag_value(mach_header.flags)), hex(mach_header.flags))
+
+		self.tblFileInfos.addRow("----", str("-----"), '-----')
+		self.tblFileInfos.addRow("Triple", str(targetRet.GetTriple()), '-')
+
+		# self.progress.setValue(2)
+
+	#################################### END NEW CALLBACKS ########################################
+
+	def loadTarget(self):
+		return
 		if self.driver.debugger.GetNumTargets() > 0:
 			target = self.driver.getTarget()
 			# print(f"loadTarget => {target}")

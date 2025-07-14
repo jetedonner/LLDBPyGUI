@@ -9,6 +9,7 @@ def get_main_window():
     return None
 
 def logDbg(logMsg="", alsoPrintToConsole = False):
+    # return
     mainWin = get_main_window()
     if mainWin is not None:
         mainWin.wdtDbg.logDbg(logMsg)

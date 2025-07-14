@@ -36,7 +36,7 @@ class StatisticsTreeWidget(BaseTreeWidget):
 		if success:
 			self.loadJSON(str(stream.GetData()))
 			
-	def loadJSON(self, json_string):
+	def loadJSONCallback(self, json_string):
 		json_data = json.loads(json_string)
 		self.populate_tree(json_data, self)
 		

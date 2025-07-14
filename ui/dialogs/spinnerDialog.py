@@ -32,7 +32,7 @@ class SpinnerDialog(QDialog):
 		self.setLayout(layout)
 	
 		# Load and set the animated GIF
-		self.movie = QMovie("./resources/img/spinner-1.gif")
+		self.movie = QMovie("./resources/img/DoubleRingSpinner.gif")
 		self.movie.setScaledSize(QSize(64, 64))
 		self.gif_label.setMovie(self.movie)
 		self.movie.start()
