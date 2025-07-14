@@ -56,6 +56,7 @@ from ui.customQt.QMemoryViewer import *
 from ui.dbgOutputTextEdit import *
 from ui.dialogs.spinnerOverlay import *
 from worker.workerManager import *
+from worker.baseWorkerNG import *
 from config import *
 
 from lib import utils
@@ -208,9 +209,24 @@ class LLDBPyGUIWindow(QMainWindow):
 		# self.settings.setValue("window_size", self.size())
 		super().resizeEvent(event)
 
+	def stopWorkerAndQuitThread(self):
+		self.worker.stop()
+		self.threadLoad.quit()
+		pass
+
 	def __init__(self, driver = None):
 		super().__init__()
 
+		# self.start_operation()
+
+		self.threadLoad = QThread()
+		self.worker = Worker(self)
+		self.worker.moveToThread(self.threadLoad)
+		self.threadLoad.started.connect(self.worker.run)
+		self.worker.show_dialog.connect(self.start_operation)
+		self.worker.finished.connect(self.stopWorkerAndQuitThread)
+
+		# self.threadLoad.start()
 
 		lib.utils.main_window = self  # inside MainWindow __init__
 
@@ -223,8 +239,8 @@ class LLDBPyGUIWindow(QMainWindow):
 		# self.spinner_overlay = SpinnerOverlay(self)
 		# self.spinner_overlay.show()
 
-		self.dialog = SpinnerDialog()
-		self.dialog.show()
+		# self.dialog = SpinnerDialog()
+		# self.dialog.show()
 
 		# QTimer.singleShot(3000, self.finish_startup)  # Simulate startup delay
 
@@ -594,6 +610,31 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.updateStatusBar("LLDBPyGUI loaded successfully!")
 
 		self._restore_size()
+
+	def start_operation(self):
+		num_steps = 10
+		self.progress = QProgressDialog("Processing...", "Cancel", 0, num_steps, self)
+		self.progress.setWindowModality(Qt.WindowModality.WindowModal)
+		self.progress.setMinimumDuration(0)  # Show immediately
+		self.progress.setValue(0)
+
+		self.current_step = 0
+		self.timer = QTimer()
+		self.timer.timeout.connect(self.perform_step)
+		self.timer.start(500)  # Simulate work every 500ms
+
+	def perform_step(self):
+		if self.progress.wasCanceled():
+			self.timer.stop()
+			print("Operation canceled.")
+			return
+
+		self.current_step += 1
+		self.progress.setValue(self.current_step)
+
+		if self.current_step >= self.progress.maximum():
+			self.timer.stop()
+			print("Operation completed.")
 
 	def finish_startup(self):
 		# self.spinner_overlay.close()
@@ -1002,8 +1043,10 @@ class LLDBPyGUIWindow(QMainWindow):
 #			self.dialog = None
 #		else:
 
-		self.dialog = SpinnerDialog()
-		self.dialog.show()
+		self.start_operation()
+
+		# self.dialog = SpinnerDialog()
+		# self.dialog.show()
 #		self.driver.removeListener(lldb.SBTarget, SBTarget.eBroadcastBitBreakpointChanged)
 
 
@@ -1073,9 +1116,11 @@ class LLDBPyGUIWindow(QMainWindow):
 #		self.dialog = SpinnerDialog()
 #		self.dialog.show()
 
+
 		if self.setHelper.getValue(SettingsValues.LoadTestTarget):
 			# print(f"Loading target: {ConfigClass.testTarget}")
-			self.loadNewExecutableFile(ConfigClass.testTarget)
+			# self.loadNewExecutableFile(ConfigClass.testTarget)
+			self.threadLoad.start()
 
 	def loadNewExecutableFile(self, filename):
 #		self.resetGUI()
@@ -1285,6 +1330,7 @@ class LLDBPyGUIWindow(QMainWindow):
 #								print(frame)
 #								print(f"frame.GetPC() => {frame.GetPC()}")
 #								self.rip = frame.GetPC()
+								print(f"BEFORE DISASSEMBLE!!!!")
 								self.start_loadDisassemblyWorker(True)
 
 								context = frame.GetSymbolContext(lldb.eSymbolContextEverything)
@@ -1588,7 +1634,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		QApplication.processEvents()
 		self.window().wdtControlFlow.view.verticalScrollBar().setValue(self.window().txtMultiline.table.verticalScrollBar().value())
 		# self.window().txtMultiline.table.verticalScrollBar().setValue(scrollOrig)
-		self.finish_startup()
+		# self.finish_startup()
 
 	def handle_loadRegisterFinished(self):
 		self.setProgressValue(100)
