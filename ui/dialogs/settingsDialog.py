@@ -63,6 +63,7 @@ class SettingsDialog(QDialog):
 		self.settings.setValue(SettingsValues.MainFuncName.value[0], "main")
 		self.settings.setValue(SettingsValues.BreakpointAtMainFunc.value[0], True)
 		self.settings.setValue(SettingsValues.ClearConsoleComplete.value[0], True)
+		self.settings.setValue(SettingsValues.PersistentCommandHistory.value[0], True)
 
 
 
@@ -125,6 +126,7 @@ class SettingsDialog(QDialog):
 		self.tblDeveloper.item(3, 1).setText(self.setHelper.getValue(SettingsValues.MainFuncName))
 		self.tblDeveloper.item(4, 1).setCheckState(self.setHelper.getChecked(SettingsValues.BreakpointAtMainFunc))
 		self.tblDeveloper.item(5, 1).setCheckState(self.setHelper.getChecked(SettingsValues.ClearConsoleComplete))
+		self.tblDeveloper.item(6, 1).setCheckState(self.setHelper.getChecked(SettingsValues.PersistentCommandHistory))
 
 		self.browse_widget = BrowseWidget()
 		
@@ -180,6 +182,7 @@ class SettingsDialog(QDialog):
 		self.setHelper.setValue(SettingsValues.MainFuncName, self.tblDeveloper.item(3, 1).text())
 		self.setHelper.setChecked(SettingsValues.BreakpointAtMainFunc, self.tblDeveloper.item(4, 1))
 		self.setHelper.setChecked(SettingsValues.ClearConsoleComplete, self.tblDeveloper.item(5, 1))
+		self.setHelper.setChecked(SettingsValues.PersistentCommandHistory, self.tblDeveloper.item(6, 1))
 
 
 		

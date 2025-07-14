@@ -223,6 +223,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.threadLoad = QThread()
 		self.worker = Worker(self, ConfigClass.testTarget)
 		self.worker.logDbg.connect(logDbg)
+		# self.worker.logDbgC.connect(logDbgC)
 		# self.worker.loadFileInfosCallback.connect(self.loadFileInfosCallback)
 		# self.worker.loadJSONCallback.connect(self.treStats.loadJSONCallback)
 

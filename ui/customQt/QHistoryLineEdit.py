@@ -7,6 +7,12 @@ from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 from PyQt6 import uic, QtWidgets, QtCore
 
+import json
+from pathlib import Path
+
+HISTORY_FILE = Path("./input_history.json")
+
+
 class QHistoryLineEdit(QLineEdit):
 	
 	availCompletitions = QtCore.pyqtSignal(object)
@@ -14,7 +20,17 @@ class QHistoryLineEdit(QLineEdit):
 	lstCommands = []
 	currCmd = 0
 	doAddCmdToHist = True
-	
+
+	def save_history(self, history):
+		with open(HISTORY_FILE, "w") as f:
+			json.dump(history, f)
+
+	def load_history(self):
+		if HISTORY_FILE.exists():
+			with open(HISTORY_FILE, "r") as f:
+				return json.load(f)
+		return []
+
 	def __init__(self, doAddCmdToHist = True):
 		super().__init__()
 
@@ -29,7 +45,10 @@ class QHistoryLineEdit(QLineEdit):
 			}
 		""")
 		self.doAddCmdToHist = doAddCmdToHist
-		
+		self.lstCommands = self.load_history()
+		if len(self.lstCommands) > 0:
+			self.currCmd = len(self.lstCommands)
+
 		self.installEventFilter(self)  # Install event filter on the line edit
 		
 	def eventFilter(self, obj, event):
@@ -93,6 +112,7 @@ class QHistoryLineEdit(QLineEdit):
 			else:
 				self.lstCommands.append(newCommand)
 				self.currCmd = len(self.lstCommands) - 1
+			self.save_history(self.lstCommands)
 
 	def clearCommandText(self, clearCommandHistory=False):
 		self.setText("")

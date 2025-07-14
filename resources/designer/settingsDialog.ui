@@ -391,6 +391,11 @@
            <string>Clear Console complete (with 1 click)</string>
           </property>
          </row>
+         <row>
+          <property name="text">
+           <string>Persistent command history</string>
+          </property>
+         </row>
          <column>
           <property name="text">
            <string>Key</string>
@@ -484,6 +489,19 @@
           </property>
          </item>
          <item row="5" column="1">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+         </item>
+         <item row="6" column="0">
+          <property name="text">
+           <string>Persistent command history</string>
+          </property>
+         </item>
+         <item row="6" column="1">
           <property name="checkState">
            <enum>Checked</enum>
           </property>
