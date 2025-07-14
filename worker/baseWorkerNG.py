@@ -40,6 +40,7 @@ class Worker(QObject):
 	updateBreakpointsValueCallback = pyqtSignal(object)
 	loadWatchpointsValueCallback = pyqtSignal(object)
 	updateWatchpointsValueCallback = pyqtSignal(object)
+	finishedLoadingSourceCodeCallback = pyqtSignal(str)
 
 	# Load Listener
 	handle_breakpointEvent = None
@@ -51,7 +52,7 @@ class Worker(QObject):
 	fileToLoad = ""
 	targetBasename = ""
 
-	def __init__(self, mainWinToUse, filename, initTable=True):
+	def __init__(self, mainWinToUse, filename, initTable=True, sourceFile=""):
 		super().__init__()
 
 		# self.threadpool = QThreadPool(self)
@@ -63,8 +64,12 @@ class Worker(QObject):
 		self.target = None
 		self.process = None
 		self.thread = None
+		self.frame = None
 		self.listener = None
 		self.stoppedAtOEP = False
+		self.isLoadSourceCodeActive = False
+		self.sourceFile = sourceFile
+		self.lineNum = 0
 
 	def run(self):
 		self._should_stop = False  # Reset before starting
@@ -97,6 +102,44 @@ class Worker(QObject):
 	def stop(self):
 		self._should_stop = True
 
+	def runLoadSourceCode(self):
+		if self.isLoadSourceCodeActive:
+			interruptLoadSourceCode = True
+			return
+		else:
+			interruptLoadSourceCode = False
+		# QCoreApplication.processEvents()
+		self.isLoadSourceCodeActive = True
+
+		# frame = self.driver.getTarget().GetProcess().GetThreadAtIndex(0).GetFrameAtIndex(0)
+		context = self.frame.GetSymbolContext(lldb.eSymbolContextEverything)
+		self.lineNum = context.GetLineEntry().GetLine()
+		# Create the filespec for 'main.c'.
+		filespec = lldb.SBFileSpec(self.sourceFile, False)
+		source_mgr = self.driver.debugger.GetSourceManager()
+		# Use a string stream as the destination.
+		linesOfCode = self.count_lines_of_code(self.sourceFile)
+		print(f"linesOfCode: {linesOfCode} / {linesOfCode - self.lineNum}")
+		stream = lldb.SBStream()
+		source_mgr.DisplaySourceLinesWithLineNumbers(filespec, self.lineNum, self.lineNum,
+													 linesOfCode - self.lineNum, '=>', stream)
+		#		print(stream.GetData())
+
+		self.isLoadSourceCodeActive = False
+		self.finishedLoadingSourceCodeCallback.emit(stream.GetData())
+		# QCoreApplication.processEvents()
+		# QApplication.processEvents()
+
+	def count_lines_of_code(self, file_path):
+		with open(file_path, 'r') as file:
+			lines = file.readlines()
+
+		# code_lines = [
+		# 	line for line in lines
+		# 	if line.strip() # and not line.strip().startswith('//') and not line.strip().startswith('/*')
+		# ]
+		return len(lines)
+
 	def loadBPsWPs(self):
 		# super(LoadBreakpointsWorker, self).workerFunc()
 
@@ -122,6 +165,8 @@ class Worker(QObject):
 				self.loadWatchpointsValueCallback.emit(wp_loc)  # , self.initTable)
 			else:
 				self.updateWatchpointsValueCallback.emit(wp_loc)
+
+		self.runLoadSourceCode()
 		# self.finishedLoadInstructionsCallback.emit()
 		# pass
 
@@ -134,9 +179,9 @@ class Worker(QObject):
 		if self.process:
 			# thread = process.GetThreadAtIndex(0)
 			if self.thread:
-				frame = self.driver.getFrame()
+				self.frame = self.driver.getFrame()
 				#				frame = thread.GetFrameAtIndex(0)
-				if frame:
+				if self.frame:
 					registerList = self.thread.GetFrameAtIndex(0).GetRegisters()
 					numRegisters = registerList.GetSize()
 					numRegSeg = 100 / numRegisters
@@ -172,7 +217,7 @@ class Worker(QObject):
 
 					# Load VARIABLES
 					idx = 0
-					vars = frame.GetVariables(True, True, True, False)  # type of SBValueList
+					vars = self.frame.GetVariables(True, True, True, False)  # type of SBValueList
 					#					print(f"GETTING VARIABLES: vars => {vars}")
 					for var in vars:
 						#						hexVal = ""

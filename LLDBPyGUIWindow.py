@@ -221,7 +221,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		# self.start_operation()
 
 		self.threadLoad = QThread()
-		self.worker = Worker(self, ConfigClass.testTarget)
+		self.worker = Worker(self, ConfigClass.testTarget, True, ConfigClass.testTargetSource)
 		self.worker.logDbg.connect(logDbg)
 		self.worker.logDbgC.connect(logDbgC)
 		# self.worker.logDbgC.connect(logDbgC)
@@ -630,6 +630,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.worker.updateBreakpointsValueCallback.connect(self.wdtBPsWPs.handle_updateBreakpointValue)
 		self.worker.loadWatchpointsValueCallback.connect(self.tabWatchpoints.tblWatchpoints.handle_loadWatchpointValue)
 		self.worker.updateWatchpointsValueCallback.connect(self.tabWatchpoints.tblWatchpoints.handle_updateWatchpointValue)
+		self.worker.finishedLoadingSourceCodeCallback.connect(self.handle_loadSourceFinished)
 
 		# loadBreakpointsValueCallback = pyqtSignal(object, bool)
 		# updateBreakpointsValueCallback = pyqtSignal(object)
