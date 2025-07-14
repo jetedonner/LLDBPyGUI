@@ -22,6 +22,7 @@ class SettingsValues(Enum):
 	KeepWatchpointsEnabled = ("Keep watchpoints enabled", True, bool)
 	HexGrouping = ("Hex-Value Grouping", 1, int)
 	StatusBarMsgTimeout = ("StatusBar message timeout", 1500, int)
+	ExitLLDBOnAppExit = ("Exit LLDB on App exit", True, bool)
 	
 	# Developer Settings
 	LoadTestTarget = ("Load test target", True, bool)
@@ -68,6 +69,8 @@ class SettingsHelper(QObject):
 		self.settings.setValue(SettingsValues.KeepWatchpointsEnabled.value[0], True)
 		self.settings.setValue(SettingsValues.HexGrouping.value[0], 1)
 		self.settings.setValue(SettingsValues.StatusBarMsgTimeout.value[0], 1500)
+		self.settings.setValue(SettingsValues.ExitLLDBOnAppExit.value[0], True)
+
 		
 		self.settings.setValue(SettingsValues.LoadTestTarget.value[0], True)
 		self.settings.setValue(SettingsValues.LoadTestBPs.value[0], True)

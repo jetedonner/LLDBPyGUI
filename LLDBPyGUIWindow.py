@@ -235,7 +235,7 @@ class LLDBPyGUIWindow(QMainWindow):
 
 		# self.threadLoad.start()
 
-		lib.utils.main_window = self  # inside MainWindow __init__
+		# lib.utils.main_window = self  # inside MainWindow __init__
 
 		self.driver = driver
 		# Set the custom logging callback
@@ -589,10 +589,10 @@ class LLDBPyGUIWindow(QMainWindow):
 		# self.centralWidget.setLayout(self.layoutMainWin)
 		# self.setCentralWidget(self.centralWidget)
 		#
-		self.dbgWidgetMain = QWidget()
-		self.dbgWidgetMain.setLayout(QVBoxLayout())
-		self.dbgWidgetMain.setContentsMargins(0, 0, 0, 0)
-		# self.dbgWidgetMain.layout().addWidget(self.tabWidgetMain)
+		# self.dbgWidgetMain = QWidget()
+		# self.dbgWidgetMain.setLayout(QVBoxLayout())
+		# self.dbgWidgetMain.setContentsMargins(0, 0, 0, 0)
+		# # self.dbgWidgetMain.layout().addWidget(self.tabWidgetMain)
 		self.wdtDbg = DbgOutputWidget()
 
 		self.splitterDbgMain = QSplitter()
@@ -733,7 +733,9 @@ class LLDBPyGUIWindow(QMainWindow):
 		# print(f"GETTING MEMORY: {addr}")
 		# self.updateStatusBar(f"Showing memory for address: {addr}")
 		# self.statusBar.showMessage(f"Showing memory for address: {addr}")
-		lib.utils.setStatusBar(f"Showing memory for address: {addr}")
+
+		# lib.utils.setStatusBar(f"Showing memory for address: {addr}")
+
 		self.doReadMemory(addr)
 #		print(f"Triggering QAction: {action.text()}")
 
@@ -790,7 +792,9 @@ class LLDBPyGUIWindow(QMainWindow):
 		addrObjHex = f"{hex(addrObj)}"
 		print(f"OEP2 (load addr): ")
 		logDbg(f"OEP2 (load addr): {addrObjHex}")
-		lib.utils.setStatusBar(f"Go to address: {addrObjHex}")
+
+		# lib.utils.setStatusBar(f"Go to address: {addrObjHex}")
+
 		self.txtMultiline.viewAddress(addrObjHex)
 		pass
 
@@ -804,7 +808,9 @@ class LLDBPyGUIWindow(QMainWindow):
 		addrObj2Hex = f"{hex(addrObj2)}"
 		print(f"OEP2 (load addr): ")
 		logDbg(f"OEP2 (load addr): {addrObj2Hex}")
-		lib.utils.setStatusBar(f"Go to address: {addrObj2Hex}")
+
+		# lib.utils.setStatusBar(f"Go to address: {addrObj2Hex}")
+
 		self.txtMultiline.viewAddress(addrObj2Hex)
 		pass
 

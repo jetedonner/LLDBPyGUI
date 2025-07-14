@@ -55,6 +55,8 @@ class SettingsDialog(QDialog):
 		self.settings.setValue(SettingsValues.KeepWatchpointsEnabled.value[0], True)
 		self.settings.setValue(SettingsValues.HexGrouping.value[0], 1)
 		self.settings.setValue(SettingsValues.StatusBarMsgTimeout.value[0], 1500)
+		self.settings.setValue(SettingsValues.ExitLLDBOnAppExit.value[0], True)
+
 		
 		self.settings.setValue(SettingsValues.LoadTestTarget.value[0], True)
 		self.settings.setValue(SettingsValues.LoadTestBPs.value[0], True)
@@ -104,9 +106,11 @@ class SettingsDialog(QDialog):
 			self.tblGeneral.item(5, i).setCheckState(self.setHelper.getChecked(SettingsValues.VisualizeCurrentBP))
 			self.tblGeneral.item(6, i).setCheckState(self.setHelper.getChecked(SettingsValues.UseNativeDialogs))
 			self.tblGeneral.item(9, i).setCheckState(self.setHelper.getChecked(SettingsValues.KeepWatchpointsEnabled))
-			
+			self.tblGeneral.item(12, i).setCheckState(self.setHelper.getChecked(SettingsValues.ExitLLDBOnAppExit))
+
 		self.tblGeneral.item(11, 1).setText(str(self.setHelper.getValue(SettingsValues.StatusBarMsgTimeout)))
-		
+
+
 		self.cmbGrouping = QComboBox()
 		member_names = list(ByteGrouping.__members__.keys())
 		self.cmbGrouping.addItems(member_names)
@@ -174,7 +178,8 @@ class SettingsDialog(QDialog):
 		self.setHelper.setChecked(SettingsValues.KeepWatchpointsEnabled, self.tblGeneral.item(9, colCheckBox))
 		self.setHelper.setValue(SettingsValues.HexGrouping, self.cmbGrouping.currentIndex())
 		self.setHelper.setValue(SettingsValues.StatusBarMsgTimeout, int(self.tblGeneral.item(11, 1).text()))
-		
+		self.setHelper.setChecked(SettingsValues.ExitLLDBOnAppExit, self.tblGeneral.item(12, colCheckBox))
+
 		self.setHelper.setChecked(SettingsValues.LoadTestTarget, self.tblDeveloper.item(0, 0))
 		self.setHelper.setChecked(SettingsValues.LoadTestBPs, self.tblDeveloper.item(1, 1))
 		self.setHelper.setChecked(SettingsValues.StopAtEntry, self.tblDeveloper.item(2, 1))

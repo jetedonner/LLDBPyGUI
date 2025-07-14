@@ -193,6 +193,13 @@ def close_application():
 #	Stop all running tasks in the thread pool
 	print("KILLING PROCESS")
 	# os._exit(1)
+
+	global driver
+	driver.getTarget().GetProcess().Kill()
+	if SettingsHelper().getValue(SettingsValues.ExitLLDBOnAppExit):
+		driver.debugger.Terminate()
+
+
 	
 def StartLLDBPyGUI(debugger, command, result, dict):
 	

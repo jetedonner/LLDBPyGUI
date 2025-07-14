@@ -67,7 +67,9 @@ class BreakpointHelper():
 				print(f"Setting new BP-Condition: {itemCond.text()}")
 				print(bp_cur)
 				bp_cur.SetCondition(itemCond.text())
-				lib.utils.setStatusBar(f"Breakpoint ({itemNum.text()}) condition changed successfully")
+
+				# lib.utils.setStatusBar(f"Breakpoint ({itemNum.text()}) condition changed successfully")
+
 				# self.table.window().updateStatusBar(f"Breakpoint ({itemNum.text()}) condition changed successfully")
 				# print(self.table.window().updateStatusBar(f"Breakpoint ({itemNum.text()}) condition changed successfully"))
 				pass

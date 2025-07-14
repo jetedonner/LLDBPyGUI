@@ -20,10 +20,15 @@ class QHistoryLineEdit(QLineEdit):
 	lstCommands = []
 	currCmd = 0
 	doAddCmdToHist = True
+	persistentHistory = False
 
 	def save_history(self, history):
 		with open(HISTORY_FILE, "w") as f:
 			json.dump(history, f)
+
+	def clear_history(self):
+		with open(HISTORY_FILE, "w") as f:
+			f.write("")
 
 	def load_history(self):
 		if HISTORY_FILE.exists():
@@ -31,7 +36,7 @@ class QHistoryLineEdit(QLineEdit):
 				return json.load(f)
 		return []
 
-	def __init__(self, doAddCmdToHist = True):
+	def __init__(self, doAddCmdToHist=True, persistentHistory=False):
 		super().__init__()
 
 		self.setStyleSheet("""
@@ -45,7 +50,10 @@ class QHistoryLineEdit(QLineEdit):
 			}
 		""")
 		self.doAddCmdToHist = doAddCmdToHist
-		self.lstCommands = self.load_history()
+		self.persistentHistory = persistentHistory
+
+		if self.doAddCmdToHist and persistentHistory:
+			self.lstCommands = self.load_history()
 		if len(self.lstCommands) > 0:
 			self.currCmd = len(self.lstCommands)
 
@@ -96,7 +104,8 @@ class QHistoryLineEdit(QLineEdit):
 			event.accept()
 
 		elif event.key() == Qt.Key.Key_Return:
-			self.addCommandToHistory()
+			if self.doAddCmdToHist:
+				self.addCommandToHistory()
 			super(QHistoryLineEdit, self).keyPressEvent(event)
 			pass
 		else:
@@ -112,12 +121,15 @@ class QHistoryLineEdit(QLineEdit):
 			else:
 				self.lstCommands.append(newCommand)
 				self.currCmd = len(self.lstCommands) - 1
-			self.save_history(self.lstCommands)
+			if self.persistentHistory:
+				self.save_history(self.lstCommands)
 
-	def clearCommandText(self, clearCommandHistory=False):
+	def clearCommandText(self, clearCommandHistory=False, clearPersistentHistory=False):
 		self.setText("")
 		if clearCommandHistory:
 			self.lstCommands.clear()
+		if clearPersistentHistory:
+			self.clear_history()
 
 				
 			

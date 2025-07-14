@@ -45,7 +45,9 @@ class CommandsWidget(QWidget):
 		# 	}
 		# """)
 
-		self.txtCmd = QHistoryLineEdit(self.setHelper.getValue(SettingsValues.CmdHistory))
+		# self.lstCommands = self.load_history()
+
+		self.txtCmd = QHistoryLineEdit(self.setHelper.getValue(SettingsValues.CmdHistory), self.setHelper.getValue(SettingsValues.PersistentCommandHistory))
 		self.txtCmd.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
 		# self.txtCmd.setText(ConfigClass.initialCommand)
 		self.txtCmd.setPlaceholderText("Enter LLDB command here ...")
