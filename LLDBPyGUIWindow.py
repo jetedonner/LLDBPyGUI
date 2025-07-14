@@ -1663,7 +1663,7 @@ class LLDBPyGUIWindow(QMainWindow):
 #		print(f"Current RIP: {self.rip} / {hex(self.rip)} / DRIVER: {self.driver.getPC()} / {self.driver.getPC(True)}")
 		QApplication.processEvents()
 		self.txtMultiline.setPC(self.driver.getPC(), True)
-		logDbg(f"self.driver.getPC(): {self.driver.getPC()}")
+		logDbg(f"self.driver.getPC(): {hex(self.driver.getPC())} / {self.driver.getPC()}")
 		return
 		self.start_loadRegisterWorker()
 		self.setProgressValue(50)

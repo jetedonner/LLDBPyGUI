@@ -64,6 +64,7 @@ class Worker(QObject):
 		self.process = None
 		self.thread = None
 		self.listener = None
+		self.stoppedAtOEP = False
 
 	def run(self):
 		self._should_stop = False  # Reset before starting
@@ -121,8 +122,8 @@ class Worker(QObject):
 				self.loadWatchpointsValueCallback.emit(wp_loc)  # , self.initTable)
 			else:
 				self.updateWatchpointsValueCallback.emit(wp_loc)
-
-#		pass
+		# self.finishedLoadInstructionsCallback.emit()
+		# pass
 
 	def loadRegisters(self):
 		# super(LoadRegisterWorker, self).workerFunc()
@@ -215,7 +216,7 @@ class Worker(QObject):
 
 					# QCoreApplication.processEvents()
 		self.loadBPsWPs()
-		pass
+		# pass
 
 	def char_array_to_string(self, char_array_value):
 		byte_array = char_array_value.GetPointeeData(0, char_array_value.GetByteSize())
@@ -421,6 +422,7 @@ class Worker(QObject):
 		if success:
 			self.loadJSONCallback.emit(str(stream.GetData()))
 
+
 	def loadNewExecutableFile(self, filename):
 		# return
 
@@ -465,7 +467,13 @@ class Worker(QObject):
 				# self.driver.debugger.HandleCommand("process launch --stop-at-entry")
 				self.driver.debugger.HandleCommand('process launch --stop-at-entry')
 
-				# main_bp2 = self.enableBPCallback.emit("0x100000ac0", True, False)
+				# main_bp2 = self.enableBPCallback.emit("0x100000ab0", True, False)
+
+				main_oep = find_main(self.driver.debugger)
+				self.logDbgC.emit(f"find_main(self.driver.debugger) => {hex(main_oep)}")
+				main_bp2 = self.enableBPCallback.emit(hex(main_oep), True, False)
+				self.logDbgC.emit(f"main_bp2 (@ {hex(main_oep)}): {main_bp2}")
+				# print(f"main_bp2 (@ {hex(main_oep)}): {main_bp2}")
 
 				addrObj2 = find_main(self.driver.debugger)
 				# main_bp2 = self.bpHelper.enableBP(hex(addrObj2), True, False)
