@@ -470,20 +470,23 @@ class Worker(QObject):
 				# main_bp2 = self.enableBPCallback.emit("0x100000ab0", True, False)
 
 				main_oep = find_main(self.driver.debugger)
-				self.logDbgC.emit(f"find_main(self.driver.debugger) => {hex(main_oep)}")
-				main_bp2 = self.enableBPCallback.emit(hex(main_oep), True, False)
-				self.logDbgC.emit(f"main_bp2 (@ {hex(main_oep)}): {main_bp2}")
-				# print(f"main_bp2 (@ {hex(main_oep)}): {main_bp2}")
+				self.driver.debugger.HandleCommand(f'breakpoint set -a {hex(main_oep)}')
 
-				addrObj2 = find_main(self.driver.debugger)
-				# main_bp2 = self.bpHelper.enableBP(hex(addrObj2), True, False)
-
-				main_bp2 = self.enableBPCallback.emit(hex(addrObj2), True, False)
-				# self.enableBPCallback.emit(hex(addrObj2), True, False)
-				print(f"main_bp2 (@{addrObj2}): {main_bp2}")
-				self.logDbg.emit(f"main_bp2 (@{hex(addrObj2)}): {main_bp2}")
+				# self.logDbgC.emit(f"find_main(self.driver.debugger) => {hex(main_oep)}")
+				# main_bp2 = self.enableBPCallback.emit(hex(main_oep), True, False)
+				# self.logDbgC.emit(f"main_bp2 (@ {hex(main_oep)}): {main_bp2}")
+				# # print(f"main_bp2 (@ {hex(main_oep)}): {main_bp2}")
+				#
+				# addrObj2 = find_main(self.driver.debugger)
+				# # main_bp2 = self.bpHelper.enableBP(hex(addrObj2), True, False)
+				#
+				# main_bp2 = self.enableBPCallback.emit(hex(addrObj2), True, False)
+				# # self.enableBPCallback.emit(hex(addrObj2), True, False)
+				# # print(f"main_bp2 (@{addrObj2}): {main_bp2}")
+				# self.logDbgC.emit(f"main_bp2 (@{hex(addrObj2)}): {main_bp2}")
 
 				self.driver.debugger.HandleCommand('breakpoint set --name main')
+				self.driver.debugger.HandleCommand(f'br list')
 				self.driver.debugger.HandleCommand('process continue')
 
 
