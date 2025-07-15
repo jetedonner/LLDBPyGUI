@@ -4,6 +4,7 @@ from PyQt6.QtCore import Qt
 from datetime import datetime
 
 from config import *
+from lib.settings import *
 
 class DbgOutputWidget(QWidget):
     def __init__(self):
@@ -82,11 +83,12 @@ class DbgOutputTextEdit(QTextEdit):
         # self.setFontFamily("Courier New")
 
     def logDbg(self, logMsg):
+        sDateTimeFormat = "%H:%M:%S"
+        if SettingsHelper().getValue(SettingsValues.ShowDateInLogView):
+            sDateTimeFormat = "%Y-%m-%d %H:%M:%S"
         now = datetime.now()
-        timestamp = now.strftime("%Y-%m-%d %H:%M:%S")  # Format as 'YYYY-MM-DD HH:MM:SS'
+        timestamp = now.strftime(sDateTimeFormat)  # Format as 'YYYY-MM-DD HH:MM:SS'
 
-        # my_string = f"The current date and time is: {timestamp}"
-        # print(my_string)
         self.append(f"{timestamp}: {logMsg}")
     # def keyPressEvent(self, event):
     #     cursor = self.textCursor()

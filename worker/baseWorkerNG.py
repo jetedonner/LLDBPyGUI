@@ -42,6 +42,13 @@ class Worker(QObject):
 	updateWatchpointsValueCallback = pyqtSignal(object)
 	finishedLoadingSourceCodeCallback = pyqtSignal(str)
 
+	startLoadControlFlowSignal = pyqtSignal()
+	endLoadControlFlowCallback = pyqtSignal(bool)
+
+	# def do_work(self):
+	# 	self.request_text.emit()  # Ask main thread for text
+
+
 	# Load Listener
 	handle_breakpointEvent = None
 	handle_processEvent = None
@@ -51,6 +58,7 @@ class Worker(QObject):
 	mainWin = None
 	fileToLoad = ""
 	targetBasename = ""
+
 
 	def __init__(self, mainWinToUse, filename, initTable=True, sourceFile=""):
 		super().__init__()
@@ -70,6 +78,9 @@ class Worker(QObject):
 		self.isLoadSourceCodeActive = False
 		self.sourceFile = sourceFile
 		self.lineNum = 0
+		self.allInstructions = []
+		self.finishedLoadControlFlow = False
+		self.endLoadControlFlowCallback.connect(self.handle_endLoadControlFlowCallback)
 
 	def run(self):
 		self._should_stop = False  # Reset before starting
@@ -102,6 +113,18 @@ class Worker(QObject):
 	def stop(self):
 		self._should_stop = True
 
+	def handle_endLoadControlFlowCallback(self, success):
+		self.logDbg.emit(f"Result load control flow: {success}")
+		self.finishedLoadControlFlow = True
+
+	def runLoadControlFlow(self):
+		self.logDbg.emit(f"runLoadControlFlow ... ")
+		while not self.finishedLoadControlFlow:
+			self.logDbg.emit(f"... ")
+			time.sleep(0.5)
+		self.logDbg.emit(f"Finished loading control flow ... continuing ...")
+		pass
+
 	def runLoadSourceCode(self):
 		if self.isLoadSourceCodeActive:
 			interruptLoadSourceCode = True
@@ -126,7 +149,10 @@ class Worker(QObject):
 		#		print(stream.GetData())
 
 		self.isLoadSourceCodeActive = False
+		self.finishedLoadControlFlow = False
 		self.finishedLoadingSourceCodeCallback.emit(stream.GetData())
+		self.runLoadControlFlow()
+		# startLoadControlFlowSignal
 		# QCoreApplication.processEvents()
 		# QApplication.processEvents()
 
@@ -376,7 +402,9 @@ class Worker(QObject):
 									self.logDbgC.emit(f"{sym.GetStartAddress().GetFunction()}")
 
 								# logDbg(f"Analyzing instructions: {len(sym.GetStartAddress().GetFunction().GetInstructions(self.target))}")
+								self.allInstructions += sym.GetStartAddress().GetFunction().GetInstructions(self.target)
 								for instruction in sym.GetStartAddress().GetFunction().GetInstructions(self.target):
+
 									# print(f"{instruction}")
 									#
 									# if (hex(instruction.GetAddress().GetLoadAddress(target)) == "0x100000d39"):

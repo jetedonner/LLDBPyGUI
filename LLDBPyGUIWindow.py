@@ -1051,79 +1051,14 @@ class LLDBPyGUIWindow(QMainWindow):
 	def test2_clicked(self):
 		os.system('clear')  # Unix/Linux/macOS
 		statusTxt = "Console cleared"
-		if self.setHelper.getChecked(SettingsValues.ClearConsoleComplete):
+		if self.setHelper.getValue(SettingsValues.ClearConsoleComplete):
 			os.system('clear')  # Unix/Linux/macOS
 			statusTxt += " (completely)"
 
 		self.updateStatusBar(statusTxt)
-		# print("\033c", end="")  # Resets the terminal
-
-		# # self.wdtControlFlow.worker.quit()
-		# # self.wdtControlFlow.worker.wait()
-		# # self.wdtControlFlow.toggleTestTimer()
-		# if len(self.wdtControlFlow.connectionsNG) <= 0:
-		# 	return
-		#
-		# scene_rect = self.wdtControlFlow.scene.sceneRect()
-		# line_rect = self.wdtControlFlow.connectionsNG[5].mainLine.mapToScene(self.wdtControlFlow.connectionsNG[0].mainLine.boundingRect()).boundingRect()
-		#
-		# if scene_rect.intersects(line_rect):
-		# 	print("Line item is within the visible scene area.")
-		# 	logDbg(f"CONNECTION IS VISIBLE")
-		# else:
-		# 	print(f"NOT INSIDE!!!!")
-		#
-		# view_rect = self.wdtControlFlow.view.mapToScene(self.wdtControlFlow.view.viewport().rect()).boundingRect()
-		# line_rect = self.wdtControlFlow.connectionsNG[5].mainLine.mapToScene(self.wdtControlFlow.connectionsNG[5].mainLine.boundingRect()).boundingRect()
-		#
-		# if view_rect.intersects(line_rect):
-		# 	logDbg(f"Line item IS VISIBLE in the view.")
-		# 	self.wdtControlFlow.connectionsNG[5].mainLine.setVisible(True)
-		# else:
-		# 	logDbg(f"Line item IS NOOOOOTTTTT VISIBLE in the view!!!!")
-		# 	self.wdtControlFlow.connectionsNG[5].mainLine.setVisible(False)
-
-		pass
 
 	def test_clicked(self):
-#		self.resetGUI()
-#		QAppl
-#		self.txtSource.scroll_to_line("=>")
-#		self.txtMultiline.table.testBG()
-#		self.dialog = SpinnerDialog()
-#		self.dialog.show()
-#		if self.dialog != None:
-#			self.dialog.close()
-#			self.dialog = None
-#		else:
-
-		self.start_operation()
-
-		# self.dialog = SpinnerDialog()
-		# self.dialog.show()
-#		self.driver.removeListener(lldb.SBTarget, SBTarget.eBroadcastBitBreakpointChanged)
-
-
-#		self.tabWatchpoints.tblWatchpoints.resetContent()
-#		self.tabWatchpoints.reloadWatchpoints(True)
-#		self.stopTarget()
-
-		# This was current
-		# self.loadNewExecutableFile(ConfigClass.testTarget)
-		# self.tabWidgetMain.setCurrentIndex(2)
-		# target = lldb.debugger.GetSelectedTarget()
-		# self.target
-		# self.wdtControlFlow.loadInstructions()
-		# objCon = self.wdtControlFlow.draw_flowConnection(0, 45)
-		# objCon.setToolTip(f"FIRST TOOLTIP!!!")
-		# objCon2 = self.wdtControlFlow.draw_flowConnection(37, 57, QColor("orange"), 25, 1, 21)
-		# objCon2.setToolTip(f"SECOND TOOLTIP!!!")
-		# objCon3 = self.wdtControlFlow.draw_flowConnection(42, 46, QColor("green"), 15, 1, 29)
-		# objCon3.setToolTip(f"THIRD TOOLTIP!!!")
-		# self.wdtDbg.logDbg("QMainWindow HELLO from wdtDbg")
-		# self.dbgTxt.logDbg("QMainWindow HELLO")
-		# breakpoint = self.driver.getTarget().BreakpointCreateByName("subfunc")  # or any breakpoint creation methodpass
-		# breakpoint.SetCondition("$rax == 0x0000000000000001")
+		self.wdtControlFlow.loadConnections()
 
 	def stopTarget(self):
 		# self.driver
@@ -1802,6 +1737,9 @@ class LLDBPyGUIWindow(QMainWindow):
 				self.tabWidgetDbg.setCurrentIndex(currTabIdx)
 		else:
 			self.txtSource.setText("<Source code NOT available>")
+
+		self.wdtControlFlow.loadConnections()
+		self.worker.endLoadControlFlowCallback.emit(True)
 
 	def loadStacktrace(self):
 		self.process = self.driver.getTarget().GetProcess()

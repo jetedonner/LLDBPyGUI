@@ -354,6 +354,9 @@ class QControlFlowWidget(QWidget):
 
         # self.ctrlFlowConManager = ControlFlowConnectionMgr(self)
         self.currStep = 0
+        self.startAddr = 0x0
+        self.endAddr = 0x0
+
         # Main layout
         self.thread = None
         self.tableView = tableView
@@ -371,6 +374,7 @@ class QControlFlowWidget(QWidget):
         self.layout.addWidget(self.view)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.draw_instructions()
+        # self.isInsideTextSectionGetRangeVarsReady()
 
     # controlFlowWidget = None
     # connections = []
@@ -423,8 +427,7 @@ class QControlFlowWidget(QWidget):
         #     logDbg(f"Connections are ... GO!")
         pass
 
-    # def loadTextSection(self):
-    def isInsideTextSection(self, addr):
+    def isInsideTextSectionGetRangeVarsReady(self):
         target = self.driver.getTarget()
         process = target.GetProcess()
         self.thread = process.GetThreadAtIndex(0)
@@ -434,36 +437,60 @@ class QControlFlowWidget(QWidget):
                 subSec = sec.GetSubSectionAtIndex(idx3)
                 if subSec.GetName() == "__text":
                     # sEndAddr = str(hex(subSec.GetFileAddress() + subSec.GetByteSize()))
-                    startAddr = subSec.GetFileAddress()
-                    endAddr = subSec.GetFileAddress() + subSec.GetByteSize()
-                    return endAddr > int(addr, 16) >= startAddr
+                    self.startAddr = subSec.GetFileAddress()
+                    self.endAddr = subSec.GetFileAddress() + subSec.GetByteSize()
+
+    # def loadTextSection(self):
+    def isInsideTextSection(self, addr):
+        # target = self.driver.getTarget()
+        # process = target.GetProcess()
+        # self.thread = process.GetThreadAtIndex(0)
+        # module = self.thread.GetFrameAtIndex(0).GetModule()
+        # for sec in module.section_iter():
+        #     for idx3 in range(sec.GetNumSubSections()):
+        #         subSec = sec.GetSubSectionAtIndex(idx3)
+        #         if subSec.GetName() == "__text":
+        #             # sEndAddr = str(hex(subSec.GetFileAddress() + subSec.GetByteSize()))
+        #             startAddr = subSec.GetFileAddress()
+        #             endAddr = subSec.GetFileAddress() + subSec.GetByteSize()
+        #             return endAddr > int(addr, 16) >= startAddr
                 # for sym in module.symbol_in_section_iter(subSec):
                 #     pass
-        pass
+        return self.endAddr > int(addr, 16) >= self.startAddr
+
+    def loadConnectionsThreadingStart(self):
+        tblDisassembly = self.window().txtMultiline.table
+        scrollOrig = tblDisassembly.verticalScrollBar().value()
+        tblDisassembly.verticalScrollBar().setValue(0)
 
     def loadConnections(self):
+        logDbgC(f"Control Flow loadConnections() ...")
         radius = 140
-        scrollOrig = self.window().txtMultiline.table.verticalScrollBar().value()
-        self.window().txtMultiline.table.verticalScrollBar().setValue(0)
-        for row in range(self.window().txtMultiline.table.rowCount()):
-            # self.window().txtMultiline.table.rowAt(row).
-            if self.window().txtMultiline.table.item(row, 3) is not None and self.window().txtMultiline.table.item(row,
-                                                                                                                   3).text().startswith(JMP_MNEMONICS): #"call", "jmp", "jne", "jz", "je", "jnz", "jle", "jl", "jge", "jg")):
-                if self.window().txtMultiline.table.item(row, 3).text().startswith("jmpq"):
-                    continue
+        tblDisassembly = self.window().txtMultiline.table
+        scrollOrig = tblDisassembly.verticalScrollBar().value()
+        tblDisassembly.verticalScrollBar().setValue(0)
+        self.isInsideTextSectionGetRangeVarsReady()
+        for row in range(tblDisassembly.rowCount()):
+            if tblDisassembly.item(row, 3) is None:
+                continue
 
-                sAddrJumpTo = self.window().txtMultiline.table.item(row, 4).text()
+            sMnemonic = tblDisassembly.item(row, 3).text()
+            if sMnemonic is not None and sMnemonic.startswith(JMP_MNEMONICS) and not sMnemonic.startswith(JMP_MNEMONICS_EXCLUDE): #"call", "jmp", "jne", "jz", "je", "jnz", "jle", "jl", "jge", "jg")):
+                # if self.window().txtMultiline.table.item(row, 3).text().startswith(JMP_MNEMONICS_EXCLUDE):
+                #     continue
+
+                sAddrJumpTo = tblDisassembly.item(row, 4).text()
                 if self.isInsideTextSection(sAddrJumpTo):
                     # logDbg(f"IS INSIDE!!!")
-                    sAddrJumpFrom = self.window().txtMultiline.table.item(row, 2).text()
+                    sAddrJumpFrom = tblDisassembly.item(row, 2).text()
                     logDbg(f"Found instruction with jump @: {sAddrJumpFrom} / isInside: {sAddrJumpTo}!")
-                    rowStart = int(self.window().txtMultiline.table.getRowForAddress(sAddrJumpFrom))
-                    rowEnd = int(self.window().txtMultiline.table.getRowForAddress(sAddrJumpTo))
+                    rowStart = int(tblDisassembly.getRowForAddress(sAddrJumpFrom))
+                    rowEnd = int(tblDisassembly.getRowForAddress(sAddrJumpTo))
 
                     if (rowStart < rowEnd):
-                        newConObj = self.draw_flowConnectionNG(rowStart, rowEnd, int(sAddrJumpFrom, 16), int(sAddrJumpTo, 16), QColor("lightblue"), radius)
+                        newConObj = QControlFlowWidget.draw_flowConnectionNG(rowStart, rowEnd, int(sAddrJumpFrom, 16), int(sAddrJumpTo, 16), self.window().txtMultiline.table, QColor("lightblue"), radius)
                     else:
-                        newConObj = self.draw_flowConnectionNG(rowEnd, rowStart, int(sAddrJumpFrom, 16), int(sAddrJumpTo, 16), QColor("lightgreen"), radius, 1, True)
+                        newConObj = QControlFlowWidget.draw_flowConnectionNG(rowEnd, rowStart, int(sAddrJumpFrom, 16), int(sAddrJumpTo, 16), self.window().txtMultiline.table, QColor("lightgreen"), radius, 1, True)
                     # self.connectionsNG.append(newConnectionNG)
                     newConObj.parentControlFlow = self
                     self.addConnection(newConObj)
@@ -476,10 +503,10 @@ class QControlFlowWidget(QWidget):
         radius = 140
         for con in self.connections:
             # logDbg(f"Connection {idx} dist: {abs(con.jumpDist)}")
-            y_position = self.window().txtMultiline.table.rowViewportPosition(con.origRow)
+            y_position = tblDisassembly.rowViewportPosition(con.origRow)
             # logDbg(f"y_position Start: {y_position}")
 
-            y_position2 = self.window().txtMultiline.table.rowViewportPosition(con.destRow)
+            y_position2 = tblDisassembly.rowViewportPosition(con.destRow)
             # logDbg(f"y_position End: {y_position2}")
 
             nRowHeight = 21
@@ -561,7 +588,7 @@ class QControlFlowWidget(QWidget):
                 radius -= 10
             idx += 1
 
-        self.window().txtMultiline.table.verticalScrollBar().setValue(scrollOrig)
+        tblDisassembly.verticalScrollBar().setValue(scrollOrig)
         pass
 
     def loadInstructions(self):
@@ -648,8 +675,9 @@ class QControlFlowWidget(QWidget):
     #     print("Running...")
     #     self.connections[0].startArrow.moveBy(-2, 0)
 
-    def draw_flowConnectionNG(self, startRow, endRow, startAddr, endAddr, color=QColor("lightblue"), radius=50, lineWidth=1, switched=False):
-        newConnectionNG = ControlFlowConnectionNG(startRow, endRow, startAddr, endAddr, self.window().txtMultiline.table)
+    @staticmethod
+    def draw_flowConnectionNG(startRow, endRow, startAddr, endAddr, table, color=QColor("lightblue"), radius=50, lineWidth=1, switched=False):
+        newConnectionNG = ControlFlowConnectionNG(startRow, endRow, startAddr, endAddr, table)
         newConnectionNG.switched = switched
         newConnectionNG.color = random_qcolor()
         # if switched:
