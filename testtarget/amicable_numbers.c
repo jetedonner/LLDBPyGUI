@@ -5,10 +5,10 @@
 // clang -g -target x86_64-apple-macos -arch x86_64 -o amicable_numbers amicable_numbers.c
 //
 // Make executable:
-// chmod u+x hello_world
+// chmod u+x amicable_numbers
 //
 // Codesign for MacOS
-// codesign --verbose=4 --timestamp --strict --options runtime -s "<YOUR SIGNING CERTIFICATE NAME>" hello_world --force
+// codesign --verbose=4 --timestamp --strict --options runtime -s "<YOUR SIGNING CERTIFICATE NAME>" amicable_numbers --force
 
 #include <stdio.h>
 #include <unistd.h>
@@ -37,7 +37,7 @@ int dividerSum(int num2Check){
 int main() {
 
   printf("#==================================================#\n");
-  printf("| W3lc0m4 to AMICABLE NUMBER GENERATOR             |\n");
+  printf("| W3lc0m4 to AMICABLE NUMBERS GENERATOR            |\n");
   printf("| This app lets you generate amicable number pairs |\n");
   printf("|                                                  |\n");
   printf("| v 0.0.1, (c.) 1991-2025 by kimhauser.ch          |\n");

@@ -28,7 +28,7 @@ class Worker(QObject):
 	# Load Callbacks
 	loadFileInfosCallback = pyqtSignal(object, object)
 	loadJSONCallback = pyqtSignal(str)
-	loadModulesCallback = pyqtSignal(object)
+	loadModulesCallback = pyqtSignal(object, object)
 	enableBPCallback = pyqtSignal(str, bool, bool)
 	loadInstructionCallback = pyqtSignal(object)
 	finishedLoadInstructionsCallback = pyqtSignal()
@@ -442,7 +442,7 @@ class Worker(QObject):
 					self.logDbg.emit(f"loadTarget() => Thread.GetNumFrames(): {self.thread.GetNumFrames()} ...")
 					for z in range(self.thread.GetNumFrames()):
 						frame = self.thread.GetFrameAtIndex(z)
-						self.loadModulesCallback.emit(frame)
+						self.loadModulesCallback.emit(frame, self.target.modules)
 						# self.tabWidgetStruct.cmbModules.addItem(
 						# 	frame.GetModule().GetFileSpec().GetFilename() + " (" + str(
 						# 		frame.GetFrameID()) + ")")
@@ -513,6 +513,12 @@ class Worker(QObject):
 				self.driver.debugger.HandleCommand('process launch --stop-at-entry')
 
 				# main_bp2 = self.enableBPCallback.emit("0x100000ab0", True, False)
+
+				if len(self.driver.getTarget().modules) > 0:
+					self.logDbg.emit(f"self.driver.getTarget().GetModuleAtIndex(0) (len: {len(self.driver.getTarget().modules)}): {self.driver.getTarget().GetModuleAtIndex(0)}")
+					for idxMod in range(len(self.driver.getTarget().modules)):
+						self.logDbg.emit(
+							f"- self.driver.getTarget().GetModuleAtIndex({idxMod}): {self.driver.getTarget().GetModuleAtIndex(idxMod)}")
 
 				main_oep = find_main(self.driver.debugger)
 				self.driver.debugger.HandleCommand(f'breakpoint set -a {hex(main_oep)}')

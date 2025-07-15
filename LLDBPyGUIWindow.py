@@ -1328,8 +1328,14 @@ class LLDBPyGUIWindow(QMainWindow):
 		main_bp2 = self.bpHelper.enableBP(address, enabled, updateUI)
 		return main_bp2
 
-	def loadModulesCallback(self, frame):
-		self.tabWidgetStruct.cmbModules.addItem(frame.GetModule().GetFileSpec().GetFilename() + " (" + str(frame.GetFrameID()) + ")")
+	def loadModulesCallback(self, frame, modules=None):
+		self.tabWidgetStruct.cmbModules.clear()
+		if modules is not None and len(modules) > 0:
+			for i in range(len(modules)):
+				self.tabWidgetStruct.cmbModules.addItem(
+					modules[i].GetFileSpec().GetFilename() + " (" + str(i) + ")")
+		else:
+			self.tabWidgetStruct.cmbModules.addItem(frame.GetModule().GetFileSpec().GetFilename() + " (" + str(frame.GetFrameID()) + ")")
 		pass
 
 	def loadFileInfosCallback(self, mach_header, targetRet):
@@ -1818,6 +1824,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			for idx2 in range(numFrames):
 				self.setProgressValue(idx2 / numFrames)
 				frame = self.thread.GetFrameAtIndex(idx2)
+				logDbgC(f"frame.GetFunction(): {frame.GetFunction()}")
 				frameNode = QTreeWidgetItem(self.threadNode, ["#" + str(frame.GetFrameID()), "", str(frame.GetPCAddress()), str(hex(frame.GetPC())), self.GuessLanguage(frame)])
 				idx += 1
 

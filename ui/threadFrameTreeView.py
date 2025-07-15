@@ -45,7 +45,8 @@ class ThreadFrameTreeWidget(BaseTreeWidget):
 			return
 		col = self.columnAt(event.pos().x())
 		if col == 3 and daItem.text(col) is not None and daItem.text(col) != "":
-			self.window().doReadMemory(int(daItem.text(col), 16))
+			# self.window().doReadMemory(int(daItem.text(col), 16))
+			self.window().txtMultiline.viewAddress(daItem.text(col))
 			
 #	def handle_doubleClick(self, event):
 #		if event.column() == 3:
