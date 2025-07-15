@@ -1314,7 +1314,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		desc = get_description(event)
 		# print('GUI-Event description:', desc)
 		# print('GUI-Event data flavor:', event.GetDataFlavor())
-		if str(event.GetDataFlavor()) == "ProgressEventData" and not self.listener.should_quit:
+		if str(event.GetDataFlavor()) == "ProgressEventData": # and not self.should_quit:
 			self.treListener.handle_gotNewEvent(event)
 			pass
 

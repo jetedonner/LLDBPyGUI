@@ -33,14 +33,15 @@ class DebuggerDriver(Thread):
     signals = None
     
     def breakpointHandlerDriver(self, dummy, frame, bpno, err):
-    #   print(dummy)
-    #   print(frame)
-    #   print(bpno)
-    #   print(err)
-        global pymobiledevice3GUIWindow
-        pymobiledevice3GUIWindow.bpcp("YESSSSS!!!!!")
-    #   print("MLIR debugger attaching...")
-    #   print("IIIIIIIIINNNNNNNN CCCCAAQALLLLLLBBBAAACCKKKK")
+        #   print(dummy)
+        #   print(frame)
+        #   print(bpno)
+        #   print(err)
+        #     global pymobiledevice3GUIWindow
+        #     pymobiledevice3GUIWindow.bpcp("YESSSSS!!!!!")
+        #   print("MLIR debugger attaching...")
+        #   print("IIIIIIIIINNNNNNNN CCCCAAQALLLLLLBBBAAACCKKKK")
+        pass
     
     def __init__(self, debugger, event_queue):
         Thread.__init__(self)
@@ -132,7 +133,7 @@ class DebuggerDriver(Thread):
       #		print(f"Removed Listener with {success} / self.broadcasterTarget => {self.broadcasterTarget} / self.listenerTarget  => {self.listenerTarget} / self.maskTarget => {self.maskTarget}")
 
     def createTarget(self, target_image, args=None):
-        print(f"createTarget({target_image})....")
+        print(f"createTarget({target_image}). / args: {args}...")
         self.handleCommand("target create %s" % target_image)
         if args is not None:
             self.handleCommand("settings set target.run-args %s" % args)
@@ -185,6 +186,7 @@ class DebuggerDriver(Thread):
   
     def eventLoop(self):
 #       global process
+        print(f"=======================>>>>>>>>>>>>>>>>>>> eventLoop STARTED!!!!!!!!!!!!!")
         while not self.isDone() and not self.aborted:# and not self.listener.should_quit:
             event = lldb.SBEvent()
             got_event = self.listener.WaitForEvent(lldb.UINT32_MAX, event)
@@ -200,7 +202,7 @@ class DebuggerDriver(Thread):
 ###           global process
 ###           print('Process state:', lldbutil.state_type_to_str(process.GetState()))
 ##           print()
-#           
+#
 #           # eBroadcastBitSTDOUT
 #           if SBProcess.EventIsProcessEvent(event):
 #           #             self._broadcast_process_state(SBProcess.GetProcessFromEvent(event), event)
@@ -234,7 +236,7 @@ class DebuggerDriver(Thread):
 # #               continue
 # ##             elif not event.GetBroadcaster().IsValid():
 # ##                 continue
-#           
+#
 #           self.event_queue.put(event)
 #           self.signals.event_queued.emit(event)
 #           QCoreApplication.processEvents()
@@ -246,6 +248,7 @@ class DebuggerDriver(Thread):
         self.eventLoop()
 
     def terminate(self):
+        print(f"=======================>>>>>>>>>>>>>>>>>>> eventLoop ENDED !!!!!!!!!!!!!")
         lldb.SBDebugger.Terminate()
         sys.exit(0)
         
