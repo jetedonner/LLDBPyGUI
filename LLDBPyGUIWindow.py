@@ -1093,7 +1093,8 @@ class LLDBPyGUIWindow(QMainWindow):
 
 
 	def test_clicked(self):
-		self.wdtControlFlow.loadConnections()
+		self.wdtControlFlow.logViewportHeight()
+		# self.wdtControlFlow.loadConnections()
 
 	def stopTarget(self):
 		# self.driver
@@ -1644,6 +1645,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		QApplication.processEvents()
 		self.txtMultiline.setPC(self.driver.getPC(), True)
 		logDbg(f"self.driver.getPC(): {hex(self.driver.getPC())} / {self.driver.getPC()}")
+		self.wdtControlFlow.draw_instructions()
 		return
 		self.start_loadRegisterWorker()
 		self.setProgressValue(50)

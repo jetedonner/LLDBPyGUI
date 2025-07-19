@@ -259,7 +259,7 @@ class QControlFlowWidget(QWidget):
         self.view = NoScrollGraphicsView(self.scene)
         self.layout.addWidget(self.view)
         self.layout.setContentsMargins(0, 0, 0, 0)
-        self.draw_instructions()
+        # self.draw_instructions()
 
     def addConnection(self, conn):
         self.connections.append(conn)
@@ -496,12 +496,16 @@ class QControlFlowWidget(QWidget):
 
         return newConnectionNG
 
+    def logViewportHeight(self):
+        logDbgC(f"self.tableView.table.viewport().height(): {self.tableView.table.viewport().height()}")
+
     # THIS FUNCTION ENSURES THAT THE CANVAS HAS FULL SIZE - DO NOT DELETE!!!
     def draw_instructions(self):
         start = QPointF(15, 0)
         end = QPointF(15, 0)
         # print(f"self.tableView.viewport().height() => {self.tableView.table.viewport().height()}")
         line1 = QGraphicsLineItem(start.x() + 20, 0, end.x() + 20, self.tableView.table.viewport().height() - 5)
+        self.logViewportHeight()
         line1.setPen(QPen(QColor("transparent"), 0))
         self.scene.addItem(line1)
     
