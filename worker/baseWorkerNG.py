@@ -133,6 +133,18 @@ class Worker(QObject):
 			self.logDbg.emit(f"... ")
 			time.sleep(0.5)
 		self.logDbg.emit(f"Finished loading control flow ... continuing ...")
+
+
+
+
+
+		# if self.setHelper.getChecked(SettingsValues.BreakpointAtMainFunc):
+		# 	self.bpHelper.enableBP(hex(addrObj2), True, False)
+		# self.txtMultiline.viewAddress(hex(addrObj2))
+		# self.setProgressValue(95)
+		# QApplication.processEvents()
+		# self.window().wdtControlFlow.view.verticalScrollBar().setValue(self.window().txtMultiline.table.verticalScrollBar().value())
+
 		pass
 
 	def runLoadSourceCode(self):

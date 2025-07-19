@@ -123,6 +123,7 @@ class NoScrollGraphicsView(QGraphicsView):
     disableScroll = False
     def on_scroll(self, value):
         if not self.disableScroll:
+            # logDbgC(f"on_scroll({value}")
             self.window().txtMultiline.table.verticalScrollBar().setValue(value)
             if self.window().wdtControlFlow is not None:
                 self.window().wdtControlFlow.checkHideOverflowConnections()
@@ -322,6 +323,7 @@ class QControlFlowWidget(QWidget):
         radius = 140
         tblDisassembly = self.window().txtMultiline.table
         scrollOrig = tblDisassembly.verticalScrollBar().value()
+        logDbgC(f"Control Flow loadConnections() => scrollOrig: {scrollOrig}")
         tblDisassembly.verticalScrollBar().setValue(0)
         self.isInsideTextSectionGetRangeVarsReady()
         for row in range(tblDisassembly.rowCount()):
@@ -420,6 +422,7 @@ class QControlFlowWidget(QWidget):
                 radius -= 10
             idx += 1
 
+        logDbgC(f"Control Flow loadConnections() => scrollOrig: {scrollOrig}")
         tblDisassembly.verticalScrollBar().setValue(scrollOrig)
         pass
 
@@ -521,3 +524,8 @@ class QControlFlowWidget(QWidget):
         arrow_head.toPos = toPos
         arrow_head.arrow_size = arrow_size
         return arrow_head
+
+    def resetContent(self):
+        self.connections.clear()
+        self.scene.clear()
+        pass

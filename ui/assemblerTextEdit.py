@@ -315,6 +315,8 @@ class DisassemblyTableWidget(BaseTableWidget):
 			# self.scroll()
 			# self.view.verticalScrollBar().scroll(0, 0.783171521)
 
+	bpHelper = None
+
 	def __init__(self, driver, bpHelper, parent):
 		super().__init__()
 		
@@ -655,14 +657,23 @@ class DisassemblyTableWidget(BaseTableWidget):
 		self.setItem(row, col, item)
 		
 	def scrollToRow(self, row):
-		if self.rowCount() >= 1:
-			row_to_scroll = row + self.symbolCount
-			scroll_value = (row_to_scroll - self.viewport().height() / (2 * self.rowHeight(1))) * self.rowHeight(1)
-#			print(f'scroll_value => {scroll_value}')
-			self.verticalScrollBar().setValue(int(scroll_value))
-#			print(f'self.verticalScrollBar().value() => {self.verticalScrollBar().value()}')
-			QApplication.processEvents()
-			# self.act = QAction("onScroll")
+		allHeight = 0
+		for i in range(self.rowCount()):
+			logDbgC(f"self.rowHeight({i}) => {self.rowHeight(i)}....")
+			allHeight += self.rowHeight(i)
+			if i == row:
+				break
+		allHeight -= (self.viewport().height() / 2)
+		logDbgC(f"allHeight: {allHeight} / row: {row}")
+		self.verticalScrollBar().setValue(int(allHeight))
+# 		if self.rowCount() >= 1:
+# 			row_to_scroll = row + self.symbolCount
+# 			scroll_value = (row_to_scroll - self.viewport().height() / (2 * self.rowHeight(1))) * self.rowHeight(1)
+# #			print(f'scroll_value => {scroll_value}')
+# 			self.verticalScrollBar().setValue(int(scroll_value))
+# #			print(f'self.verticalScrollBar().value() => {self.verticalScrollBar().value()}')
+# 			QApplication.processEvents()
+# 			# self.act = QAction("onScroll")
 
 		
 class AssemblerTextEdit(QWidget):

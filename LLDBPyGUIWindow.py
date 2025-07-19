@@ -852,6 +852,9 @@ class LLDBPyGUIWindow(QMainWindow):
 			self.txtMultiline.resetContent()
 			self.wdtBPsWPs.treBPs.clear()
 			self.tabWatchpoints.tblWatchpoints.resetContent()
+			self.wdtControlFlow.resetContent()
+			self.setResumeActionIcon(True)
+
 			# self.wdtBPsWPs.treBPs.clear()
 			global event_queue
 			event_queue = queue.Queue()
@@ -859,6 +862,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			global driver
 			driver = dbg.debuggerdriver.createDriver(self.driver.debugger, event_queue)
 			self.driver = driver
+			self.txtMultiline.table.bpHelper.driver = self.driver
 			self.driver.setDone(False)
 			self.driver.start()
 			# print(f"Loading new target: '{filename}")
@@ -1773,6 +1777,10 @@ class LLDBPyGUIWindow(QMainWindow):
 	def runControlFlow_loadConnections(self):
 		self.wdtControlFlow.loadConnections()
 		self.worker.endLoadControlFlowCallback.emit(True)
+		oepMain = find_main(self.driver.debugger)
+		logDbgC(f"Going to OEP: {oepMain} / {hex(oepMain)}")
+		self.txtMultiline.viewAddress(hex(oepMain))
+		self.wdtControlFlow.view.verticalScrollBar().setValue(self.txtMultiline.table.verticalScrollBar().value())
 
 	def loadStacktrace(self):
 		self.process = self.driver.getTarget().GetProcess()
