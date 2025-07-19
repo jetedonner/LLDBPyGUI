@@ -659,12 +659,12 @@ class DisassemblyTableWidget(BaseTableWidget):
 	def scrollToRow(self, row):
 		allHeight = 0
 		for i in range(self.rowCount()):
-			logDbgC(f"self.rowHeight({i}) => {self.rowHeight(i)}....")
+			# logDbgC(f"self.rowHeight({i}) => {self.rowHeight(i)}....")
 			allHeight += self.rowHeight(i)
 			if i == row:
 				break
 		allHeight -= (self.viewport().height() / 2)
-		logDbgC(f"allHeight: {allHeight} / row: {row}")
+		# logDbgC(f"allHeight: {allHeight} / row: {row}")
 		self.verticalScrollBar().setValue(int(allHeight))
 # 		if self.rowCount() >= 1:
 # 			row_to_scroll = row + self.symbolCount
@@ -777,13 +777,13 @@ class AssemblerTextEdit(QWidget):
 		
 	def setPC(self, pc, pushLocation = False):
 		currentPC = hex(pc).lower()
-		logDbgC(f"setPC: {currentPC} ({pc})")
+		# logDbgC(f"setPC: {currentPC} ({pc})")
 		for row in range(self.table.rowCount()):
 			if self.table.item(row, 2) != None:
 				if self.table.item(row, 2).text().lower() == currentPC:
 					self.currentPCRow = row
 					self.table.item(row, 0).setText('>')
-					logDbgC(f"setPC => row: {row}")
+					# logDbgC(f"setPC => row: {row}")
 					self.table.setFocus(Qt.FocusReason.NoFocusReason)
 					self.table.selectRow(row)
 					self.table.scrollToRow(row)
