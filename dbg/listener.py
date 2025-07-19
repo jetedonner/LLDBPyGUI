@@ -29,7 +29,7 @@ class LLDBListener(QtCore.QObject, Thread):
 	def __init__(self, process, debugger):
 		super(LLDBListener, self).__init__()
 		Thread.__init__(self)
-		# print('INITING LISTENER!!!!')
+		print('INITING LISTENER!!!!')
 		self.listener = lldb.SBListener('LLDBPyGUI event listener')
 		self.process = process
 		self.debugger = debugger
@@ -220,6 +220,7 @@ class LLDBListener(QtCore.QObject, Thread):
 			# print("GOING to WAIT 4 EVENT...")
 			if self.listener.WaitForEvent(lldb.UINT32_MAX, event):
 				if not self.should_quit:
+					print("self.gotEvent.emit(event)!!!")
 					self.gotEvent.emit(event)
 					# print("GOT NEW EVENT LISTENER!!")
 					if SBCommandInterpreter.EventIsCommandInterpreterEvent(event):

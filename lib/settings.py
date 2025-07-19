@@ -24,6 +24,7 @@ class SettingsValues(Enum):
 	StatusBarMsgTimeout = ("StatusBar message timeout", 1500, int)
 	ExitLLDBOnAppExit = ("Exit LLDB on App exit", True, bool)
 	ShowDateInLogView = ("Show date in logView", True, bool)
+	AutoBreakpointForScanf = ("Automatically set breakpoints for scanf calls", True, bool)
 
 	
 	# Developer Settings
@@ -73,7 +74,7 @@ class SettingsHelper(QObject):
 		self.settings.setValue(SettingsValues.StatusBarMsgTimeout.value[0], 1500)
 		self.settings.setValue(SettingsValues.ExitLLDBOnAppExit.value[0], True)
 		self.settings.setValue(SettingsValues.ShowDateInLogView.value[0], True)
-
+		self.settings.setValue(SettingsValues.AutoBreakpointForScanf.value[0], True)
 
 		
 		self.settings.setValue(SettingsValues.LoadTestTarget.value[0], True)

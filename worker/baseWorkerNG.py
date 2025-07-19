@@ -42,8 +42,11 @@ class Worker(QObject):
 	updateWatchpointsValueCallback = pyqtSignal(object)
 	finishedLoadingSourceCodeCallback = pyqtSignal(str)
 
+
 	startLoadControlFlowSignal = pyqtSignal()
+	runControlFlow_loadConnections = pyqtSignal()
 	endLoadControlFlowCallback = pyqtSignal(bool)
+
 
 	# def do_work(self):
 	# 	self.request_text.emit()  # Ask main thread for text
@@ -89,8 +92,15 @@ class Worker(QObject):
 		self.logDbg.emit(f"loadNewExecutableFile({self.fileToLoad})...")
 		self.targetBasename = os.path.basename(self.fileToLoad)
 		self.loadNewExecutableFile(self.fileToLoad)
+		self.logDbgC.emit(f"self.mainWin.driver.debugger.GetNumTargets() (baseWorkerNG): {self.mainWin.driver.debugger.GetNumTargets()}")
 		if self.mainWin.driver.debugger.GetNumTargets() > 0:
+			idx = 0
+			self.logDbgC.emit(f"self.mainWin.driver.debugger.GetTargetAtIndex({idx}) (baseWorkerNG): {self.mainWin.driver.debugger.GetTargetAtIndex(idx)}")
+			if self.mainWin.driver.debugger.GetNumTargets() > 1:
+				idx = 1
+				self.logDbgC.emit(f"self.mainWin.driver.debugger.GetTargetAtIndex({idx}) (baseWorkerNG): {self.mainWin.driver.debugger.GetTargetAtIndex(idx)}")
 			self.target = self.mainWin.driver.getTarget()
+			self.logDbgC.emit(f"self.target (baseWorkerNG): {self.target}")
 			# print(f"loadTarget => {target}")
 			if self.target:
 				exe = self.target.GetExecutable().GetDirectory() + "/" + self.target.GetExecutable().GetFilename()
@@ -114,7 +124,7 @@ class Worker(QObject):
 		self._should_stop = True
 
 	def handle_endLoadControlFlowCallback(self, success):
-		self.logDbg.emit(f"Result load control flow: {success}")
+		# self.logDbg.emit(f"Result load control flow: {success}")
 		self.finishedLoadControlFlow = True
 
 	def runLoadControlFlow(self):
@@ -151,10 +161,11 @@ class Worker(QObject):
 		self.isLoadSourceCodeActive = False
 		self.finishedLoadControlFlow = False
 		self.finishedLoadingSourceCodeCallback.emit(stream.GetData())
-		self.runLoadControlFlow()
 		# startLoadControlFlowSignal
+		self.runControlFlow_loadConnections.emit()
 		# QCoreApplication.processEvents()
 		# QApplication.processEvents()
+		self.runLoadControlFlow()
 
 	def count_lines_of_code(self, file_path):
 		with open(file_path, 'r') as file:
@@ -192,7 +203,8 @@ class Worker(QObject):
 			else:
 				self.updateWatchpointsValueCallback.emit(wp_loc)
 
-		self.runLoadSourceCode()
+
+
 		# self.finishedLoadInstructionsCallback.emit()
 		# pass
 
@@ -287,7 +299,8 @@ class Worker(QObject):
 
 					# QCoreApplication.processEvents()
 		self.loadBPsWPs()
-		# pass
+		self.runLoadSourceCode()
+		self.runLoadControlFlow()
 
 	def char_array_to_string(self, char_array_value):
 		byte_array = char_array_value.GetPointeeData(0, char_array_value.GetByteSize())
@@ -495,10 +508,11 @@ class Worker(QObject):
 		if success:
 			self.loadJSONCallback.emit(str(stream.GetData()))
 
+	def on_scanf_hit(frame, bp_loc, dict):
+		print("✅ Breakpoint hit at scanf!")
+		return True  # Returning True tells LLDB to stop here	# return
 
 	def loadNewExecutableFile(self, filename):
-		# return
-
 		# logDbg(f"loadNewExecutableFile({filename})...")
 		# self.targetBasename = os.path.basename(filename)
 		# self.stopTarget()
@@ -507,8 +521,15 @@ class Worker(QObject):
 		self.mainWin.event_queue = queue.Queue()
 		#
 		#				#				global driver
+		# self.mainWin.worker.listener.should_quit = False
+		self.mainWin.driver.should_quit = False
 		self.mainWin.inited = False
+		# if self.driver is None:
+		# lldb.SBDebugger.Destroy(self.mainWin.driver.debugger)
+		# self.mainWin.driver.debugger = lldb.SBDebugger.Create()
 		self.driver = dbg.debuggerdriver.createDriver(self.mainWin.driver.debugger, self.mainWin.event_queue)
+		self.mainWin.driver = self.driver
+		self.driver.debugger = self.mainWin.driver.debugger
 		#		self.driver.debugger.SetLoggingCallback(self.my_custom_log_callback)
 		self.driver.debugger.SetAsync(False)
 		#			self.driver.aborted = False
@@ -516,15 +537,16 @@ class Worker(QObject):
 		#			self.driver.createTarget(filename)
 		self.driver.signals.event_queued.connect(self.mainWin.handle_event_queued)
 		self.driver.start()
-		self.driver.createTarget(filename)
+		self.target = self.driver.createTarget(filename)
 		# logDbg(f"self.driver.createTarget({filename}) => self.driver.debugger.GetNumTargets() = {self.driver.debugger.GetNumTargets()}")
-		if self.driver.debugger.GetNumTargets() > 0:
+		if self.target.IsValid(): # self.driver.debugger.GetNumTargets() > 0:
 			# self.mainWin.target = self.mainWin.driver.debugger.GetSelectedTarget()
 
 
-			self.target = self.driver.getTarget()
+			# self.target = self.driver.debugger.GetTargetAtIndex(0)# self.driver.getTarget()
+			# self.driver.target = self.target
 			self.mainWin.target = self.target
-			self.logDbg.emit(f"target: {self.target}")
+			self.logDbgC.emit(f"target: {self.target}")
 			# return
 
 			# if self.mainWin.setHelper.getValue(SettingsValues.BreakAtMainFunc):
@@ -550,6 +572,15 @@ class Worker(QObject):
 
 				main_oep = find_main(self.driver.debugger)
 				self.driver.debugger.HandleCommand(f'breakpoint set -a {hex(main_oep)}')
+
+				# Set breakpoint on scanf
+				if	self.mainWin.setHelper.getValue(SettingsValues.AutoBreakpointForScanf):
+					bp = self.driver.getTarget().BreakpointCreateByName("scanf")
+					self.driver.scanfID = bp.GetID()
+					self.driver.debugger.HandleCommand(f'br name add -N scanf {bp.GetID()}')
+					# bp.AddName("scanf")
+					bp.SetScriptCallbackFunction("on_scanf_hit")
+					self.logDbgC.emit(f'breakpoint set "scanf": {bp}')
 
 				# self.logDbgC.emit(f"find_main(self.driver.debugger) => {hex(main_oep)}")
 				# main_bp2 = self.enableBPCallback.emit(hex(main_oep), True, False)
@@ -638,3 +669,5 @@ class Worker(QObject):
 			##			'/tmp/stdout.txt'
 			self.loadTarget()
 			# self.setWinTitleWithState("Target loaded")
+		else:
+			print(f"Error creating target!!!")

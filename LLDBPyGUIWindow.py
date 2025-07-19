@@ -220,6 +220,8 @@ class LLDBPyGUIWindow(QMainWindow):
 
 		# self.start_operation()
 
+		self.driver = driver
+
 		self.threadLoad = QThread()
 		self.worker = Worker(self, ConfigClass.testTarget, True, ConfigClass.testTargetSource)
 		self.worker.logDbg.connect(logDbg)
@@ -238,7 +240,7 @@ class LLDBPyGUIWindow(QMainWindow):
 
 		# lib.utils.main_window = self  # inside MainWindow __init__
 
-		self.driver = driver
+
 		# Set the custom logging callback
 		self.driver.debugger.SetLoggingCallback(self.my_custom_log_callback)
 
@@ -632,6 +634,8 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.worker.updateWatchpointsValueCallback.connect(self.tabWatchpoints.tblWatchpoints.handle_updateWatchpointValue)
 		self.worker.finishedLoadingSourceCodeCallback.connect(self.handle_loadSourceFinished)
 
+		self.worker.runControlFlow_loadConnections.connect(self.runControlFlow_loadConnections)
+
 		# loadBreakpointsValueCallback = pyqtSignal(object, bool)
 		# updateBreakpointsValueCallback = pyqtSignal(object)
 		# loadWatchpointsValueCallback = pyqtSignal(object)
@@ -845,10 +849,22 @@ class LLDBPyGUIWindow(QMainWindow):
 	def load_clicked(self):
 		filename = showOpenFileDialog()
 		if filename != None and filename != "":
+			self.txtMultiline.resetContent()
+			self.wdtBPsWPs.treBPs.clear()
+			self.tabWatchpoints.tblWatchpoints.resetContent()
+			# self.wdtBPsWPs.treBPs.clear()
+			global event_queue
+			event_queue = queue.Queue()
 			self.should_quit = False
+			global driver
+			driver = dbg.debuggerdriver.createDriver(self.driver.debugger, event_queue)
+			self.driver = driver
 			self.driver.setDone(False)
+			self.driver.start()
 			# print(f"Loading new target: '{filename}")
-			self.loadNewExecutableFile(filename)
+			# self.loadNewExecutableFile(filename)
+			# self.worker.loadNewExecutableFile(filename)
+			self.threadLoad.start()
 
 	def handle_tabWidgetMainCurrentChanged(self, idx):
 		if idx == 2:
@@ -899,7 +915,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		pass
 
 	def stop_clicked(self):
-		logDbg(f"Trying to kill debugged app ...")
+		logDbgC(f"Trying to kill debugged app ...")
 		target = self.driver.getTarget()
 		if target:
 			process = target.GetProcess()
@@ -922,19 +938,27 @@ class LLDBPyGUIWindow(QMainWindow):
 				# 		print(f"=============>>>>>>>>>>>> STDERR: {process_stderr}")
 				# 		print(process_stderr)
 				# # process.Kill()  # kill the process
-				lldb.debugger.Terminate()
+				# lldb.debugger.Terminate()
+				# self.driver.debugger.Terminate()
+				# lldb.debugger.Terminate()
+				# if self.listener is not None:
+				# 	self.listener.should_quit = True
+				self.worker.listener.should_quit = True
 				errKill = process.Kill()
 				if not errKill.Success():
 					logDbgC(f'Error killing process: {errKill}')
 				else:
 					# lldb.debugger.Terminate()
-					logDbg(f"Debugged app killed, cleaning up ...")
+					logDbgC(f"Debugged app killed, cleaning up ...")
+					self.driver.debugger.DeleteTarget(target)
+					self.driver.debugger.Terminate()
+					logDbgC(f"Debugger terminated, cleaning up ...")
 					self.resetGUI()
 			else:
-				logDbg(f"No valid process found ...")
+				logDbgC(f"No valid process found ...")
 				pass
 		else:
-			logDbg(f"No valid target found ...")
+			logDbgC(f"No valid target found ...")
 			pass
 
 
@@ -1049,13 +1073,16 @@ class LLDBPyGUIWindow(QMainWindow):
 		pass
 
 	def test2_clicked(self):
-		os.system('clear')  # Unix/Linux/macOS
-		statusTxt = "Console cleared"
-		if self.setHelper.getValue(SettingsValues.ClearConsoleComplete):
-			os.system('clear')  # Unix/Linux/macOS
-			statusTxt += " (completely)"
+		# os.system('clear')  # Unix/Linux/macOS
+		# statusTxt = "Console cleared"
+		# if self.setHelper.getValue(SettingsValues.ClearConsoleComplete):
+		# 	os.system('clear')  # Unix/Linux/macOS
+		# 	statusTxt += " (completely)"
+		#
+		# self.updateStatusBar(statusTxt)
 
-		self.updateStatusBar(statusTxt)
+		self.wdtBPsWPs.treBPs.show_notification("REST Notification => From Action (side actionbar)")
+
 
 	def test_clicked(self):
 		self.wdtControlFlow.loadConnections()
@@ -1124,6 +1151,7 @@ class LLDBPyGUIWindow(QMainWindow):
 #
 #				#				global driver
 		self.inited = False
+		self.worker.listener.should_quit = False
 		self.driver = dbg.debuggerdriver.createDriver(self.driver.debugger, event_queue)
 #		self.driver.debugger.SetLoggingCallback(self.my_custom_log_callback)
 		self.driver.debugger.SetAsync(False)
@@ -1732,12 +1760,17 @@ class LLDBPyGUIWindow(QMainWindow):
 				line_entry = frame.GetLineEntry()
 				line_number = line_entry.GetLine()
 				# print(f"line_entry: {line_entry} / line_number: {line_number}")
-				if line_number != 0xFFFFFFFF:
+				if line_number != 0xFFFFFFFF and line_number >= 0:
 					self.txtSource.scroll_to_lineNG(line_number)
 				self.tabWidgetDbg.setCurrentIndex(currTabIdx)
 		else:
 			self.txtSource.setText("<Source code NOT available>")
 
+		logDbgC(f"Calling 'self.wdtControlFlow.loadConnections()' from 'handle_loadSourceFinished'")
+		# self.wdtControlFlow.loadConnections()
+		# self.worker.endLoadControlFlowCallback.emit(True)
+
+	def runControlFlow_loadConnections(self):
 		self.wdtControlFlow.loadConnections()
 		self.worker.endLoadControlFlowCallback.emit(True)
 

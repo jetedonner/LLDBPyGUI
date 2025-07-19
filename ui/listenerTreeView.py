@@ -188,85 +188,30 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 				QCoreApplication.processEvents()
 				QApplication.processEvents()
 
-				# output = lldb.SBProcess.GetOutput(event)
-				# print(f"===========>>>>>>>>>>>>>>>>> output: {output}")
-
-# 				import sys
-# 				from io import StringIO
-#
-# 				# setup the environment
-# 				backup = sys.stdout
-#
-# 				# ####
-# 				sys.stdout = StringIO()  # capture output
-# 				# write()
-# 				out = sys.stdout.getvalue()  # release output
-# 				# ####
-#
-# 				sys.stdout.close()  # close the stream
-# 				sys.stdout = backup  # restore original stdout
-#
-# 				print(out.upper())  # post processing
-#
-# 				#				QCoreApplication.processEvents()
-# #				QApplication.processEvents()
-#
-#
-# 				# print(f"GOT STDOUT EVENT!!!")
-# 				# print(">>>>> WE GOT STDOUT")
-#
-#
-# 				print(sys.stdout)
-# 				# Example usage:
-# 				with contextlib.redirect_stdout(SBStreamForwarder()):
-# 					print("This output will be redirected to an SBStream!")
-# #
-# #				# Now you can access the captured output using the SBStream object
-# 				output_stream = SBStreamForwarder().sb_stream
-# 				if output_stream != None:
-# 					for line in output_stream:
-# 						print("Captured line:", line)
 				tmrAppStarted = QtCore.QTimer()
 				tmrAppStarted.singleShot(1000, self.readSTDOUT)
 				return
-# 				print(f"lldb.SBEvent.GetCStringFromEvent(event): {lldb.SBEvent.GetCStringFromEvent(event)}")
-				process = self.driver.getTarget().GetProcess() # lldb.SBProcess.GetProcessFromEvent(event)
+				process = self.driver.getTarget().GetProcess()
 				if process.GetState() == lldb.eStateStopped:
-					# output = process.GetSTDOUT(1024)
 					self.readSTDOUT(process)
 				else:
 					print(f"APP NOT STOOOOOOOOOOOOOOOPPPPPPPPPPPEEEEEEEEEEDDDDDDDDDD!!!!!!!!")
-					# process.Stop()
 					self.readSTDOUT(process)
-					# process.Stop()
-					# if process.GetState() == lldb.eStateStopped:
-					# 	# output = process.GetSTDOUT(1024)
-					# 	self.readSTDOUT(process)
-					# else:
-					# 	print(f"APP NOT STOOOOOOOOOOOOOOOPPPPPPPPPPPEEEEEEEEEEDDDDDDDDDD 123 ????? !!!!!!!!")
-#				QCoreApplication.processEvents()
-#				QApplication.processEvents()
 				
 				
 		elif SBBreakpoint.EventIsBreakpointEvent(event):
 			sectionNode.setIcon(0, ConfigClass.iconBPEnabled)
 			eventType = SBBreakpoint.GetBreakpointEventTypeFromEvent(event)
 
-			# print(eventType)
 			subSectionNode = QTreeWidgetItem(sectionNode, ["EventType: ", BreakpointEventTypeString(eventType) + " (" + str(eventType) + ")"])
 			bp = SBBreakpoint.GetBreakpointFromEvent(event)
-			# print(f"EventIsBreakpointEvent => {bp}")
 			bp_id = bp.GetID()
 
-#			if isinstance(extObj, lldb.SBTarget):
-#				thread = extObj.GetProcess().selected_thread
-#			else:
-#				thread = extObj.selected_thread
 			thread = self.driver.getTarget().GetProcess().GetThreadAtIndex(0)
 			print(thread)
 			frame = thread.GetFrameAtIndex(0)
 			print(frame)
-#			self.window().handle_debugStepCompleted(StepKind.Continue, True, frame.register["rip"].value, frame)
+
 			if eventType == lldb.eBreakpointEventTypeAdded:
 				self.bpHelper = BreakpointHelperNG(self.driver)
 				self.bpHelper.setCtrls(self.window().txtMultiline, self.window().wdtBPsWPs.treBPs)
@@ -300,34 +245,44 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 				self.window().txtMultiline.setPC(self.driver.getPC(), True)
 				self.window().updateStatusBar("Watchpoint hit ...", True, 3000)
 				self.window().setResumeActionIcon()
-#				GetWatchpointEventTypeFromEvent(*args)
-#				GetWatchpointEventTypeFromEvent(SBEvent event) -> lldb::WatchpointEventType	source code
-#				
-#				GetWatchpointFromEvent(*args)
-#				GetWatchpointFromEvent(SBEvent event) -> SBWatchpoint
-				
-				
-#				self.driver.debugger.SetAsync(False)
-#				self.driver.getTarget().GetProcess().Stop() #GetThreadAtIndex(0).Suspend()
-			elif reason == lldb.eStopReasonBreakpoint:# or reason == lldb.eBroadcastBitBreakpointChanged:
-#				self.window().handle_processEvent(event, extObj)
-				#assert(thread.GetStopReasonDataCount() == 2)
+
+			elif reason == lldb.eStopReasonBreakpoint:
 
 				if isinstance(extObj, lldb.SBTarget):
 					thread = extObj.GetProcess().selected_thread
 				else:
 					thread = extObj.selected_thread
 
-				# reason = thread.GetStopReason()
-
+				# breakpoint = SBBreakpoint.GetBreakpointFromEvent(event)
+				# logDbgC(f"breakpoint HIT: {breakpoint}")
 				if bp_id == -1:
 					bp_id = thread.GetStopReasonDataAtIndex(0)
-				# print(f'bp_id: {bp_id}')
+					# for idx in range(thread.GetStopReasonDataCount()):
+					# 	if idx == 0:
+					# 		bp_id = thread.GetStopReasonDataAtIndex(idx)
+					# 	logDbg(f"StopReasonData({idx}): {thread.GetStopReasonDataAtIndex(idx)}")
+
 				if isinstance(extObj, lldb.SBTarget):
 					breakpoint = extObj.FindBreakpointByID(int(bp_id))
 				else:
 					breakpoint = extObj.GetTarget().FindBreakpointByID(int(bp_id))
 
+				if breakpoint is not None and breakpoint.GetID() == self.driver.scanfID:
+
+					if breakpoint.MatchesName("scanf"):
+						logDbgC(f"if breakpoint.MatchesName('scanf')")
+						self.window().txtMultiline.table.handle_gotoAddr()
+
+					slNames = lldb.SBStringList()
+					breakpoint.GetNames(slNames)
+
+					logDbgC(f"FOUND BREAKPOINT-NAMES: {len(slNames)}")
+
+					for name in slNames:
+						logDbgC(f"Name for breakpoint (ID: {breakpoint.GetID()}) found: {name}")
+						if name == "scanf":
+							logDbgC(f"SCANF FOUND !!!!")
+							# self.window().txtMultiline.table.handle_gotoAddr()
 
 				self.bp_loc = 0
 				if breakpoint.GetNumLocations() == 1:
@@ -340,7 +295,6 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 				# if(breakpoint.GetCondition() != ""):
 				print(arrBPConditions)
 				print(arrBPHits)
-				# print(breakpoint.GetID())
 				bpCond = arrBPConditions.get(str(breakpoint.GetID()) + "." + str(self.bp_loc.GetID()))
 				if bpCond is not None and bpCond != "":
 				# if (dbg.breakpointHelper.arrBPConditions[str(breakpoint.GetID())] != None and dbg.breakpointHelper.arrBPConditions[str(breakpoint.GetID())] != ""):
@@ -369,7 +323,6 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 							return
 					else:
 						print("⚠️ Evaluation error:", value.GetError().GetCString())
-					# pass
 
 
 				line_entry = self.bp_loc.GetAddress().GetLineEntry()
@@ -380,13 +333,7 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 				subSectionNode = QTreeWidgetItem(sectionNode, ["Breakpoint ID: ", str(bp_id)])
 				subSectionNode = QTreeWidgetItem(sectionNode, ["Filename: ", str(filename)])
 				subSectionNode = QTreeWidgetItem(sectionNode, ["Line no.: ", str(line_no)])
-#				lldb.anonymous
-#				self.window().handle_processEvent(event, extObj)
-#				QCoreApplication.processEvents()
-	#				if filename is not None:
-	#					self.focus_signal.emit(filename, int(line_no))
-	#				else:
-	#					self.focus_signal.emit('', -1)
+
 			elif reason == lldb.eStopReasonWatchpoint or \
 				reason == lldb.eStopReasonPlanComplete:
 				frame = thread.GetFrameAtIndex(0)
@@ -395,9 +342,6 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 				filename = file_spec.fullpath
 				line_no = line_entry.GetLine()
 				print('stopped @ %s:%d', filename, line_no)
-	#				if filename is not None:
-	#					self.focus_signal.emit(filename, int(line_no))
-#				break
 			elif reason == lldb.eStopReasonThreadExiting:
 				print('thread exit')
 			elif reason == lldb.eStopReasonSignal or \
@@ -406,76 +350,11 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 		
 			elif reason == lldb.eStopReasonExec:
 				print('re-run')
-				
-#		subSectionNode = QTreeWidgetItem(sectionNode, ["Type: " + str(event.GetType()), ''])
-#		subSectionNode = QTreeWidgetItem(sectionNode, ["BroadcasterClass: " + str(event.GetBroadcasterClass()), ''])
-#		subSectionNode = QTreeWidgetItem(sectionNode, ["DataFlavor: " + str(event.GetDataFlavor()), ''])
-#		subSectionNode = QTreeWidgetItem(sectionNode, ["CStringFromEvent: " + str(event.GetCStringFromEvent(event)), ''])
-#		subSectionNode = QTreeWidgetItem(sectionNode, ["Description: " + str(self.get_description(event)), ''])
-#		
-#		if isinstance(extObj, lldb.SBProcess):
-#			thread = extObj.selected_thread
-#			reason = thread.GetStopReason()
-#			if reason == lldb.eStopReasonBreakpoint:
-#				#assert(thread.GetStopReasonDataCount() == 2)
-#				bp_id = thread.GetStopReasonDataAtIndex(0)
-#				print('bp_id:%s', bp_id)
-#				breakpoint = extObj.GetTarget().FindBreakpointByID(int(bp_id))
-#				if breakpoint.GetNumLocations() == 1:
-#					bp_loc = breakpoint.GetLocationAtIndex(0)
-#				else:
-#					bp_loc_id = thread.GetStopReasonDataAtIndex(1)
-#					bp_loc = breakpoint.FindLocationByID(bp_loc_id)
-#				line_entry = bp_loc.GetAddress().GetLineEntry()
-#				file_spec = line_entry.GetFileSpec()
-#				filename = file_spec.fullpath
-#				line_no = line_entry.GetLine()
-#				print('stopped for BP %d: %s:%d', bp_id, filename, line_no)
-#				subSectionNode = QTreeWidgetItem(sectionNode, ["Breakpoint ID: " + str(bp_id), ''])
-#				subSectionNode = QTreeWidgetItem(sectionNode, ["Filename: " + str(filename), ''])
-#				subSectionNode = QTreeWidgetItem(sectionNode, ["Line no.: " + str(line_no), ''])
-#	#				if filename is not None:
-#	#					self.focus_signal.emit(filename, int(line_no))
-#	#				else:
-#	#					self.focus_signal.emit('', -1)
-#			elif reason == lldb.eStopReasonWatchpoint or \
-#				reason == lldb.eStopReasonPlanComplete:
-#				frame = thread.GetFrameAtIndex(0)
-#				line_entry = frame.GetLineEntry()
-#				file_spec = line_entry.GetFileSpec()
-#				filename = file_spec.fullpath
-#				line_no = line_entry.GetLine()
-#				print('stopped @ %s:%d', filename, line_no)
-#	#				if filename is not None:
-#	#					self.focus_signal.emit(filename, int(line_no))
-##				break
-#			elif reason == lldb.eStopReasonThreadExiting:
-#				print('thread exit')
-#			elif reason == lldb.eStopReasonSignal or \
-#				reason == lldb.eStopReasonException:
-#				print('signal/exception %x', thread.GetStopReasonDataAtIndex(0))
-#			
-#			elif reason == lldb.eStopReasonExec:
-#				print('re-run')
-				
-#		sectionNode.setExpanded(True)
-		
-		
-			
+
 		QCoreApplication.processEvents()
 		currTabIdx = self.window().tabWidgetDbg.currentIndex()
 		self.window().tabWidgetDbg.setCurrentWidget(self.window().treListener)
 		self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
-#		self.txtSource.horizontalScrollBar().setValue(horizontal_value)
-#		if not autoScroll:
-#			self.txtSource.verticalScrollBar().setValue(vertical_value)
-#		else:
-			
-#				QApplication.processEvents()
-#				currTabIdx = self.tabWidgetDbg.currentIndex()
-#				self.tabWidgetDbg.setCurrentIndex(3)
-#			line_text = "=>"
-#			self.txtSource.scroll_to_line(line_text)
 		self.window().tabWidgetDbg.setCurrentIndex(currTabIdx)
 		
 		QCoreApplication.processEvents()
@@ -492,12 +371,10 @@ class ListenerTreeWidget(BaseTreeWidget):
 	
 	def __init__(self, driver, setHelper):
 		super().__init__(driver)
-		#self.driver = driver
 		self.setHelper = setHelper
 
 		self.setContentsMargins(0, 0, 0, 0)
-		
-#       self.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
+
 		self.context_menu = QMenu(self)
 		actionShowInfos = self.context_menu.addAction("Show infos")
 		
@@ -507,10 +384,6 @@ class ListenerTreeWidget(BaseTreeWidget):
 		self.setFont(ConfigClass.font)
 		self.setHeaderLabels(['Type / Listener'])
 		self.header().resizeSection(0, 370)
-#		self.header().resizeSection(1, 256)
-#		self.header().resizeSection(2, 128)
-#		self.header().resizeSection(3, 128)
-#		self.header().resizeSection(4, 256)
 		self.setMouseTracking(True)
 		self.itemChanged.connect(self.handle_itemChanged)
 		self.itemEntered.connect(self.handle_itemEntered)
@@ -542,25 +415,16 @@ class ListenerTreeWidget(BaseTreeWidget):
 		return setKey
 	
 	def handle_itemChanged(self, item, column):
-#		print(f"Item changed: {item} => col: {column}")
 		if not self.ommitChange:
 			self.ommitChange = True
 			if item.childCount() > 0:
 				self.setHelper.beginWriteArray("listener_" + item.text(0))
-#				print(item.text(0))
 				for i in range(item.childCount()):
 					item.child(i).setCheckState(0, item.checkState(0))
 					daData = item.child(i).data(0, Qt.ItemDataRole.UserRole)
 					if daData != None:
-#						if isinstance(daData[0], str):
-#							setKey = str(daData[0]) + "_" + str(BroadcastBitString(daData[0], daData[1]))
-#						else:
-#							setKey = str(daData[0].GetBroadcasterClassName()) + "_" + str(BroadcastBitString(daData[0], daData[1]))
 						setKey = self.getKeyForBroadcastBitData(daData)
-#						print(dir(daData[0]))
-#						print(str(daData[0].GetBroadcasterClassName()) + "_" + str(BroadcastBitString(daData[0], daData[1])))
 						self.setHelper.setArrayValue(setKey, (True if item.checkState(0) == Qt.CheckState.Checked else False))
-#					pass
 				self.setHelper.endArray()
 			else:
 				parentItem = item.parent()

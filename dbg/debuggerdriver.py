@@ -21,6 +21,8 @@ from PyQt6 import uic, QtWidgets, QtCore
 
 from dbg.fileInfos import *
 from config import *
+from ui.helper.dbgOutputHelper import logDbgC
+
 
 class DebuggerDriverSignals(QObject):
     event_queued = QtCore.pyqtSignal(object)
@@ -31,6 +33,8 @@ class DebuggerDriver(Thread):
     
     aborted = False
     signals = None
+    scanfID = 0x0
+    target = None
     
     def breakpointHandlerDriver(self, dummy, frame, bpno, err):
         #   print(dummy)
@@ -45,6 +49,7 @@ class DebuggerDriver(Thread):
     
     def __init__(self, debugger, event_queue):
         Thread.__init__(self)
+        self.scanfID = 0x0
         self.signals = DebuggerDriverSignals()
         self.event_queue = event_queue
         # This is probably not great because it does not give liblldb a chance
@@ -134,9 +139,13 @@ class DebuggerDriver(Thread):
 
     def createTarget(self, target_image, args=None):
         print(f"createTarget({target_image}). / args: {args}...")
-        self.handleCommand("target create %s" % target_image)
-        if args is not None:
-            self.handleCommand("settings set target.run-args %s" % args)
+        self.target = self.debugger.CreateTargetWithFileAndArch(target_image, "x86_64-apple-macosx15.1.1")# , lldb.LLDB_ARCH_DEFAULT)
+        assert self.target
+        print(f"New TARGET IS: {self.target}")
+        print(f"FINISHED: createTarget({target_image}). / args: {args}...")
+        # self.handleCommand("target create %s" % target_image)
+        # if args is not None:
+        #     self.handleCommand("settings set target.run-args %s" % args)
 
         # # Define paths for stdout and stderr redirection
         # stdout_path = "/tmp/console_app_stdout.log"
@@ -147,6 +156,7 @@ class DebuggerDriver(Thread):
         # self.handleCommand(f"settings set target.standard-error-path {stderr_path}")
         # # print(f"Stdout redirected to: {stdout_path}")
         # # print(f"Stderr redirected to: {stderr_path}")
+        return self.target
 
     def attachProcess(self, pid):
         self.handleCommand("process attach -p %d" % pid)
@@ -177,7 +187,7 @@ class DebuggerDriver(Thread):
         self.debugger.SetTerminalWidth(width)
 
     def getTarget(self):
-        return self.debugger.GetTargetAtIndex(0)
+        return self.target if self.target is not None else self.debugger.GetTargetAtIndex(0)
 
     def handleCommand(self, cmd):
         ret = lldb.SBCommandReturnObject()

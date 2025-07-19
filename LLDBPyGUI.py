@@ -20,6 +20,10 @@ from dbg.debuggerdriver import *
 from LLDBPyGUIWindow import *
 from config import *
 
+def on_scanf_hit(frame, bp_loc, dict):
+	print("✅ Breakpoint hit at scanf!")
+	return True  # Returning True tells LLDB to stop here	# return
+
 def __lldb_init_module(debugger, internal_dict):
 	''' we can execute lldb commands using debugger.HandleCommand() which makes all output to default
 	lldb console. With SBDebugger.GetCommandinterpreter().HandleCommand() we can consume all output

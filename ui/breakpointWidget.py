@@ -19,6 +19,9 @@ from ui.baseTreeWidget import *
 
 from config import *
 from lib.utils import *
+from ui.dialogs.notification import Notification
+from ui.helper.dbgOutputHelper import logDbgC
+
 
 class EditableTreeItem(QTreeWidgetItem):
 	
@@ -174,11 +177,20 @@ class BreakpointTreeWidget(BaseTreeWidget):
 		for item in items:
 			for subitem in item.subItems:
 				if int(subitem.text(2), 16) == int(address, 16) and subitem.isBPEnabled:
-#					if self.invisibleRootItem().child(childPar).child(childChild).text(2) == address:
-#						print(f'FOUND ADDRESS FOR PC: {address}')
 					if setPC:
 						for i in range(subitem.columnCount()):
 							subitem.setBackground(i, ConfigClass.colorGreen)
+						if subitem.text(3) == f"scanf":
+							import AppKit
+							AppKit.NSBeep()
+							# logDbgC(f"SCANF HIT!!!")
+							# self.window().txtMultiline.table.handle_gotoAddr()
+							# self.show_notification("SCANF Hit => Please enter input in lldb console") #  (with command 'feedinput')
+							logDbgC(f"#========== !!! ATTENTION: SCANF HIT !! ===========#")
+							logDbgC(f"| Please enter your input string in the LLDB       |")
+							logDbgC(f"| console tab to continue with 'feedinput <input>' |")
+							logDbgC(f"#==================================================#")
+							self.show_notification(f"SCANF HIT! Please feed an input in the lldb console!")
 					self.scrollToItem(subitem, 
 						QAbstractItemView.ScrollHint.PositionAtCenter)
 					if not setPC:
@@ -187,7 +199,19 @@ class BreakpointTreeWidget(BaseTreeWidget):
 					if setPC:
 						for i in range(subitem.columnCount()):
 							subitem.setBackground(i, ConfigClass.colorTransparent)
-							
+
+	def show_notification(self, message):
+		# self.window().tabWidgetDbg.setCurrentWidget(self.window().tabWidgetConsoles)
+		self.window().tabWidgetDbg.setCurrentIndex(9)
+		self.window().tabWidgetConsoles.setCurrentIndex(0)
+		self.window().wdtCommands.txtCmd.setFocus()
+		self.window().wdtCommands.txtCommands.append(f"#================ !!! SCANF HIT !!! ================#")
+		self.window().wdtCommands.txtCommands.append(f"| Please enter your input string in the LLDB        |")
+		self.window().wdtCommands.txtCommands.append(f"| console tab to continue with 'feedinput <input>'  |")
+		self.window().wdtCommands.txtCommands.append(f"#===================================================#")
+		# notification = Notification(self, message)
+		# # notification.show()
+
 	def handle_deleteBP(self):
 		daItem = self.currentItem()
 		if daItem.childCount() > 0:

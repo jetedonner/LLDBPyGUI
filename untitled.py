@@ -12,7 +12,7 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtGui import QBrush, QPixmap, QImage
 from PyQt6 import uic, QtWidgets
 
-from ui.customQt.QControlFlowWidget import FixedScrollBar
+# from ui.customQt.QControlFlowWidget import FixedScrollBar
 from ui.helper.quickToolTip import *
 from ui.helper.locationStack import *
 from ui.baseTableWidget import *
@@ -311,7 +311,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 		self.setShowGrid(False)
 		self.setMouseTracking(True)
 		self.cellDoubleClicked.connect(self.on_double_click)
-		self.setVerticalScrollBar(FixedScrollBar())
+		self.setVerticalScrollBar(QScrollBar())
 		self.verticalScrollBar().valueChanged.connect(self.on_scroll)
 
 

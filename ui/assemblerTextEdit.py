@@ -12,7 +12,7 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtGui import QBrush, QPixmap, QImage
 from PyQt6 import uic, QtWidgets, QtGui
 
-from ui.customQt.QControlFlowWidget import FixedScrollBar
+# from ui.customQt.QControlFlowWidget import FixedScrollBar
 from ui.helper.quickToolTip import *
 from ui.helper.locationStack import *
 from ui.baseTableWidget import *
@@ -407,7 +407,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 		self.setShowGrid(False)
 		self.setMouseTracking(True)
 		self.cellDoubleClicked.connect(self.on_double_click)
-		self.setVerticalScrollBar(FixedScrollBar())
+		self.setVerticalScrollBar(QScrollBar())
 		self.verticalScrollBar().valueChanged.connect(self.on_scroll)
 
 	def keyPressEvent(self, event):
@@ -672,6 +672,7 @@ class AssemblerTextEdit(QWidget):
 	
 	def resetContent(self):
 		self.table.resetContent()
+		self.table.symbolCount = 0
 	
 	def appendAsmSymbol(self, addr, symbol):
 		# Define the text for the spanning cell
@@ -765,13 +766,13 @@ class AssemblerTextEdit(QWidget):
 		
 	def setPC(self, pc, pushLocation = False):
 		currentPC = hex(pc).lower()
-		logDbgC(f"setPC ({currentPC} / {pc})...")
+		logDbgC(f"setPC: {currentPC} ({pc})")
 		for row in range(self.table.rowCount()):
 			if self.table.item(row, 2) != None:
 				if self.table.item(row, 2).text().lower() == currentPC:
 					self.currentPCRow = row
 					self.table.item(row, 0).setText('>')
-					logDbgC(f"setPC => row: {row}...")
+					logDbgC(f"setPC => row: {row}")
 					self.table.setFocus(Qt.FocusReason.NoFocusReason)
 					self.table.selectRow(row)
 					self.table.scrollToRow(row)

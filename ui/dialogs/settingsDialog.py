@@ -57,7 +57,9 @@ class SettingsDialog(QDialog):
 		self.settings.setValue(SettingsValues.StatusBarMsgTimeout.value[0], 1500)
 		self.settings.setValue(SettingsValues.ExitLLDBOnAppExit.value[0], True)
 		self.settings.setValue(SettingsValues.ShowDateInLogView.value[0], True)
-		
+		self.settings.setValue(SettingsValues.ShowDateInLogView.value[0], True)
+		self.settings.setValue(SettingsValues.AutoBreakpointForScanf.value[0], True)
+
 		self.settings.setValue(SettingsValues.LoadTestTarget.value[0], True)
 		self.settings.setValue(SettingsValues.LoadTestBPs.value[0], True)
 		self.settings.setValue(SettingsValues.StopAtEntry.value[0], False)
@@ -108,6 +110,17 @@ class SettingsDialog(QDialog):
 			self.tblGeneral.item(9, i).setCheckState(self.setHelper.getChecked(SettingsValues.KeepWatchpointsEnabled))
 			self.tblGeneral.item(12, i).setCheckState(self.setHelper.getChecked(SettingsValues.ExitLLDBOnAppExit))
 			self.tblGeneral.item(13, i).setCheckState(self.setHelper.getChecked(SettingsValues.ShowDateInLogView))
+			self.tblGeneral.item(15, i).setCheckState(self.setHelper.getChecked(SettingsValues.AutoBreakpointForScanf))
+
+			if i == 0:
+				item = QTableWidgetItem("Input handling (i.e. scanf)")
+			else:
+				item = QTableWidgetItem("")
+
+			item.setBackground(Qt.GlobalColor.lightGray)
+			item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable & ~Qt.ItemFlag.ItemIsSelectable)
+			item.setFont(QFont("Courier New", 9, QFont.Weight.Bold))
+			self.tblGeneral.setItem(14, i, item)
 
 		self.tblGeneral.item(11, 1).setText(str(self.setHelper.getValue(SettingsValues.StatusBarMsgTimeout)))
 
@@ -180,6 +193,7 @@ class SettingsDialog(QDialog):
 		self.setHelper.setValue(SettingsValues.StatusBarMsgTimeout, int(self.tblGeneral.item(11, 1).text()))
 		self.setHelper.setChecked(SettingsValues.ExitLLDBOnAppExit, self.tblGeneral.item(12, colCheckBox))
 		self.setHelper.setChecked(SettingsValues.ShowDateInLogView, self.tblGeneral.item(13, colCheckBox))
+		self.setHelper.setChecked(SettingsValues.AutoBreakpointForScanf, self.tblGeneral.item(15, colCheckBox))
 
 		self.setHelper.setChecked(SettingsValues.LoadTestTarget, self.tblDeveloper.item(0, 0))
 		self.setHelper.setChecked(SettingsValues.LoadTestBPs, self.tblDeveloper.item(1, 1))

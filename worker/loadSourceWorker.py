@@ -64,6 +64,9 @@ class LoadSourceCodeWorker(QRunnable):
 		# Use a string stream as the destination.
 		linesOfCode = self.count_lines_of_code(self.sourceFile)
 		print(f"linesOfCode: {linesOfCode} / {linesOfCode - self.lineNum}")
+		if self.lineNum < 0 or self.lineNum > linesOfCode:
+			return
+
 		stream = lldb.SBStream()
 		source_mgr.DisplaySourceLinesWithLineNumbers(filespec, self.lineNum, self.lineNum, linesOfCode - self.lineNum, '=>', stream)
 #		print(stream.GetData())
