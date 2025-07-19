@@ -79,11 +79,27 @@ def fmt_lst(fl_reg, lst):
 
 	return '\n'.join(ret)
 
+def fmt_shortNG(fl_reg):
+	val = fl_reg.GetValueAsUnsigned()
+	reg_print_width = fl_reg.GetByteSize() * 2
+	descs = parse_flags(val)
+
+	# print(f"============>>>>>>>>>>>>>> flag_list_to_str(descs): {flag_list_to_str(descs)}")
+	# return ('%s: 0x%.*x [%s]' % (
+	# 	fl_reg.GetName(), 		# register name
+	# 	reg_print_width, 		# how many hex digits to print
+	# 	val, 					# value
+	# 	flag_list_to_str(descs) # parsed value (list of set flags)
+	# ))
+	return flag_list_to_str(descs)
+
+
 def fmt_short(fl_reg):
 	val = fl_reg.GetValueAsUnsigned()
 	reg_print_width = fl_reg.GetByteSize() * 2
 	descs = parse_flags(val)
 
+	print(f"============>>>>>>>>>>>>>> flag_list_to_str(descs): {flag_list_to_str(descs)}")
 	return ('%s: 0x%.*x [%s]' % (
 		fl_reg.GetName(), 		# register name
 		reg_print_width, 		# how many hex digits to print
@@ -107,7 +123,7 @@ def pfl_cmd(debugger, command, result, internal_dict):
 
 	lst = shlex.split(command)
 
-	ret = ''
+	# ret = ''
 
 	if lst:
 		# dirty argparse hack
@@ -120,6 +136,9 @@ def pfl_cmd(debugger, command, result, internal_dict):
 		ret = fmt_short(fl_reg)
 
 	print(ret)
+
+	ret = fmt_shortNG(fl_reg)
+	return ret
 
 def __lldb_init_module(debugger, dict):
 	# debugger.HandleCommand('command script add -f decode_rflags.decode_rflags_command drf')

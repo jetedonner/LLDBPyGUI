@@ -202,7 +202,7 @@ class BreakpointTreeWidget(BaseTreeWidget):
 
 	def show_notification(self, message):
 		# self.window().tabWidgetDbg.setCurrentWidget(self.window().tabWidgetConsoles)
-		self.window().tabWidgetDbg.setCurrentIndex(9)
+		self.window().tabWidgetDbg.setCurrentIndex(8)
 		self.window().tabWidgetConsoles.setCurrentIndex(0)
 		self.window().wdtCommands.txtCmd.setFocus()
 		self.window().wdtCommands.txtCommands.append(f"#================ !!! SCANF HIT !!! ================#")

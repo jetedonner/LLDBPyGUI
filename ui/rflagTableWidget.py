@@ -9,13 +9,39 @@ from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 from PyQt6 import uic, QtWidgets
+
+from prettyflags import pfl_cmd
 from ui.baseTableWidget import *
 from config import *
-from ui.helper.dbgOutputHelper import logDbgC
+from ui.helper.dbgOutputHelper import logDbgC, get_main_window
 
+
+class RFlagWidget(QWidget):
+	def __init__(self,parent=None, driver=None):
+		super().__init__(parent)
+
+		self.setContentsMargins(0, 0, 0, 0)
+		self.tblRFlag = RFlagTableWidget()
+		self.setLayout(QVBoxLayout())
+		self.wdtLabel = QLabel("rFlags / eFlags: ")
+		self.layout().addWidget(self.wdtLabel)
+		self.layout().addWidget(self.tblRFlag)
+		self.layout().setContentsMargins(0, 0, 0, 0)
+		if driver is not None:
+			self.tblRFlag.loadRFlags(driver.debugger)
+			res = 0
+			self.wdtLabel.setText("rFlags / eFlags: ")# + hex(self.tblRFlag.rflags_value) + " / " + format(self.tblRFlag.rflags_value, 'b') + " / " + pfl_cmd(get_main_window().driver.debugger, "", res, []))
+			self.tblRFlag.addRow("--- QUICK ---", "--- FLAG ---", "--- INFOS ---")
+			self.tblRFlag.addRow("int", str(self.tblRFlag.rflags_value), "")
+			self.tblRFlag.addRow("hex", hex(self.tblRFlag.rflags_value), "")
+			self.tblRFlag.addRow("binary", format(self.tblRFlag.rflags_value, 'b'), "")
+			self.tblRFlag.addRow("quick", pfl_cmd(get_main_window().driver.debugger, "", res, []), "")
+			logDbgC(f"rFlags / eFlags:\n- Unsigned: {hex(self.tblRFlag.rflags_value)} / {self.tblRFlag.rflags_value}\n- Binary: " + format(self.tblRFlag.rflags_value, 'b') + "\n- Flags: " + pfl_cmd(get_main_window().driver.debugger, "", res, []))
 
 class RFlagTableWidget(BaseTableWidget):
-		
+
+	rflags_value = 0x0
+
 	def __init__(self):
 		super().__init__()
 		self.context_menu = QMenu(self)
@@ -25,7 +51,8 @@ class RFlagTableWidget(BaseTableWidget):
 #		actionDisableBP.triggered.connect(self.handle_disableBP)
 #		
 #		self.context_menu.addSeparator()
-		
+		self.rflags_value = 0x0
+
 		self.setColumnCount(3)
 		self.setColumnWidth(0, 128)
 		self.setColumnWidth(1, 196)
@@ -45,7 +72,20 @@ class RFlagTableWidget(BaseTableWidget):
 		self.cellDoubleClicked.connect(self.on_double_click)
 		self.itemEntered.connect(self.handle_itemEntered)
 		self.setContentsMargins(0, 0, 0, 0)
-		
+
+	# def initRFlagsWidget(self):
+	# 	tabDet2 = QWidget()
+	# 	tabDet2.setContentsMargins(0, 0, 0, 0)
+	# 	tblReg2 = RFlagTableWidget()
+	# 	tabDet2.tblWdgt = tblReg2
+	# 	self.tblRegs.append(tblReg2)
+	# 	tabDet2.setLayout(QVBoxLayout())
+	# 	tabDet2.layout().addWidget(tblReg2)
+	# 	tabDet2.layout().setContentsMargins(0, 0, 0, 0)
+	# 	self.tabWidgetReg.addTab(tabDet2, "rFlags/eFlags")
+	# 	tblReg2.loadRFlags(self.driver.debugger)
+	# 	pass
+
 	def handle_itemEntered(self, item):
 #		if item.column() == 1:
 #			item.setToolTip(f"Register: {item.tableWidget().item(item.row(), 0).text()}\nValue: {str(int(item.tableWidget().item(item.row(), 1).text(), 16))}")
@@ -120,105 +160,108 @@ class RFlagTableWidget(BaseTableWidget):
 		# 	result.AppendError("Could not find rflags register.")
 		# 	return
 
-		rflags_value = rflags_reg.GetValueAsUnsigned()
+		self.rflags_value = rflags_reg.GetValueAsUnsigned()
+		# rflags_value = self.rflags_value
+		logDbgC(f"rflags_value: {hex(self.rflags_value)}")
 
-		flags = []
+		# flags = []
 
 		# Define the flags and their bit positions
 		# (Bit 0 to 21 are the most common ones to check)
-		if (rflags_value >> 0) & 1:
-			flags.append("CF (Carry)")
+		if (self.rflags_value >> 0) & 1:
+			# flags.append("CF (Carry)")
 			self.addRow("CF", "Carry", "")
 		else:
-			flags.append("NC (No Carry)")
+			# flags.append("NC (No Carry)")
 			self.addRow("NC", "No Carry", "")
 
 		# Bit 1 is reserved and always 1
 		# if (rflags_value >> 1) & 1: flags.append("1 (Reserved)")
 
-		if (rflags_value >> 2) & 1:
-			flags.append("PF (Parity Even)")
+		if (self.rflags_value >> 2) & 1:
+			# flags.append("PF (Parity Even)")
 			self.addRow("PF", "Parity Even", "")
 		else:
-			flags.append("PO (Parity Odd)")
+			# flags.append("PO (Parity Odd)")
 			self.addRow("PO", "Parity Odd", "")
 
 		# Bit 3 is reserved and always 0
 
-		if (rflags_value >> 4) & 1:
-			flags.append("AF/NA (Auxiliary Carry)")
+		if (self.rflags_value >> 4) & 1:
+			# flags.append("AF/NA (Auxiliary Carry)")
 			self.addRow("AF", "Auxiliary Carry", "")
 		else:
-			flags.append("NA/AF (No Auxiliary Carry)")
+			# flags.append("NA/AF (No Auxiliary Carry)")
 			self.addRow("NA", "No Auxiliary Carry", "")
 
 		# Bit 5 is reserved and always 0
 
-		if (rflags_value >> 6) & 1:
-			flags.append("ZF/NZ (Zero)")
+		if (self.rflags_value >> 6) & 1:
+			# flags.append("ZF/NZ (Zero)")
 			self.addRow("ZF", "Zero Flag", "")
 		else:
-			flags.append("NZ/ZF (Not Zero)")
+			# flags.append("NZ/ZF (Not Zero)")
 			self.addRow("NZ", "Not Zero", "")
 
-		if (rflags_value >> 7) & 1:
-			flags.append("SF/PL (Sign Negative)")
+		if (self.rflags_value >> 7) & 1:
+			# flags.append("SF/PL (Sign Negative)")
 			self.addRow("SF", "Sign Negative", "")
 		else:
-			flags.append("PL/FL (Sign Positive)")
+			# flags.append("PL/FL (Sign Positive)")
 			self.addRow("PL", "Sign Positive", "")
 
-		if (rflags_value >> 8) & 1:
-			flags.append("TF/NTF (Trap/Single Step)")
+		if (self.rflags_value >> 8) & 1:
+			# flags.append("TF/NTF (Trap/Single Step)")
 			self.addRow("TF", "Trap/Single Step", "")
 		else:
-			flags.append("NTF/TF (No Trap/Single Step)")
+			# flags.append("NTF/TF (No Trap/Single Step)")
 			self.addRow("NTF", "No Trap/Single Step", "")
 
-		if (rflags_value >> 9) & 1:
-			flags.append("IF/ID (Interrupt Enable)")
+		if (self.rflags_value >> 9) & 1:
+			# flags.append("IF/ID (Interrupt Enable)")
 			self.addRow("IF", "Interrupt Enable", "")
 		else:
-			flags.append("ID/IF (Interrupt Disable)")
+			# flags.append("ID/IF (Interrupt Disable)")
 			self.addRow("ID", "Interrupt Disable", "")
 
-		if (rflags_value >> 10) & 1:
-			flags.append("DF/DU (Direction Down)")
+		if (self.rflags_value >> 10) & 1:
+			# flags.append("DF/DU (Direction Down)")
 			self.addRow("DF", "Direction Down", "")
 		else:
-			flags.append("DU/DF (Direction Up)")
+			# flags.append("DU/DF (Direction Up)")
 			self.addRow("DU", "Direction Up", "")
 
-		if (rflags_value >> 11) & 1:
-			flags.append("OF/NO (Overflow)")
+		if (self.rflags_value >> 11) & 1:
+			# flags.append("OF/NO (Overflow)")
 			self.addRow("OF", "Overflow", "")
 		else:
-			flags.append("NO/OF (No Overflow)")
+			# flags.append("NO/OF (No Overflow)")
 			self.addRow("NO", "No Overflow", "")
 
-		iopl = (rflags_value >> 12) & 0x3  # 2 bits
-		flags.append(f"IOPL={iopl}")
+		iopl = (self.rflags_value >> 12) & 0x3  # 2 bits
+		# flags.append(f"IOPL={iopl}")
+		self.addRow("IOPL", f"{iopl}", "")
 
-		if (rflags_value >> 14) & 1:
-			flags.append("NT/NNT (Nested Task)")
+		if (self.rflags_value >> 14) & 1:
+			# flags.append("NT/NNT (Nested Task)")
 			self.addRow("NT", "Nested Task", "")
 		else:
-			flags.append("NNT/NT (Not Nested Task)")
+			# flags.append("NNT/NT (Not Nested Task)")
 			self.addRow("NNT", "Not Nested Task", "")
 
 		# Bit 15 is reserved and always 0
 
-		if (rflags_value >> 16) & 1: flags.append("RF (Resume Flag)")
+		if (self.rflags_value >> 16) & 1: self.addRow("RF", "Resume Flag", "") #flags.append("RF (Resume Flag)")
 
-		if (rflags_value >> 17) & 1: flags.append("VM (Virtual-8086 Mode)")
+		if (self.rflags_value >> 17) & 1: self.addRow("VM", "Virtual-8086 Mode", "") # flags.append("VM (Virtual-8086 Mode)")
 
-		if (rflags_value >> 18) & 1: flags.append("AC (Alignment Check)")
+		if (self.rflags_value >> 18) & 1: self.addRow("AC", "Alignment Check", "") # flags.append("AC (Alignment Check)")
 
-		if (rflags_value >> 19) & 1: flags.append("VIF (Virtual Interrupt)")
+		if (self.rflags_value >> 19) & 1: self.addRow("VIF", "Virtual Interrupt", "") # flags.append("VIF (Virtual Interrupt)")
 
-		if (rflags_value >> 20) & 1: flags.append("VIP (Virtual Interrupt Pending)")
+		if (self.rflags_value >> 20) & 1: self.addRow("VIP", "Virtual Interrupt Pending", "") # flags.append("VIP (Virtual Interrupt Pending)")
 
-		if (rflags_value >> 21) & 1: flags.append("ID (ID Flag)")
+		if (self.rflags_value >> 21) & 1: self.addRow("ID", "ID Flag", "") # flags.append("ID (ID Flag)")
 
 		# result.AppendMessage(f"RFLAGS: 0x{rflags_value:016x} [{', '.join(flags)}]")
-		logDbgC(f"flags: {flags}")
+		# logDbgC(f"flags: {flags}")

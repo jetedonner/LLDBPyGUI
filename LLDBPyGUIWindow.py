@@ -10,7 +10,7 @@ import lib.utils
 from ui.consoleWidget import ConsoleWidget
 from ui.customQt.QControlFlowWidget import QControlFlowWidget
 from ui.rememberLocationsTableWidget import RememberLocationsTableWidget
-from ui.rflagTableWidget import RFlagTableWidget
+from ui.rflagTableWidget import RFlagTableWidget, RFlagWidget
 
 try:
 	import queue
@@ -486,9 +486,9 @@ class LLDBPyGUIWindow(QMainWindow):
 
 		self.tabWidgetDbg.addTab(self.treThreads, "Threads/Frames")
 
-		self.tblRememberLoc = RememberLocationsTableWidget(self.driver, self.bpHelper)
+		# self.tblRememberLoc = RememberLocationsTableWidget(self.driver, self.bpHelper)
 
-		self.tabWidgetDbg.addTab(self.tblRememberLoc, "Remember Locations")
+		# self.tabWidgetDbg.addTab(self.tblRememberLoc, "Remember Locations")
 
 		self.treListener = ListenerWidget(self.driver, self.setHelper)
 		self.treListener.treEventLog.sigSTDOUT.connect(self.testSTDOUT)
@@ -690,6 +690,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		# self.progress.cancel()
 		# self.timer.stop()
 		logDbg(f"finish_startup called ... trying to close progress dialog ...")
+		self.wdtControlFlow.view.verticalScrollBar().setValue(int(self.txtMultiline.table.verticalScrollBar().value()))
 		# self.progress.setValue(10)
 		# self.progress.hide()
 
@@ -1078,13 +1079,13 @@ class LLDBPyGUIWindow(QMainWindow):
 		pass
 
 	def test2_clicked(self):
-		# os.system('clear')  # Unix/Linux/macOS
-		# statusTxt = "Console cleared"
-		# if self.setHelper.getValue(SettingsValues.ClearConsoleComplete):
-		# 	os.system('clear')  # Unix/Linux/macOS
-		# 	statusTxt += " (completely)"
-		#
-		# self.updateStatusBar(statusTxt)
+		os.system('clear')  # Unix/Linux/macOS
+		statusTxt = "Console cleared"
+		if self.setHelper.getValue(SettingsValues.ClearConsoleComplete):
+			os.system('clear')  # Unix/Linux/macOS
+			statusTxt += " (completely)"
+
+		self.updateStatusBar(statusTxt)
 
 		self.wdtBPsWPs.treBPs.show_notification("REST Notification => From Action (side actionbar)")
 
@@ -1719,16 +1720,16 @@ class LLDBPyGUIWindow(QMainWindow):
 #		pass
 
 	def handle_loadRFlags(self):
-		tabDet2 = QWidget()
-		tabDet2.setContentsMargins(0, 0, 0, 0)
-		tblReg2 = RFlagTableWidget()
-		tabDet2.tblWdgt = tblReg2
-		self.tblRegs.append(tblReg2)
-		tabDet2.setLayout(QVBoxLayout())
-		tabDet2.layout().addWidget(tblReg2)
-		tabDet2.layout().setContentsMargins(0, 0, 0, 0)
-		self.tabWidgetReg.addTab(tabDet2, "rFlags/eFlags")
-		tblReg2.loadRFlags(self.driver.debugger)
+		# tabDet2 = QWidget()
+		# tabDet2.setContentsMargins(0, 0, 0, 0)
+		tblReg2 = RFlagWidget(parent=None, driver=self.driver)
+		# tabDet2.tblWdgt = tblReg2
+		self.tblRegs.append(tblReg2.tblRFlag)
+		# tabDet2.setLayout(QVBoxLayout())
+		# tabDet2.layout().addWidget(tblReg2)
+		# tabDet2.layout().setContentsMargins(0, 0, 0, 0)
+		self.tabWidgetReg.addTab(tblReg2, "rFlags/eFlags")
+		# tblReg2.loadRFlags(self.driver.debugger)
 
 	# self.currTblDet = tblReg2
 		# tabDet = QWidget()
@@ -1758,7 +1759,8 @@ class LLDBPyGUIWindow(QMainWindow):
 
 	def handle_loadRememberLocation(self, name, value, data, valType, address, comment):
 		# self.inited = True
-		self.tblRememberLoc.addRow(name, value, valType, address, data, comment)
+		# self.tblRememberLoc.addRow(name, value, valType, address, data, comment)
+		pass
 
 	def handle_loadVariableValue(self, name, value, data, valType, address):
 		self.inited = True
@@ -1811,13 +1813,14 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.wdtControlFlow.loadConnections()
 		self.worker.endLoadControlFlowCallback.emit(True)
 		oepMain = find_main(self.driver.debugger)
-		logDbgC(f"Going to OEP: {oepMain} / {hex(oepMain)}")
+		logDbgC(f"OEP: {hex(oepMain)} / {oepMain}")
+		# logDbgC(f"Going to OEP: {oepMain} / {hex(oepMain)}")
 		self.txtMultiline.viewAddress(hex(oepMain))
 		logDbgC(f"self.txtMultiline.table.verticalScrollBar().value(): {self.txtMultiline.table.verticalScrollBar().value()} / self.wdtControlFlow.view.verticalScrollBar().value(): {self.wdtControlFlow.view.verticalScrollBar().value()}")
 		self.wdtControlFlow.view.verticalScrollBar().setValue(self.txtMultiline.table.verticalScrollBar().value())
 		QApplication.processEvents()
-		logDbgC(
-			f"=> self.txtMultiline.table.verticalScrollBar().value(): {self.txtMultiline.table.verticalScrollBar().value()} / self.wdtControlFlow.view.verticalScrollBar().value(): {self.wdtControlFlow.view.verticalScrollBar().value()}")
+		# logDbgC(
+		# 	f"=> self.txtMultiline.table.verticalScrollBar().value(): {self.txtMultiline.table.verticalScrollBar().value()} / self.wdtControlFlow.view.verticalScrollBar().value(): {self.wdtControlFlow.view.verticalScrollBar().value()}")
 		# self.wdtControlFlow.view.verticalScrollBar().setValue(self.txtMultiline.table.verticalScrollBar().value())
 
 	def loadStacktrace(self):
@@ -1841,7 +1844,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			for idx2 in range(numFrames):
 				self.setProgressValue(idx2 / numFrames)
 				frame = self.thread.GetFrameAtIndex(idx2)
-				logDbgC(f"frame.GetFunction(): {frame.GetFunction()}")
+				# logDbgC(f"frame.GetFunction(): {frame.GetFunction()}")
 				frameNode = QTreeWidgetItem(self.threadNode, ["#" + str(frame.GetFrameID()), "", str(frame.GetPCAddress()), str(hex(frame.GetPC())), self.GuessLanguage(frame)])
 				idx += 1
 
