@@ -268,7 +268,7 @@ class RFlagTableWidget(BaseTableWidget):
 		res = 0
 		# self.wdtLabel.setText(
 		# 	"rFlags / eFlags: ")  # + hex(self.tblRFlag.rflags_value) + " / " + format(self.tblRFlag.rflags_value, 'b') + " / " + pfl_cmd(get_main_window().driver.debugger, "", res, []))
-		self.addRow("--- QUICK ---", "--- FLAG ---", "--- INFOS ---")
+		self.addRow("--- FLAG TYPE ---", "--- VALUE ---", "--- INFOS ---")
 		self.addRow("int", str(self.rflags_value), "Complete Flag with all bits as INT")
 		self.addRow("hex", hex(self.rflags_value), "Complete Flag with all bits as HEX")
 		self.addRow("binary", format(self.rflags_value, 'b'), "Complete Flag with all bits as BINARY")
@@ -277,6 +277,7 @@ class RFlagTableWidget(BaseTableWidget):
 			f"rFlags / eFlags:\n- Unsigned: {hex(self.rflags_value)} / {self.rflags_value}\n- Binary: " + format(
 				self.rflags_value, 'b') + "\n- Flags: " + pfl_cmd(get_main_window().driver.debugger, "", res,
 																		   []))
+		logDbgC(f"RFLAGS: 0x{self.rflags_value:016x}")
 
 		# result.AppendMessage(f"RFLAGS: 0x{rflags_value:016x} [{', '.join(flags)}]")
 		# logDbgC(f"flags: {flags}")

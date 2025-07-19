@@ -110,7 +110,7 @@ def fmt_short(fl_reg):
 # def decode_rflags_command(debugger, command, result, dict):
 
 def pfl_cmd(debugger, command, result, internal_dict):
-	print(f"Hello PFL Command!")
+	# print(f"Hello PFL Command!")
 	target = debugger.GetSelectedTarget()
 	process = target.GetProcess()
 	thread = process.GetSelectedThread()

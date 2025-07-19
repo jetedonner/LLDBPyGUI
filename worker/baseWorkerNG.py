@@ -5,6 +5,7 @@ from PyQt6.QtCore import QObject, QThread, pyqtSignal
 
 from config import *
 from dbg.listener import LLDBListener
+from ui.helper.dbgOutputHelper import logDbgC
 from worker.loadDisassemblyWorker import LoadDisassemblyWorker
 
 try:
@@ -583,11 +584,14 @@ class Worker(QObject):
 							f"- self.driver.getTarget().GetModuleAtIndex({idxMod}): {self.driver.getTarget().GetModuleAtIndex(idxMod)}")
 
 				main_oep = find_main(self.driver.debugger)
-				self.driver.debugger.HandleCommand(f'breakpoint set -a {hex(main_oep)}')
+				self.driver.debugger.HandleCommand(f'breakpoint set -a {hex(main_oep)} -N kimon')
 
 				# Set breakpoint on scanf
 				if	self.mainWin.setHelper.getValue(SettingsValues.AutoBreakpointForScanf):
 					bp = self.driver.getTarget().BreakpointCreateByName("scanf")
+					for bl in bp:
+						logDbgC(f"bl.location: {bl}")
+						
 					self.driver.scanfID = bp.GetID()
 					self.driver.debugger.HandleCommand(f'br name add -N scanf {bp.GetID()}')
 					# bp.AddName("scanf")

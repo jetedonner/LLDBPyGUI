@@ -71,6 +71,18 @@ class BreakpointHelperNG():
 				self.treBP.addBP(bp)
 			return bp
 
+	def deleteAllBPs(self):
+		# br delete - f
+		target = self.driver.getTarget()
+		# found = False
+		for i in range(target.GetNumBreakpoints()):
+			bp = target.GetBreakpointAtIndex(i)
+			for j in range(bp.GetNumLocations()):
+				bl = bp.GetLocationAtIndex(j)
+				# if hex(bl.GetAddress().GetLoadAddress(target)) == address:
+				self.deleteBP(hex(bl.GetAddress().GetLoadAddress(target)))
+		self.driver.debugger.HandleCommand("br delete -f")
+
 	def deleteBP(self, address):
 		target = self.driver.getTarget()
 		found = False

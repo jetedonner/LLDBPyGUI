@@ -180,6 +180,7 @@ class BreakpointTreeWidget(BaseTreeWidget):
 					if setPC:
 						for i in range(subitem.columnCount()):
 							subitem.setBackground(i, ConfigClass.colorGreen)
+
 						if subitem.text(3) == f"scanf":
 							import AppKit
 							AppKit.NSBeep()
@@ -403,23 +404,45 @@ class BreakpointTreeWidget(BaseTreeWidget):
 #			print(f"UPDATEING BP-NAME: {item.text(0)} => {item.text(col)}")
 			target = self.window().driver.getTarget()
 			bpFound = False
+
+
 			for i in range(target.GetNumBreakpoints()):
 				bp = target.GetBreakpointAtIndex(i)
 				for bl in bp:
-					name_list = lldb.SBStringList()
-					bp.GetNames(name_list)
-					num_names = name_list.GetSize()
-					name_list.AppendString("")
-					num_names = 1
-					for j in range(num_names):
-						name = name_list.GetStringAtIndex(j)
+					if item.text(0) == str(bp.GetID()) + "." + str(bl.GetID()):
+						bp.AddName("KIMon")
+			for i in range(target.GetNumBreakpoints()):
+				bp = target.GetBreakpointAtIndex(i)
+				# for bl in bp:
+				name_list = lldb.SBStringList()
+				bp.GetNames(name_list)
+				logDbgC(f"BP -> name_list: {name_list} / len: {name_list.GetSize()} / self.oldBPName: {self.oldBPName}")
+				num_names = name_list.GetSize()
+				for j in range(num_names):
+					name = name_list.GetStringAtIndex(j)
+					bp3 = target.FindBreakpointByID(bp.GetID())
+					bp2 = target.GetBreakpointAtIndex(j)
+					logDbgC(f"name: {name} / self.oldBPName: {self.oldBPName} / item.text(col): {item.text(col)} / bp.GetID(): {bp.GetID()} / bp2.GetID(): {bp2.GetID()} / bp3.GetID(): {bp3.GetID()}")
+					if bp2.GetID() == bp.GetID():
+						logDbgC(f"name: {name}")
 						if name == self.oldBPName:
 							bp.RemoveName(self.oldBPName)
 							bp.AddName(item.text(col))
 							bpFound = True
 							break
-					if bpFound:
-						break
+				if bpFound:
+					break
+				# name_list.AppendString("")
+				# num_names = 1
+				# for j in range(num_names):
+				# 	name = name_list.GetStringAtIndex(j)
+				# 	if name == self.oldBPName:
+				# 		bp.RemoveName(self.oldBPName)
+				# 		bp.AddName(item.text(col))
+				# 		bpFound = True
+				# 		break
+				# if bpFound:
+				# 	break
 					
 	def getAllItemsAndSubitems(self):
 		itemsRet = []
