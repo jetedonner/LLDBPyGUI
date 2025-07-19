@@ -27,9 +27,11 @@ class EditableTreeItem(QTreeWidgetItem):
 	
 	isBPEnabled = True
 	textEdited = pyqtSignal(object, int, str)
-	
+	# oldBPName = ""
+
 	def __init__(self, parent, text):
 		super().__init__(parent, text)
+		# self.oldBPName = ""
 #		self.setText(0, text)
 #		self.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEditable | Qt.ItemFlag.ItemIsEnabled)  # Set flags for editing
 
@@ -54,10 +56,12 @@ class EditableTreeItem(QTreeWidgetItem):
 class BreakpointTreeWidget(BaseTreeWidget):
 
 	arrBPConditions = {}
+	oldBPName = ""
 
 	def __init__(self, driver, bpHelper):
 		super().__init__(driver)
 
+		self.oldBPName = ""
 		self.setContentsMargins(0, 0, 0, 0)
 		# self.setStyleSheet("""
 		# 	QTreeWidget {
@@ -327,7 +331,7 @@ class BreakpointTreeWidget(BaseTreeWidget):
 		if newAddr != "":
 			self.window().txtMultiline.viewAddress(newAddr)
 			
-	oldBPName = ""
+
 	def handle_itemEntered(self, item, col):
 		if col == 1:
 			item.setToolTip(col, "State: " + str(item.isBPEnabled))
@@ -337,6 +341,7 @@ class BreakpointTreeWidget(BaseTreeWidget):
 				self.window().updateStatusBar(f"Goto instruction @ address {addrTxt}")
 				
 		self.oldBPName = item.text(3)
+		# item.oldName = item.text(3)
 		item.setData(5, Qt.ItemDataRole.UserRole, item.text(5))
 		
 		pass
@@ -403,35 +408,72 @@ class BreakpointTreeWidget(BaseTreeWidget):
 		elif col == 3 and item.childCount() == 0:
 #			print(f"UPDATEING BP-NAME: {item.text(0)} => {item.text(col)}")
 			target = self.window().driver.getTarget()
-			bpFound = False
-
-
+			# bpFound = False
+			bpRet = None
+			blRet = None
+			# target = self.driver.getTarget()
+			found = False
+			# logDbgC(f"target.GetNumBreakpoints(): {target.GetNumBreakpoints()}")
 			for i in range(target.GetNumBreakpoints()):
 				bp = target.GetBreakpointAtIndex(i)
-				for bl in bp:
+				# logDbgC(f"target.GetBreakpointAtIndex({i}): {bp} => bp.GetNumLocations(): {bp.GetNumLocations()}")
+				for j in range(bp.GetNumLocations()):
+					bl = bp.GetLocationAtIndex(j)
+					# logDbgC(f"bp.GetLocationAtIndex({j}): {bl} => GetID(): {str(bp.GetID())}.{str(bl.GetID())} / item.text(0): {item.text(0)}")
 					if item.text(0) == str(bp.GetID()) + "." + str(bl.GetID()):
-						bp.AddName("KIMon")
-			for i in range(target.GetNumBreakpoints()):
-				bp = target.GetBreakpointAtIndex(i)
-				# for bl in bp:
-				name_list = lldb.SBStringList()
-				bp.GetNames(name_list)
-				logDbgC(f"BP -> name_list: {name_list} / len: {name_list.GetSize()} / self.oldBPName: {self.oldBPName}")
-				num_names = name_list.GetSize()
-				for j in range(num_names):
-					name = name_list.GetStringAtIndex(j)
-					bp3 = target.FindBreakpointByID(bp.GetID())
-					bp2 = target.GetBreakpointAtIndex(j)
-					logDbgC(f"name: {name} / self.oldBPName: {self.oldBPName} / item.text(col): {item.text(col)} / bp.GetID(): {bp.GetID()} / bp2.GetID(): {bp2.GetID()} / bp3.GetID(): {bp3.GetID()}")
-					if bp2.GetID() == bp.GetID():
-						logDbgC(f"name: {name}")
-						if name == self.oldBPName:
+					# if hex(bl.GetAddress().GetLoadAddress(target)) == address:
+					# 	logDbgC(f"Found the right BP!!!!!!")
+						bpRet = bp
+						blRet = bl
+						found = True
+						# name_list = lldb.SBStringList()
+						# bp.GetNames(name_list)
+						# logDbgC(f"BP -> name_list: {name_list} / len: {name_list.GetSize()} / self.oldBPName: {self.oldBPName}")
+						# num_names = name_list.GetSize()
+						# if i < num_names:
+						# 	name = name_list.GetStringAtIndex(i)
+						#
+						# 	#if name == item.oldBPName:
+						if bp.MatchesName(self.oldBPName):
 							bp.RemoveName(self.oldBPName)
 							bp.AddName(item.text(col))
-							bpFound = True
-							break
-				if bpFound:
+							# bpFound = True
+							# break
+						else:
+							# bp.RemoveName(self.oldBPName)
+							bp.AddName(item.text(col))
+							# logDbgC(f"if bp.MatchesName({self.oldBPName}): FALSE!!!! => item.text({col}): {item.text(col)}")
+						break
+				if found:
 					break
+			return [bpRet, blRet]
+
+			# for i in range(target.GetNumBreakpoints()):
+			# 	bp = target.GetBreakpointAtIndex(i)
+			# 	for bl in bp:
+			# 		if item.text(0) == str(bp.GetID()) + "." + str(bl.GetID()):
+			# 			bp.AddName("KIMon")
+			# for i in range(target.GetNumBreakpoints()):
+			# 	bp = target.GetBreakpointAtIndex(i)
+			# 	# for bl in bp:
+			# 	name_list = lldb.SBStringList()
+			# 	bp.GetNames(name_list)
+			# 	logDbgC(f"BP -> name_list: {name_list} / len: {name_list.GetSize()} / self.oldBPName: {self.oldBPName}")
+			# 	num_names = name_list.GetSize()
+			# 	for j in range(num_names):
+			# 		name = name_list.GetStringAtIndex(j)
+			# 		bp3 = target.FindBreakpointByID(bp.GetID())
+			# 		bp2 = target.GetBreakpointAtIndex(j)
+			# 		logDbgC(f"name: {name} / self.oldBPName: {self.oldBPName} / item.text(col): {item.text(col)} / bp.GetID(): {bp.GetID()} / bp2.GetID(): {bp2.GetID()} / bp3.GetID(): {bp3.GetID()}")
+			# 		if bp2.GetID() == bp.GetID():
+			# 			logDbgC(f"name: {name}")
+			# 			if name == self.oldBPName:
+			# 				bp.RemoveName(self.oldBPName)
+			# 				bp.AddName(item.text(col))
+			# 				bpFound = True
+			# 				break
+			# 	if bpFound:
+			# 		break
 				# name_list.AppendString("")
 				# num_names = 1
 				# for j in range(num_names):
