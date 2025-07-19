@@ -43,34 +43,34 @@ def decode_rflags_command(debugger, command, result, dict):
 
     # Bit 3 is reserved and always 0
 
-    if (rflags_value >> 4) & 1: flags.append("AF (Auxiliary Carry)")
-    else: flags.append("NA (No Auxiliary Carry)")
+    if (rflags_value >> 4) & 1: flags.append("AF/NA (Auxiliary Carry)")
+    else: flags.append("NA/AF (No Auxiliary Carry)")
 
     # Bit 5 is reserved and always 0
 
-    if (rflags_value >> 6) & 1: flags.append("ZF (Zero)")
-    else: flags.append("NZ (Not Zero)")
+    if (rflags_value >> 6) & 1: flags.append("ZF/NZ (Zero)")
+    else: flags.append("NZ/ZF (Not Zero)")
 
-    if (rflags_value >> 7) & 1: flags.append("SF (Sign Negative)")
-    else: flags.append("PL (Sign Positive)")
+    if (rflags_value >> 7) & 1: flags.append("SF/PL (Sign Negative)")
+    else: flags.append("PL/FL (Sign Positive)")
 
-    if (rflags_value >> 8) & 1: flags.append("TF (Trap/Single Step)")
-    else: flags.append("NTF (No Trap/Single Step)")
+    if (rflags_value >> 8) & 1: flags.append("TF/NTF (Trap/Single Step)")
+    else: flags.append("NTF/TF (No Trap/Single Step)")
 
-    if (rflags_value >> 9) & 1: flags.append("IF (Interrupt Enable)")
-    else: flags.append("ID (Interrupt Disable)")
+    if (rflags_value >> 9) & 1: flags.append("IF/ID (Interrupt Enable)")
+    else: flags.append("ID/IF (Interrupt Disable)")
 
-    if (rflags_value >> 10) & 1: flags.append("DF (Direction Down)")
-    else: flags.append("DU (Direction Up)")
+    if (rflags_value >> 10) & 1: flags.append("DF/DU (Direction Down)")
+    else: flags.append("DU/DF (Direction Up)")
 
-    if (rflags_value >> 11) & 1: flags.append("OF (Overflow)")
-    else: flags.append("NO (No Overflow)")
+    if (rflags_value >> 11) & 1: flags.append("OF/NO (Overflow)")
+    else: flags.append("NO/OF (No Overflow)")
 
     iopl = (rflags_value >> 12) & 0x3 # 2 bits
     flags.append(f"IOPL={iopl}")
 
-    if (rflags_value >> 14) & 1: flags.append("NT (Nested Task)")
-    else: flags.append("NNT (Not Nested Task)")
+    if (rflags_value >> 14) & 1: flags.append("NT/NNT (Nested Task)")
+    else: flags.append("NNT/NT (Not Nested Task)")
 
     # Bit 15 is reserved and always 0
 
@@ -91,4 +91,5 @@ def decode_rflags_command(debugger, command, result, dict):
 
 def __lldb_init_module(debugger, dict):
     debugger.HandleCommand('command script add -f decode_rflags.decode_rflags_command decode_rflags')
-    print('The "decode_rflags" command has been loaded.')
+    debugger.HandleCommand('command script add -f decode_rflags.decode_rflags_command drf')
+    print('The "decode_rflags" / "drf" command has been loaded...')

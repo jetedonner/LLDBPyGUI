@@ -663,7 +663,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 			allHeight += self.rowHeight(i)
 			if i == row:
 				break
-		allHeight -= (self.viewport().height() / 2)
+		allHeight -= (self.viewport().height() / 2) + (self.rowHeight(1) / 2)
 		# logDbgC(f"allHeight: {allHeight} / row: {row}")
 		self.verticalScrollBar().setValue(int(allHeight))
 # 		if self.rowCount() >= 1:

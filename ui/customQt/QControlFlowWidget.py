@@ -323,7 +323,8 @@ class QControlFlowWidget(QWidget):
         radius = 140
         tblDisassembly = self.window().txtMultiline.table
         scrollOrig = tblDisassembly.verticalScrollBar().value()
-        logDbgC(f"Control Flow loadConnections() => scrollOrig: {scrollOrig}")
+        scrollOrig2 = self.view.verticalScrollBar().value()
+        logDbgC(f"Control Flow loadConnections() => scrollOrig: {scrollOrig} / {scrollOrig2}")
         tblDisassembly.verticalScrollBar().setValue(0)
         self.isInsideTextSectionGetRangeVarsReady()
         for row in range(tblDisassembly.rowCount()):
@@ -424,6 +425,7 @@ class QControlFlowWidget(QWidget):
 
         logDbgC(f"Control Flow loadConnections() => scrollOrig: {scrollOrig}")
         tblDisassembly.verticalScrollBar().setValue(scrollOrig)
+        self.view.verticalScrollBar().setValue(scrollOrig)
         pass
 
     def loadInstructions(self):

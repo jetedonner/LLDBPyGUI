@@ -10,6 +10,7 @@ import lib.utils
 from ui.consoleWidget import ConsoleWidget
 from ui.customQt.QControlFlowWidget import QControlFlowWidget
 from ui.rememberLocationsTableWidget import RememberLocationsTableWidget
+from ui.rflagTableWidget import RFlagTableWidget
 
 try:
 	import queue
@@ -1394,6 +1395,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			tbl.resetContent()
 		self.tblRegs.clear()
 		self.tabWidgetReg.clear()
+		self.rflagsLoaded = 0
 		self.tblVariables.resetContent()
 		self.wdtBPsWPs.treBPs.clear()
 		self.tabWatchpoints.tblWatchpoints.resetContent()
@@ -1582,6 +1584,7 @@ class LLDBPyGUIWindow(QMainWindow):
 
 			context = frm.GetSymbolContext(lldb.eSymbolContextEverything)
 			self.workerManager.start_loadSourceWorker(self.driver.debugger, ConfigClass.testTargetSource, self.handle_loadSourceFinished, context.GetLineEntry().GetLine())
+			self.tblRegs[3].loadRFlags(self.driver.debugger)
 #			self.setResumeActionIcon()
 			self.setWinTitleWithState("Interrupted")
 			self.setResumeActionIcon()
@@ -1697,6 +1700,7 @@ class LLDBPyGUIWindow(QMainWindow):
 
 	currTreDet = None
 	tblRegs = []
+	rflagsLoaded = 0
 	def handle_loadRegister(self, type):
 		tabDet = QWidget()
 		tabDet.setContentsMargins(0, 0, 0, 0)
@@ -1708,7 +1712,36 @@ class LLDBPyGUIWindow(QMainWindow):
 		tabDet.layout().setContentsMargins(0, 0, 0, 0)
 		self.tabWidgetReg.addTab(tabDet, type)
 		self.currTblDet = tblReg
+		if self.rflagsLoaded == 2:
+			self.rflagsLoaded = not self.rflagsLoaded
+			self.handle_loadRFlags()
+		self.rflagsLoaded += 1
 #		pass
+
+	def handle_loadRFlags(self):
+		tabDet2 = QWidget()
+		tabDet2.setContentsMargins(0, 0, 0, 0)
+		tblReg2 = RFlagTableWidget()
+		tabDet2.tblWdgt = tblReg2
+		self.tblRegs.append(tblReg2)
+		tabDet2.setLayout(QVBoxLayout())
+		tabDet2.layout().addWidget(tblReg2)
+		tabDet2.layout().setContentsMargins(0, 0, 0, 0)
+		self.tabWidgetReg.addTab(tabDet2, "rFlags/eFlags")
+		tblReg2.loadRFlags(self.driver.debugger)
+
+	# self.currTblDet = tblReg2
+		# tabDet = QWidget()
+		# tabDet.setContentsMargins(0, 0, 0, 0)
+		# tblReg = RFlagTableWidget()
+		# tabDet.tblWdgt = tblReg
+		# self.tblRegs.append(tblReg)
+		# tabDet.setLayout(QVBoxLayout())
+		# tabDet.layout().addWidget(tblReg)
+		# tabDet.layout().setContentsMargins(0, 0, 0, 0)
+		# self.tabWidgetReg.addTab(tabDet, "rFlags/eFlags")
+		# self.currTblDet = tblReg
+		# # tblReg.
 
 	def handle_loadRegisterValue(self, idx, type, register, value):
 #		target = self.driver.getTarget()
@@ -1780,7 +1813,12 @@ class LLDBPyGUIWindow(QMainWindow):
 		oepMain = find_main(self.driver.debugger)
 		logDbgC(f"Going to OEP: {oepMain} / {hex(oepMain)}")
 		self.txtMultiline.viewAddress(hex(oepMain))
+		logDbgC(f"self.txtMultiline.table.verticalScrollBar().value(): {self.txtMultiline.table.verticalScrollBar().value()} / self.wdtControlFlow.view.verticalScrollBar().value(): {self.wdtControlFlow.view.verticalScrollBar().value()}")
 		self.wdtControlFlow.view.verticalScrollBar().setValue(self.txtMultiline.table.verticalScrollBar().value())
+		QApplication.processEvents()
+		logDbgC(
+			f"=> self.txtMultiline.table.verticalScrollBar().value(): {self.txtMultiline.table.verticalScrollBar().value()} / self.wdtControlFlow.view.verticalScrollBar().value(): {self.wdtControlFlow.view.verticalScrollBar().value()}")
+		# self.wdtControlFlow.view.verticalScrollBar().setValue(self.txtMultiline.table.verticalScrollBar().value())
 
 	def loadStacktrace(self):
 		self.process = self.driver.getTarget().GetProcess()

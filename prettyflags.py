@@ -91,7 +91,10 @@ def fmt_short(fl_reg):
 		flag_list_to_str(descs) # parsed value (list of set flags)
 	))
 
+# def decode_rflags_command(debugger, command, result, dict):
+
 def pfl_cmd(debugger, command, result, internal_dict):
+	print(f"Hello PFL Command!")
 	target = debugger.GetSelectedTarget()
 	process = target.GetProcess()
 	thread = process.GetSelectedThread()
@@ -119,5 +122,6 @@ def pfl_cmd(debugger, command, result, internal_dict):
 	print(ret)
 
 def __lldb_init_module(debugger, dict):
+	# debugger.HandleCommand('command script add -f decode_rflags.decode_rflags_command drf')
 	debugger.HandleCommand('command script add -f prettyflags.pfl_cmd pfl')
-	print('The "decode_rflags" command has been loaded.')
+	print('The "pfl_cmd" command has been loaded.')
