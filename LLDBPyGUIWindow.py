@@ -856,6 +856,8 @@ class LLDBPyGUIWindow(QMainWindow):
 			self.tabWatchpoints.tblWatchpoints.resetContent()
 			self.wdtControlFlow.resetContent()
 			self.setResumeActionIcon(True)
+			self.tabWidgetReg.clear()
+			self.rflagsLoaded = 0
 
 			# self.wdtBPsWPs.treBPs.clear()
 			global event_queue
