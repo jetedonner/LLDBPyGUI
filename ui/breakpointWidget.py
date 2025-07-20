@@ -186,8 +186,13 @@ class BreakpointTreeWidget(BaseTreeWidget):
 							subitem.setBackground(i, ConfigClass.colorGreen)
 
 						if subitem.text(3) == f"scanf":
-							import AppKit
-							AppKit.NSBeep()
+
+							import platform
+							if platform.system() == "Darwin":
+								print("You're on macOS!")
+								import AppKit
+								AppKit.NSBeep()
+
 							# logDbgC(f"SCANF HIT!!!")
 							# self.window().txtMultiline.table.handle_gotoAddr()
 							# self.show_notification("SCANF Hit => Please enter input in lldb console") #  (with command 'feedinput')
@@ -443,6 +448,8 @@ class BreakpointTreeWidget(BaseTreeWidget):
 							# bp.RemoveName(self.oldBPName)
 							bp.AddName(item.text(col))
 							# logDbgC(f"if bp.MatchesName({self.oldBPName}): FALSE!!!! => item.text({col}): {item.text(col)}")
+						# item.setData(5, Qt.ItemDataRole.UserRole, item.text(5))
+						self.oldBPName = item.text(col)
 						break
 				if found:
 					break

@@ -1,0 +1,90 @@
+[
+  {
+    "Breakpoint": {
+      "BKPTOptions": {
+        "AutoContinue": false,
+        "ConditionText": "",
+        "EnabledState": true,
+        "IgnoreCount": 0,
+        "OneShotState": false
+      },
+      "BKPTResolver": {
+        "Options": {
+          "AddressOffset": 928,
+          "ModuleName": "",
+          "Offset": 0
+        },
+        "Type": "Address"
+      },
+      "Hardware": false,
+      "Names": [
+        "kimon"
+      ],
+      "SearchFilter": {
+        "Options": {},
+        "Type": "Unconstrained"
+      }
+    }
+  },
+  {
+    "Breakpoint": {
+      "BKPTOptions": {
+        "AutoContinue": false,
+        "ConditionText": "",
+        "EnabledState": true,
+        "IgnoreCount": 0,
+        "OneShotState": false
+      },
+      "BKPTResolver": {
+        "Options": {
+          "NameMask": [
+            56
+          ],
+          "Offset": 0,
+          "SkipPrologue": true,
+          "SymbolNames": [
+            "scanf"
+          ]
+        },
+        "Type": "SymbolName"
+      },
+      "Hardware": false,
+      "Names": [
+        "scanf"
+      ],
+      "SearchFilter": {
+        "Options": {},
+        "Type": "Unconstrained"
+      }
+    }
+  },
+  {
+    "Breakpoint": {
+      "BKPTOptions": {
+        "AutoContinue": false,
+        "ConditionText": "",
+        "EnabledState": true,
+        "IgnoreCount": 0,
+        "OneShotState": false
+      },
+      "BKPTResolver": {
+        "Options": {
+          "NameMask": [
+            56
+          ],
+          "Offset": 0,
+          "SkipPrologue": true,
+          "SymbolNames": [
+            "main"
+          ]
+        },
+        "Type": "SymbolName"
+      },
+      "Hardware": false,
+      "SearchFilter": {
+        "Options": {},
+        "Type": "Unconstrained"
+      }
+    }
+  }
+]

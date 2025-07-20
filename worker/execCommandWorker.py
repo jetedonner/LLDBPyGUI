@@ -26,12 +26,14 @@ class ExecCommandWorker(BaseWorker):
 	def workerFunc(self):
 		super(ExecCommandWorker, self).workerFunc()
 		res = lldb.SBCommandReturnObject()
-
+		bCurrIsAsync = self.debugger.GetAsync()
+		self.debugger.SetAsync(True)
 		# Get the command interpreter
 		command_interpreter = self.debugger.GetCommandInterpreter()
 		
 		# Execute the 'frame variable' command
 		command_interpreter.HandleCommand(self.command, res)
 		self.isExecCommandActive = False
+		self.debugger.SetAsync(bCurrIsAsync)
 		self.signals.commandCompleted.emit(res)
 		QCoreApplication.processEvents()

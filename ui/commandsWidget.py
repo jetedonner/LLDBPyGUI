@@ -144,17 +144,66 @@ class CommandsWidget(QWidget):
 		
 	def handle_commandFinished(self, res):
 		if res.Succeeded():
-			self.txtCommands.appendEscapedText(res.GetOutput())
+			sOutput = res.GetOutput()
+			self.txtCommands.appendEscapedText(sOutput)
+			# self.center_last_arrow_line()
+			# # Find the line with "->"
+			# lines = sOutput.splitlines()
+			# for i, line in enumerate(lines):
+			# 	if "->" in line:
+			# 		cursor = self.txtCommands.textCursor()
+			# 		# Move to start
+			# 		cursor.movePosition(QTextCursor.MoveOperation.Start)
+			# 		# Move to the line
+			# 		for _ in range(i):
+			# 			cursor.movePosition(QTextCursor.MoveOperation.Down)
+			# 		cursor.select(QTextCursor.SelectionType.LineUnderCursor)
+			# 		self.txtCommands.setTextCursor(cursor)
+			# 		self.txtCommands.centerCursor()
+			# 		break
+			# # if sOutput.contains("->"):
+			# 	# self.txtCommands
 		else:
 			self.txtCommands.appendEscapedText(f"{res.GetError()}")
-			
-		if self.swtAutoscroll.isChecked():
-			self.sb = self.txtCommands.verticalScrollBar()
-			self.sb.setValue(self.sb.maximum())
+
+		if not self.center_last_arrow_line():
+			if self.swtAutoscroll.isChecked():
+				self.sb = self.txtCommands.verticalScrollBar()
+				self.sb.setValue(self.sb.maximum())
+
+
+
+
+	def center_last_arrow_line(self):
+		bRet = False
+		# Get all lines from the QTextEdit
+		lines = self.txtCommands.toPlainText().splitlines()
+
+		# Find the last line that starts with "->"
+		for i in reversed(range(len(lines))):
+			if lines[i].startswith("->"):
+				target_line_index = i
+				bRet = True
+				break
+		else:
+			return bRet # No matching line found
+
+		# Create a cursor and move to the start
+		cursor = self.txtCommands.textCursor()
+		cursor.movePosition(QTextCursor.MoveOperation.Start)
+
+		# Move down to the target line
+		for _ in range(target_line_index):
+			cursor.movePosition(QTextCursor.MoveOperation.Down)
+
+		# Set the cursor and center it
+		# self.txtCmd.cursor(cursor)
+		self.txtCommands.setTextCursor(cursor)
+		return bRet
 
 	def resetContent(self, resetCommandHistory=False, resetConsole=False):
-		self.txtCmd.clearCommandText(resetCommandHistory)
-		if resetConsole:
-			self.txtCommands.setText("")
+			self.txtCmd.clearCommandText(resetCommandHistory)
+			if resetConsole:
+				self.txtCommands.setText("")
 			
 	

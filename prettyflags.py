@@ -121,21 +121,21 @@ def pfl_cmd(debugger, command, result, internal_dict):
 		print("ERROR: Cant find flags register!")
 		return
 
-	lst = shlex.split(command)
+	# lst = shlex.split(command)
 
-	# ret = ''
-
-	if lst:
-		# dirty argparse hack
-		# XXX handle flags and eflags diff for fun? :)
-		if '-l' in lst:
-			lst = [desc[0] for desc in FLAGS if desc[0] is not None]
-
-		ret = fmt_lst(fl_reg, lst)
-	else:
-		ret = fmt_short(fl_reg)
-
-	print(ret)
+	# # ret = ''
+	#
+	# if lst:
+	# 	# dirty argparse hack
+	# 	# XXX handle flags and eflags diff for fun? :)
+	# 	if '-l' in lst:
+	# 		lst = [desc[0] for desc in FLAGS if desc[0] is not None]
+	#
+	# 	ret = fmt_lst(fl_reg, lst)
+	# else:
+	# 	ret = fmt_short(fl_reg)
+	#
+	# print(ret)
 
 	ret = fmt_shortNG(fl_reg)
 	return ret

@@ -140,7 +140,7 @@ class DebuggerDriver(Thread):
     def createTarget(self, target_image, args=None):
         print(f"createTarget({target_image}). / args: {args}...")
         self.target = self.debugger.CreateTargetWithFileAndArch(target_image, "x86_64-apple-macosx15.1.1")# , lldb.LLDB_ARCH_DEFAULT)
-        assert self.target
+        # assert self.target
         print(f"New TARGET IS: {self.target}")
         print(f"FINISHED: createTarget({target_image}). / args: {args}...")
         # self.handleCommand("target create %s" % target_image)

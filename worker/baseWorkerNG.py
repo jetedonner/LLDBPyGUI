@@ -95,15 +95,13 @@ class Worker(QObject):
 		self.loadNewExecutableFile(self.fileToLoad)
 		self.logDbgC.emit(f"self.mainWin.driver.debugger.GetNumTargets() (baseWorkerNG): {self.mainWin.driver.debugger.GetNumTargets()}")
 		if self.mainWin.driver.debugger.GetNumTargets() > 0:
-			idx = 0
-			self.logDbgC.emit(f"self.mainWin.driver.debugger.GetTargetAtIndex({idx}) (baseWorkerNG): {self.mainWin.driver.debugger.GetTargetAtIndex(idx)}")
-			if self.mainWin.driver.debugger.GetNumTargets() > 1:
-				idx = 1
-				self.logDbgC.emit(f"self.mainWin.driver.debugger.GetTargetAtIndex({idx}) (baseWorkerNG): {self.mainWin.driver.debugger.GetTargetAtIndex(idx)}")
+			for i in range(self.mainWin.driver.debugger.GetNumTargets()):
+				self.logDbgC.emit(f"self.mainWin.driver.debugger.GetTargetAtIndex({i}) (baseWorkerNG): {self.mainWin.driver.debugger.GetTargetAtIndex(i)}")
+
 			self.target = self.mainWin.driver.getTarget()
 			self.logDbgC.emit(f"self.target (baseWorkerNG): {self.target}")
-			# print(f"loadTarget => {target}")
 			if self.target:
+				logDbgC(f"self.target.GetExecutable().GetFilename(): {self.target.GetExecutable().GetFilename()}")
 				exe = self.target.GetExecutable().GetDirectory() + "/" + self.target.GetExecutable().GetFilename()
 				# self.targetBasename = os.path.basename(exe)
 				mach_header = GetFileHeader(exe)
@@ -111,14 +109,6 @@ class Worker(QObject):
 				self.mainWin.devHelper.setupDevHelper()
 				self.loadFileStats()
 
-				# for i in range(10):  # Simulate long task
-				#     if self._should_stop:
-				#         print("Worker interrupted.")
-				#         break
-				#     # Simulate work
-				#     time.sleep(1)
-				#     print(f"Working... {i}")
-				#     self.logDbg.emit(f"Working... {i}")
 		self.finished.emit()
 
 	def stop(self):
@@ -135,17 +125,12 @@ class Worker(QObject):
 			time.sleep(0.5)
 		self.logDbg.emit(f"Finished loading control flow ... continuing ...")
 
-
-
-
-
 		# if self.setHelper.getChecked(SettingsValues.BreakpointAtMainFunc):
 		# 	self.bpHelper.enableBP(hex(addrObj2), True, False)
 		# self.txtMultiline.viewAddress(hex(addrObj2))
 		# self.setProgressValue(95)
 		# QApplication.processEvents()
 		# self.window().wdtControlFlow.view.verticalScrollBar().setValue(self.window().txtMultiline.table.verticalScrollBar().value())
-
 		pass
 
 	def runLoadSourceCode(self):
@@ -154,10 +139,8 @@ class Worker(QObject):
 			return
 		else:
 			interruptLoadSourceCode = False
-		# QCoreApplication.processEvents()
 		self.isLoadSourceCodeActive = True
 
-		# frame = self.driver.getTarget().GetProcess().GetThreadAtIndex(0).GetFrameAtIndex(0)
 		context = self.frame.GetSymbolContext(lldb.eSymbolContextEverything)
 		self.lineNum = context.GetLineEntry().GetLine()
 		# Create the filespec for 'main.c'.
@@ -215,11 +198,6 @@ class Worker(QObject):
 				self.loadWatchpointsValueCallback.emit(wp_loc)  # , self.initTable)
 			else:
 				self.updateWatchpointsValueCallback.emit(wp_loc)
-
-
-
-		# self.finishedLoadInstructionsCallback.emit()
-		# pass
 
 	def loadRegisters(self):
 		# super(LoadRegisterWorker, self).workerFunc()
@@ -453,21 +431,6 @@ class Worker(QObject):
 		self.finishedLoadInstructionsCallback.emit()
 		self.loadRegisters()
 
-	# def start_loadDisassemblyWorker(self, handle_loadInstruction, handle_workerFinished, initTable=True):
-	# 	self.loadDisassemblyWorker = LoadDisassemblyWorker(self.driver, initTable, self.mainWin)
-	# 	# self.loadDisassemblyWorker.signals.finished.connect(handle_workerFinished)
-	# 	self.loadDisassemblyWorker.signals.loadInstruction.connect(handle_loadInstruction)
-	# 	# self.loop = QEventLoop(self.mainWin)
-	# 	self.loadDisassemblyWorker.signals.finished.connect(self.handle_workerFinished())
-	# 	self.loadDisassemblyWorker.workerFunc()
-	# 	# self.threadpool.start(self.loadDisassemblyWorker)
-	# 	# self.loop.exec()  # Blocks until loop.quit() is calleself.threadpool.start(self.loadDisassemblyWorker)
-	#
-	# def handle_workerFinished(self):
-	# 	self.loop.quit()
-	# 	self.finishedLoadInstructionsCallback.emit()
-	# 	pass
-
 	def disassembleTarget(self):
 		self.logDbg.emit(f"HELLO WORLD DISASSEBLE ;-=")
 		pass
@@ -526,53 +489,27 @@ class Worker(QObject):
 		return True  # Returning True tells LLDB to stop here	# return
 
 	def loadNewExecutableFile(self, filename):
-		# logDbg(f"loadNewExecutableFile({filename})...")
-		# self.targetBasename = os.path.basename(filename)
-		# self.stopTarget()
-
+		
 		global event_queue
 		self.mainWin.event_queue = queue.Queue()
-		#
-		#				#				global driver
-		# self.mainWin.worker.listener.should_quit = False
 		self.mainWin.driver.should_quit = False
 		self.mainWin.inited = False
-		# if self.driver is None:
-		# lldb.SBDebugger.Destroy(self.mainWin.driver.debugger)
-		# self.mainWin.driver.debugger = lldb.SBDebugger.Create()
 		self.driver = dbg.debuggerdriver.createDriver(self.mainWin.driver.debugger, self.mainWin.event_queue)
 		self.mainWin.driver = self.driver
 		self.driver.debugger = self.mainWin.driver.debugger
-		#		self.driver.debugger.SetLoggingCallback(self.my_custom_log_callback)
 		self.driver.debugger.SetAsync(False)
-		#			self.driver.aborted = False
-
-		#			self.driver.createTarget(filename)
 		self.driver.signals.event_queued.connect(self.mainWin.handle_event_queued)
 		self.driver.start()
+		self.logDbgC.emit(f"createTarget({filename})")
 		self.target = self.driver.createTarget(filename)
-		# logDbg(f"self.driver.createTarget({filename}) => self.driver.debugger.GetNumTargets() = {self.driver.debugger.GetNumTargets()}")
-		if self.target.IsValid(): # self.driver.debugger.GetNumTargets() > 0:
-			# self.mainWin.target = self.mainWin.driver.debugger.GetSelectedTarget()
 
-
-			# self.target = self.driver.debugger.GetTargetAtIndex(0)# self.driver.getTarget()
-			# self.driver.target = self.target
+		if self.target.IsValid():
 			self.mainWin.target = self.target
 			self.logDbgC.emit(f"target: {self.target}")
-			# return
-
-			# if self.mainWin.setHelper.getValue(SettingsValues.BreakAtMainFunc):
-			#     main_bp = self.mainWin.bpHelper.addBPByName(self.mainWin.setHelper.getValue(SettingsValues.MainFuncName))
-			#     print(main_bp)
-			#     for bl in main_bp:
-			#         logDbg(f"bl.GetAddress(): {hex(bl.GetAddress().GetLoadAddress(target))}")
-			#     logDbg(f"main_bp: {main_bp}")
-			#
+			
 			if self.mainWin.setHelper.getValue(SettingsValues.BreakpointAtMainFunc):
 				# self.driver.debugger.SetAsync(True)
 
-				# self.driver.debugger.HandleCommand("process launch --stop-at-entry")
 				self.driver.debugger.HandleCommand('process launch --stop-at-entry')
 
 				# main_bp2 = self.enableBPCallback.emit("0x100000ab0", True, False)
@@ -594,96 +531,13 @@ class Worker(QObject):
 						
 					self.driver.scanfID = bp.GetID()
 					self.driver.debugger.HandleCommand(f'br name add -N scanf {bp.GetID()}')
-					# bp.AddName("scanf")
 					bp.SetScriptCallbackFunction("on_scanf_hit")
 					self.logDbgC.emit(f'breakpoint set "scanf": {bp}')
-
-				# self.logDbgC.emit(f"find_main(self.driver.debugger) => {hex(main_oep)}")
-				# main_bp2 = self.enableBPCallback.emit(hex(main_oep), True, False)
-				# self.logDbgC.emit(f"main_bp2 (@ {hex(main_oep)}): {main_bp2}")
-				# # print(f"main_bp2 (@ {hex(main_oep)}): {main_bp2}")
-				#
-				# addrObj2 = find_main(self.driver.debugger)
-				# # main_bp2 = self.bpHelper.enableBP(hex(addrObj2), True, False)
-				#
-				# main_bp2 = self.enableBPCallback.emit(hex(addrObj2), True, False)
-				# # self.enableBPCallback.emit(hex(addrObj2), True, False)
-				# # print(f"main_bp2 (@{addrObj2}): {main_bp2}")
-				# self.logDbgC.emit(f"main_bp2 (@{hex(addrObj2)}): {main_bp2}")
 
 				self.driver.debugger.HandleCommand('breakpoint set --name main')
 				self.driver.debugger.HandleCommand(f'br list')
 				self.driver.debugger.HandleCommand('process continue')
 
-
-				# import time
-				# time.sleep(5)
-				# self.target.GetProcess().Continue()
-
-			# setHelper = SettingsHelper()
-			# if self.setHelper.getChecked(SettingsValues.BreakpointAtMainFunc):
-			# 	addrObj2 = find_main(self.driver.debugger)
-			# 	logDbg(f"Enabling EntryPoint Breakpoint @ {hex(addrObj2)}")
-			# 	self.bpHelper.enableBP(hex(addrObj2), True, True)
-
-			# launch_info = target.GetLaunchInfo()
-
-			#########
-			# print("AFTER GETLAUNCHINFO!!!!")
-			# Create a temporary file to capture output
-			# output_path = "/tmp/lldb_output.txt"
-			# output_file = open(output_path, "w")
-			# output_fd = output_file.fileno()
-
-			# stdout_action = lldb.SBFileAction()
-			# stdout_action.Open(output_path, True, False)  # append=False, read=False
-			# launch_info.SetFileAction(lldb.eLaunchFlagStdout, stdout_action)
-			#########
-			# Create a pipe to capture the output
-			# read_fd, write_fd = os.pipe()
-			# launch_info.SetStandardOutput(write_fd)  # Redirect stdout
-			# launch_info.SetStandardError(write_fd)  # (optional) Redirect stderr too
-
-			# if self.setHelper.getValue(SettingsValues.StopAtEntry):
-			# 	launch_info.SetLaunchFlags(lldb.eLaunchFlagDisableASLR + lldb.eLaunchFlagStopAtEntry)# lldb.eLaunchFlagDisableASLR +
-			# 	logDbg(f"launch_info.SetLaunchFlags(lldb.eLaunchFlagDisableASLR + lldb.eLaunchFlagStopAtEntry)")
-			# else:
-			# 	launch_info.SetLaunchFlags(lldb.eLaunchFlagDebug)
-			# 	logDbg(f"launch_info.SetLaunchFlags(lldb.eLaunchFlagDebug)")
-
-			# if self.setHelper.getValue(SettingsValues.StopAtEntry):
-			# 	launch_info.SetLaunchFlags(lldb.eLaunchFlagDisableASLR and lldb.eLaunchFlagStopAtEntry)# lldb.eLaunchFlagDisableASLR +
-			# # else:
-			# # 	launch_info.SetLaunchFlags(lldb.eLaunchFlagStopAtEntry)
-			# # 	launch_info.SetLaunchFlags(lldb.eLaunchFlagDisableASLR and lldb.eLaunchFlagStopAtEntry and lldb.eLaunchFlagDebug)
-
-			# error = lldb.SBError()
-			# # SBProcess
-			# self.break_at_main(self.driver.debugger, "", "", "")
-			# self.process = target.Launch(stop_at_entry=True, error=error)
-			# self.break_at_main(self.driver.debugger, "", "", "")
-			# self.process.Stop()
-			# # output = io.StringIO()
-
-			#########
-			# Close the write end in your script so you can read from the read end
-			# os.close(write_fd)
-
-			# Read the output
-			# output = os.read(read_fd, 4096).decode("utf-8")
-			# print(f"Captured output:\n{output}")
-
-			# Read output from file
-			# output_file.close()
-			# with open(output_path, "r") as f:
-			# 	captured_output = f.read()
-
-			# print(f"Captured output:\n{captured_output}")
-			#########
-
-			#			target.Launch(self.driver.debugger.GetListener(), None, None, None, output.fileno(), None, None, 0, False, error)
-			##			'/tmp/stdout.txt'
 			self.loadTarget()
-			# self.setWinTitleWithState("Target loaded")
 		else:
 			print(f"Error creating target!!!")

@@ -304,8 +304,8 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.toolbar.addSeparator()
 
 		self.load_resume = QAction(ConfigClass.iconResume, '&Resume', self)
-		self.load_resume.setStatusTip('Resume (Ctrl+I)')
-		self.load_resume.setShortcut('Ctrl+I')
+		self.load_resume.setStatusTip('Resume (Ctrl+O)')
+		self.load_resume.setShortcut('Ctrl+O')
 		self.load_resume.triggered.connect(self.resume_clicked)
 		self.toolbar.addAction(self.load_resume)
 
@@ -364,7 +364,7 @@ class LLDBPyGUIWindow(QMainWindow):
 
 		self.settings_action = QAction(ConfigClass.iconSettings, 'Settings', self)
 		self.settings_action.setStatusTip('Settings')
-		self.settings_action.setShortcut('Ctrl+O')
+		self.settings_action.setShortcut('Ctrl+T')
 		self.settings_action.triggered.connect(self.settings_clicked)
 		self.toolbar.addAction(self.settings_action)
 #		self.toolbar.addAction(self.settings_action)
@@ -385,7 +385,7 @@ class LLDBPyGUIWindow(QMainWindow):
 
 		self.test_action = QAction(ConfigClass.iconTest, '&Test', self)
 		self.test_action.setStatusTip('Test')
-		self.test_action.setShortcut('Ctrl+T')
+		self.test_action.setShortcut('Ctrl+1')
 		self.test_action.triggered.connect(self.test_clicked)
 		self.toolbar.addAction(self.test_action)
 
@@ -851,6 +851,7 @@ class LLDBPyGUIWindow(QMainWindow):
 	def load_clicked(self):
 		filename = showOpenFileDialog()
 		if filename != None and filename != "":
+			self.worker.fileToLoad = filename
 			self.txtMultiline.resetContent()
 			self.bpHelper.deleteAllBPs()
 			self.wdtBPsWPs.treBPs.clear()

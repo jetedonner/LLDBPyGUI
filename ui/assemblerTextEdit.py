@@ -776,7 +776,12 @@ class AssemblerTextEdit(QWidget):
 		pass
 		
 	def setPC(self, pc, pushLocation = False):
-		currentPC = hex(pc).lower()
+		logDbgC(f"pc: {pc}")
+		if isinstance(pc, str):
+			currentPC = pc.lower()
+		else:
+			currentPC = hex(pc).lower()
+
 		# logDbgC(f"setPC: {currentPC} ({pc})")
 		for row in range(self.table.rowCount()):
 			if self.table.item(row, 2) != None:

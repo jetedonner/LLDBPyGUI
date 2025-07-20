@@ -311,7 +311,14 @@ class QControlFlowWidget(QWidget):
                     self.endAddr = subSec.GetFileAddress() + subSec.GetByteSize()
 
     def isInsideTextSection(self, addr):
-        return self.endAddr > int(addr, 16) >= self.startAddr
+        try:
+            return self.endAddr > int(addr, 16) >= self.startAddr
+        # except (ValueError, TypeError) as e:
+        #     print(f"Caught a value or type error: {e}")
+        except Exception as e:
+            logDbgC(f"Exception: {e}")
+            return False
+
 
     def loadConnectionsThreadingStart(self):
         tblDisassembly = self.window().txtMultiline.table
