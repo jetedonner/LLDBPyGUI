@@ -143,4 +143,4 @@ def pfl_cmd(debugger, command, result, internal_dict):
 def __lldb_init_module(debugger, dict):
 	# debugger.HandleCommand('command script add -f decode_rflags.decode_rflags_command drf')
 	debugger.HandleCommand('command script add -f prettyflags.pfl_cmd pfl')
-	print('The "pfl_cmd" command has been loaded.')
+	# print('The "pfl_cmd" command has been loaded.')

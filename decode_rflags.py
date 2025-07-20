@@ -92,4 +92,4 @@ def decode_rflags_command(debugger, command, result, dict):
 def __lldb_init_module(debugger, dict):
     debugger.HandleCommand('command script add -f decode_rflags.decode_rflags_command decode_rflags')
     debugger.HandleCommand('command script add -f decode_rflags.decode_rflags_command drf')
-    print('The "decode_rflags" / "drf" command has been loaded...')
+    # print('The "decode_rflags" / "drf" command has been loaded...')

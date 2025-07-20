@@ -26,6 +26,14 @@
 
 @implementation AppDelegate
 
+// Action method for the button
+- (void)showMessage:(id)sender {
+    NSAlert *alert = [[NSAlert alloc] init];
+    [alert setMessageText:@"Hello, World!"];
+    [alert addButtonWithTitle:@"OK"];
+    [alert runModal];
+}
+
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
     // Create the window
     NSRect frame = NSMakeRect(0, 0, 400, 200);
@@ -50,7 +58,21 @@
     // Add the label to the window's content view
     [[self.window contentView] addSubview:label];
 
+    NSButton *rightButton = [[NSButton alloc] initWithFrame:NSMakeRect(100, 140, 200, 30)];
+//     [rightButton setTarget:self];
+//     [[rightButton cell] setHighlightsBy:NSNullCellType];
+//     [rightButton setImage:[NSImage imageNamed:@"rightButton"]];
+//     [rightButton setAction:@selector(action:)];
+//     [rightButton setBordered:YES];
+    [rightButton setTarget:self];
+    [rightButton setAction:@selector(showMessage:)];
+    [[self.window contentView] addSubview:rightButton];
     [self.window makeKeyAndOrderFront:nil];
+}
+
+// This method is called when the application is about to terminate.
+- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender {
+    return YES; // Terminate the application when the last window is closed.
 }
 
 @end
