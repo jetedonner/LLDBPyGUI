@@ -15,7 +15,7 @@ from ui.helper.dbgOutputHelper import *
 from lib.utils import *
 from config import *
 
-controlFlowWidth = 75
+controlFlowWidth = 110
 
 # import threading
 # import time
@@ -327,7 +327,9 @@ class QControlFlowWidget(QWidget):
 
     def loadConnections(self):
         logDbgC(f"Control Flow loadConnections() ... (from inside func) ...")
-        radius = 140
+        # radius = 140
+        radius = 10
+
         tblDisassembly = self.window().txtMultiline.table
         scrollOrig = tblDisassembly.verticalScrollBar().value()
         scrollOrig2 = self.view.verticalScrollBar().value()
@@ -353,12 +355,14 @@ class QControlFlowWidget(QWidget):
                         newConObj = QControlFlowWidget.draw_flowConnectionNG(rowEnd, rowStart, int(sAddrJumpFrom, 16), int(sAddrJumpTo, 16), self.window().txtMultiline.table, QColor("lightgreen"), radius, 1, True)
                     newConObj.parentControlFlow = self
                     self.addConnection(newConObj)
-                    if radius >= 10:
-                        radius -= 10
+                    # if radius >= 10:
+                    #     radius -= 10
+                    if radius <= 130:
+                        radius += 15
         self.connections.sort(key=lambda x: abs(x.jumpDist), reverse=True)
 
         idx = 1
-        radius = 140
+        radius = 10
         for con in self.connections:
             y_position = tblDisassembly.rowViewportPosition(con.origRow)
             y_position2 = tblDisassembly.rowViewportPosition(con.destRow)
@@ -426,14 +430,14 @@ class QControlFlowWidget(QWidget):
                 con.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
 
             con.setToolTip(f"Branch\n-from: {hex(con.origAddr)}\n-to: {hex(con.destAddr)}\n-distance: {hex(con.jumpDist)}")
-            if radius >= 10:
-                radius -= 10
+            if radius <= 130:
+                radius += 15
             idx += 1
 
-        logDbgC(f"Control Flow loadConnections() => scrollOrig: {scrollOrig}")
+        logDbgC(f"Control Flow loadConnections() => scrollOrig: {scrollOrig}", DebugLevel.Verbose)
         tblDisassembly.verticalScrollBar().setValue(scrollOrig)
         self.view.verticalScrollBar().setValue(scrollOrig)
-        pass
+        # pass
 
     def loadInstructions(self):
         radius = 75
