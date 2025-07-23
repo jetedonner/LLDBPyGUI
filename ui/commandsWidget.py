@@ -143,6 +143,7 @@ class CommandsWidget(QWidget):
 			self.workerManager.start_execCommandWorker(self.txtCmd.text(), self.handle_commandFinished)
 		
 	def handle_commandFinished(self, res):
+		sOutput = ""
 		if res.Succeeded():
 			sOutput = res.GetOutput()
 			self.txtCommands.appendEscapedText(sOutput)
@@ -166,13 +167,10 @@ class CommandsWidget(QWidget):
 		else:
 			self.txtCommands.appendEscapedText(f"{res.GetError()}")
 
-		if not self.center_last_arrow_line():
+		if not res.Succeeded() or (res.Succeeded() and (sOutput.find("->") == -1 or not self.center_last_arrow_line())):
 			if self.swtAutoscroll.isChecked():
 				self.sb = self.txtCommands.verticalScrollBar()
 				self.sb.setValue(self.sb.maximum())
-
-
-
 
 	def center_last_arrow_line(self):
 		bRet = False

@@ -61,6 +61,8 @@ class Worker(QObject):
 	# Main Vars
 	mainWin = None
 	fileToLoad = ""
+	arch = ""
+	args = ""
 	targetBasename = ""
 
 
@@ -72,6 +74,8 @@ class Worker(QObject):
 		self._should_stop = False
 		self.mainWin = mainWinToUse
 		self.fileToLoad = filename
+		self.arch = ""
+		self.args = ""
 		self.driver = None
 		self.target = None
 		self.process = None
@@ -501,7 +505,7 @@ class Worker(QObject):
 		self.driver.signals.event_queued.connect(self.mainWin.handle_event_queued)
 		self.driver.start()
 		self.logDbgC.emit(f"createTarget({filename})")
-		self.target = self.driver.createTarget(filename)
+		self.target = self.driver.createTarget(filename, self.arch, self.args)
 
 		if self.target.IsValid():
 			self.mainWin.target = self.target
