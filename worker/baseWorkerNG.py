@@ -518,11 +518,11 @@ class Worker(QObject):
 
 				# main_bp2 = self.enableBPCallback.emit("0x100000ab0", True, False)
 
-				if len(self.driver.getTarget().modules) > 0:
-					self.logDbg.emit(f"self.driver.getTarget().GetModuleAtIndex(0) (len: {len(self.driver.getTarget().modules)}): {self.driver.getTarget().GetModuleAtIndex(0)}")
-					for idxMod in range(len(self.driver.getTarget().modules)):
-						self.logDbg.emit(
-							f"- self.driver.getTarget().GetModuleAtIndex({idxMod}): {self.driver.getTarget().GetModuleAtIndex(idxMod)}")
+				# if len(self.driver.getTarget().modules) > 0:
+				# 	self.logDbg.emit(f"self.driver.getTarget().GetModuleAtIndex(0) (len: {len(self.driver.getTarget().modules)}): {self.driver.getTarget().GetModuleAtIndex(0)}")
+				# 	for idxMod in range(len(self.driver.getTarget().modules)):
+				# 		self.logDbg.emit(
+				# 			f"- self.driver.getTarget().GetModuleAtIndex({idxMod}): {self.driver.getTarget().GetModuleAtIndex(idxMod)}")
 
 				main_oep = find_main(self.driver.debugger)
 				self.driver.debugger.HandleCommand(f'breakpoint set -a {hex(main_oep)} -N kimon')

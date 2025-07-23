@@ -1,12 +1,9 @@
-		#!/usr/bin/env python3
+#!/usr/bin/env python3
 
 import lldb
-import enum
-
-import os
-
 from ctypes import *
 from lib.settings import *
+from ui.helper.dbgOutputHelper import logDbgC, DebugLevel
 
 exec2Dbg = None
 debugger = None
@@ -392,38 +389,35 @@ class MACH_HEADER(Structure):
 def find_main(debugger):
 	target = debugger.GetSelectedTarget()
 	if not target:
-		print("No target loaded.")
-		return
+		logDbgC(f"No target loaded")
+		return 0
 
 	main_symbol = target.FindFunctions("main")
 	if main_symbol.GetSize() == 0:
-		print("Could not find 'main' function.")
-		return
+		logDbgC(f"Could not find 'main' function")
+		return 0
 
 	symbol_context = main_symbol.GetContextAtIndex(0)
 	address = symbol_context.GetSymbol().GetStartAddress()
-	print(f"Main entry point address: {address.GetLoadAddress(target)} / {hex(address.GetLoadAddress(target))}")
-	# setHelper = SettingsHelper()
-	# if setHelper.getChecked(SettingsValues.BreakpointAtMainFunc):
-	#
+	loadAddr = address.GetLoadAddress(target)
 
-	return address.GetLoadAddress(target)
+	logDbgC(f"Main entry point address: {loadAddr} / {hex(loadAddr)}", DebugLevel.Verbose)
 
-# def get_oep(debugger, command, result, internal_dict):
+	return loadAddr #address.GetLoadAddress(target)
+
 def get_oep(debugger):
 	target = debugger.GetSelectedTarget()
 	if not target:
-		print("No target selected.")
+		logDbgC(f"No target selected")
 		return
 
 	module = target.GetModuleAtIndex(0)
 	if not module:
-		print("No module found.")
+		logDbgC(f"No module found")
 		return
 
 	entry_point = module.GetObjectFileHeaderAddress().GetLoadAddress(target)
-	print(f"OEP (Original Entry Point): {entry_point}")
-	# result.PutCString(f"OEP (Original Entry Point): {entry_point}")
+	logDbgC(f"OEP (Original Entry Point): {entry_point}", DebugLevel.Verbose)
 	return entry_point
 
 def GetFileHeader(exe):
