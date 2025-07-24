@@ -435,6 +435,8 @@ class Worker(QObject):
 										#										print(f'sym.GetName() => {sym.GetName()} / instruction.GetAddress().GetFunction().GetName() => {instruction.GetAddress().GetFunction().GetName()}')
 										#										print(f'COMMENT => {instruction.GetComment(self.target)}')
 										self.loadInstructionCallback.emit(instruction)
+										# if  instruction.GetMnemonic(self.target) is None:
+										# 	continue
 										self.checkLoadConnection(instruction, idxInstructions)
 										idxInstructions += 1
 										# doFlowControl
@@ -446,6 +448,7 @@ class Worker(QObject):
 					break
 				idx += 1
 			idxOuter += 1
+
 
 		idxInst = 0
 		for inst in self.allInstructions:
@@ -510,8 +513,10 @@ class Worker(QObject):
 
 	
 	def checkLoadConnection(self, instruction, idxInstructions):
-
 		sMnemonic = instruction.GetMnemonic(self.target)
+		# if sMnemonic is None or sMnemonic == "":
+		# 	return
+
 		if sMnemonic is not None and sMnemonic.startswith(JMP_MNEMONICS) and not sMnemonic.startswith(JMP_MNEMONICS_EXCLUDE):
 			sAddrJumpTo = instruction.GetOperands(self.target)
 			if self.isInsideTextSection(sAddrJumpTo):

@@ -442,13 +442,17 @@ class QControlFlowWidget(QWidget):
 
     def loadConnectionsFromWorker(self, workerConnections):
         tblDisassembly = self.window().txtMultiline.table
+        tblDisassembly.verticalScrollBar().setValue(0)
         idx = 1
         radius = 10
         self.connections = workerConnections
         for con in self.connections:
             con.parentControlFlow = self
-            y_position = tblDisassembly.rowViewportPosition(con.origRow)# + (0 if con.origRow == 0 else 0))
-            y_position2 = tblDisassembly.rowViewportPosition(con.destRow)# - (0 if con.destRow == 0 else 0) + 0)
+            # if con. is None:
+            #     continue
+
+            y_position = tblDisassembly.rowViewportPosition(con.origRow + 2)# + (0 if con.origRow == 0 else 0))
+            y_position2 = tblDisassembly.rowViewportPosition(con.destRow + 2)# - (0 if con.destRow == 0 else 0) + 0)
             logDbgC(f"Connection ({idx}) => fromY: {y_position} / toY: {y_position2} / con.origRow + 2: {con.origRow + 2} / con.destRow + 2: {con.destRow + 2}")
             nRowHeight = 21
             nOffsetAdd = 23

@@ -1676,6 +1676,7 @@ class LLDBPyGUIWindow(QMainWindow):
 	def handle_workerFinished(self, connections = []):
 #		print(f"Current RIP: {self.rip} / {hex(self.rip)} / DRIVER: {self.driver.getPC()} / {self.driver.getPC(True)}")
 		QApplication.processEvents()
+
 		self.wdtControlFlow.loadConnectionsFromWorker(connections)
 		self.txtMultiline.setPC(self.driver.getPC(), True)
 		logDbgC(f"self.driver.getPC(): {hex(self.driver.getPC())} / {self.driver.getPC()}", DebugLevel.Verbose)
@@ -1845,7 +1846,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		# self.worker.endLoadControlFlowCallback.emit(True)
 
 	def runControlFlow_loadConnections(self):
-		self.wdtControlFlow.loadConnections()
+		# self.wdtControlFlow.loadConnections()
 		self.worker.endLoadControlFlowCallback.emit(True)
 		oepMain = find_main(self.driver.debugger)
 		logDbgC(f"OEP: {getAddrStr(oepMain)}", DebugLevel.Verbose)
