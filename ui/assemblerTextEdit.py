@@ -768,7 +768,10 @@ class AssemblerTextEdit(QWidget):
 			if self.table.item(self.currentPCRow, 0).text().endswith("I"):
 				self.table.item(self.currentPCRow, 0).setText('I')
 			else:
-				self.table.item(self.currentPCRow, 0).setText('')
+				if self.table.item(self.currentPCRow, 0).text().isdigit():
+					pass
+				else:
+					self.table.item(self.currentPCRow, 0).setText('')
 			curRememberLoc = arrRememberedLocs.get(self.table.item(self.currentPCRow, 2).text())
 			if curRememberLoc is not None:
 				self.table.setBGColor(self.currentPCRow, False, QColor(220, 220, 255, 0), range(1, 8))
@@ -789,7 +792,7 @@ class AssemblerTextEdit(QWidget):
 			if self.table.item(row, 2) != None:
 				if self.table.item(row, 2).text().lower() == currentPC:
 					self.currentPCRow = row
-					self.table.item(row, 0).setText('>')
+					# self.table.item(row, 0).setText('>')
 					# logDbgC(f"setPC => row: {row}")
 					self.table.setFocus(Qt.FocusReason.NoFocusReason)
 					self.table.selectRow(row)
@@ -798,7 +801,10 @@ class AssemblerTextEdit(QWidget):
 					# self.viewAddress()
 					self.table.setBGColor(row, True)
 				else:
-					self.table.item(row, 0).setText('')
+					if self.table.item(row, 0).text().isdigit():
+						pass
+					else:
+						self.table.item(row, 0).setText('')
 					self.table.setBGColor(row, False, QColor(220, 220, 255, 0), range(1, 8))
 
 				curRememberLoc = arrRememberedLocs.get(self.table.item(row, 2).text())

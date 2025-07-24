@@ -453,57 +453,58 @@ class QControlFlowWidget(QWidget):
             # if con. is None:
             #     continue
 
-            addr = self.driver.getTarget().ResolveLoadAddress(con.destAddr)
-            function = addr.GetFunction()
-            if function.IsValid():
-                logDbgC(f"Function name: {function.GetName()}")
-            else:
-                logDbgC(f"No function found at this address.")
+            # addr = self.driver.getTarget().ResolveLoadAddress(con.destAddr)
+            # function = addr.GetFunction()
+            # if function.IsValid():
+            #     logDbgC(f"Function name: {function.GetName()}")
+            # else:
+            #     logDbgC(f"No function found at this address.")
+            #
+            # context = self.driver.getTarget().ResolveSymbolContextForAddress(addr, lldb.eSymbolContextEverything)
+            # func = context.GetFunction()
+            # print(context)
+            # print(dir(context))
+            # if func.IsValid():
+            #     print("Function name:", func.GetName())
+            # else:
+            #     print("Function not found via symbol context.")
+            #
+            # symbols = []
+            # for module in self.driver.getTarget().module_iter():
+            #     for symbol in module:
+            #         if symbol.IsValid():
+            #             symbols.append(symbol)
+            #
+            # symbols.sort(key=lambda s: s.GetStartAddress().GetLoadAddress(self.driver.getTarget()))
+            #
+            # # current_addr = self.driver.getTarget().ResolveLoadAddress(con.destAddr)
+            #
+            # idxNGDef = 1
+            # for idxNG, symbol in enumerate(symbols):
+            #     start = symbol.GetStartAddress().GetLoadAddress(self.driver.getTarget())
+            #     end = symbol.GetEndAddress().GetLoadAddress(self.driver.getTarget())
+            #
+            #     if start <= con.destAddr < end:
+            #         logDbgC(f"Current symbol '{symbol.GetName()}' is number {idxNG} in the disassembly order.")
+            #         # idxNGDef = idxNG - 1
+            #         break
+            #     idxNGDef += 1
 
-            context = self.driver.getTarget().ResolveSymbolContextForAddress(addr, lldb.eSymbolContextEverything)
-            func = context.GetFunction()
-            print(context)
-            print(dir(context))
-            if func.IsValid():
-                print("Function name:", func.GetName())
-            else:
-                print("Function not found via symbol context.")
-
-            symbols = []
-            for module in self.driver.getTarget().module_iter():
-                for symbol in module:
-                    if symbol.IsValid():
-                        symbols.append(symbol)
-
-            symbols.sort(key=lambda s: s.GetStartAddress().GetLoadAddress(self.driver.getTarget()))
-
-            # current_addr = self.driver.getTarget().ResolveLoadAddress(con.destAddr)
-
-            idxNGDef = 1
-            for idxNG, symbol in enumerate(symbols):
-                start = symbol.GetStartAddress().GetLoadAddress(self.driver.getTarget())
-                end = symbol.GetEndAddress().GetLoadAddress(self.driver.getTarget())
-
-                if start <= con.destAddr < end:
-                    logDbgC(f"Current symbol '{symbol.GetName()}' is number {idxNG} in the disassembly order.")
-                    # idxNGDef = idxNG - 1
-                    break
-                idxNGDef += 1
-
-
+            con.origRow = int(tblDisassembly.getRowForAddress(hex(con.origAddr)))
+            con.destRow = int(tblDisassembly.getRowForAddress(hex(con.destAddr)))
 
             # for idx, symbol in enumerate(symbols):
             #     if symbol.ContainsAddress(addr):
             #         logDbgC(f"Current symbol '{symbol.GetName()}' is number {idx + 1} in the disassembly order.")
             #         break
 
-            y_position = tblDisassembly.rowViewportPosition(con.origRow + idxNGDef)#(1 if con.origRow == 0 else 0))
-            y_position2 = tblDisassembly.rowViewportPosition(con.destRow - idxNGDef)#(1 if con.destRow == 0 else 0) + 0)
+            y_position = tblDisassembly.rowViewportPosition(con.origRow)# + idxNGDef)#(1 if con.origRow == 0 else 0))
+            y_position2 = tblDisassembly.rowViewportPosition(con.destRow)# - idxNGDef)#(1 if con.destRow == 0 else 0) + 0)
             if(con.origRow > con.destRow):
-                y_position = tblDisassembly.rowViewportPosition(con.origRow + idxNGDef)#(1 if con.origRow == 0 else 0))
-                y_position2 = tblDisassembly.rowViewportPosition(con.destRow + idxNGDef)#(1 if con.destRow == 0 else 0) + 0)
+                y_position = tblDisassembly.rowViewportPosition(con.origRow)# + idxNGDef)#(1 if con.origRow == 0 else 0))
+                y_position2 = tblDisassembly.rowViewportPosition(con.destRow)# + idxNGDef)#(1 if con.destRow == 0 else 0) + 0)
 
-            logDbgC(f"Connection ({idx}) => fromY: {y_position} / toY: {y_position2} / con.origRow + 2: {con.origRow + 2} / con.destRow + 2: {con.destRow + 2}")
+            logDbgC(f"Connection ({idx}) => fromY: {y_position} / toY: {y_position2} / con.origRow: {con.origRow} / con.destRow: {con.destRow}")
             nRowHeight = 21
             nOffsetAdd = 23
             xOffset = (controlFlowWidth / 2) + (((controlFlowWidth - radius) / 2))  # + (radius / 2)

@@ -1679,11 +1679,11 @@ class LLDBPyGUIWindow(QMainWindow):
 	def handle_workerFinished(self, connections = []):
 #		print(f"Current RIP: {self.rip} / {hex(self.rip)} / DRIVER: {self.driver.getPC()} / {self.driver.getPC(True)}")
 		QApplication.processEvents()
-
-		self.wdtControlFlow.loadConnectionsFromWorker(connections)
 		self.txtMultiline.setPC(self.driver.getPC(), True)
-		logDbgC(f"self.driver.getPC(): {hex(self.driver.getPC())} / {self.driver.getPC()}", DebugLevel.Verbose)
 		self.wdtControlFlow.draw_instructions()
+		self.wdtControlFlow.loadConnectionsFromWorker(connections)
+		logDbgC(f"self.driver.getPC(): {hex(self.driver.getPC())} / {self.driver.getPC()}", DebugLevel.Verbose)
+
 		return
 		self.start_loadRegisterWorker()
 		self.setProgressValue(50)
