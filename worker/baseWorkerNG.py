@@ -445,10 +445,6 @@ class Worker(QObject):
 		pass
 
 	def loadTarget(self):
-		# return
-		# self.logDbg.emit(f"loadTarget() started Num Targets: {self.driver.debugger.GetNumTargets()} ...")
-		# if self.driver.debugger.GetNumTargets() > 0:
-			# self.target = self.driver.getTarget()
 		self.logDbgC.emit(f"loadTarget() => Target: {self.target} ...", DebugLevel.Verbose)
 		if self.target:
 			self.process = self.target.GetProcess()

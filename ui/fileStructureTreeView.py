@@ -24,6 +24,7 @@ class FileStructureTreeWidget(BaseTreeWidget):
 		actionShowInfos = self.context_menu.addAction("Show infos")
 		
 		self.actionShowMemoryFrom = self.context_menu.addAction("Show memory")
+		self.actionShowMemoryFrom.triggered.connect(self.handle_showMemory)
 		self.actionShowMemoryTo = self.context_menu.addAction("Show memory after End")
 		
 		self.setFont(ConfigClass.font)
@@ -33,7 +34,33 @@ class FileStructureTreeWidget(BaseTreeWidget):
 		self.header().resizeSection(2, 128)
 		self.header().resizeSection(3, 128)
 		self.header().resizeSection(4, 256)
-		
+
+	def mouseDoubleClickEvent(self, event):
+		daItem = self.itemAt(event.pos().x(), event.pos().y())
+		if daItem is None:
+			return
+		col = self.columnAt(event.pos().x())
+		# if daItem.childCount() > 0:
+		# 	super().mouseDoubleClickEvent(event)
+
+		if col == 1 or col == 2 or col == 3:
+			self.window().doReadMemory(int(daItem.text(1), 16), int(daItem.text(3), 16))
+		# 		self.openPersistentEditor(daItem, col)
+		# 		self.editItem(daItem, col)
+		elif col == 0 and daItem.parent().text(0) == "__text" and daItem.childCount() == 0:
+			self.window().tabWidgetMain.setCurrentWidget(self.window().splitter)
+			self.window().txtMultiline.viewAddress(daItem.text(1))
+		pass
+
+	def handle_showMemory(self):
+		daItem = self.currentItem()
+		# if daItem.childCount() > 0:
+		# 	daItem = daItem.child(0)
+		# setStatusBar(f"Deleted breakpoint @: {daItem.text(2)}")
+		self.window().doReadMemory(int(daItem.text(1), 16), int(daItem.text(3), 16))
+		# self.doReadMemory(addr)
+		pass
+
 	def contextMenuEvent(self, event):
 		# Show the context menu
 		self.context_menu.exec(event.globalPos())

@@ -179,7 +179,7 @@ class RFlagTableWidget(BaseTableWidget):
 		logDbgC(
 			f"rFlags / eFlags:\n- Unsigned: {hex(self.rflags_value)} / {self.rflags_value}\n- Binary: " + format(
 				self.rflags_value, 'b') + "\n- Flags: " + pfl_cmd(get_main_window().driver.debugger, "", res,
-																		   []), DebugLevel.Verbose)
+																		   []), DebugLevel.Verbose )
 		logDbgC(f"RFLAGS: 0x{self.rflags_value:016x}", DebugLevel.Verbose)
 
 		self.addRow("--- FLAG NAME ---", "--- OPTION ---", "--- DESCRIPTION ---")
