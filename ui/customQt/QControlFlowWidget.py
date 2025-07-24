@@ -477,7 +477,7 @@ class QControlFlowWidget(QWidget):
 
             symbols.sort(key=lambda s: s.GetStartAddress().GetLoadAddress(self.driver.getTarget()))
 
-            current_addr = self.driver.getTarget().ResolveLoadAddress(con.destAddr)
+            # current_addr = self.driver.getTarget().ResolveLoadAddress(con.destAddr)
 
             idxNGDef = 1
             for idxNG, symbol in enumerate(symbols):
