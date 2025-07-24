@@ -501,8 +501,8 @@ class QControlFlowWidget(QWidget):
             y_position = tblDisassembly.rowViewportPosition(con.origRow)# + idxNGDef)#(1 if con.origRow == 0 else 0))
             y_position2 = tblDisassembly.rowViewportPosition(con.destRow)# - idxNGDef)#(1 if con.destRow == 0 else 0) + 0)
             if(con.origRow > con.destRow):
-                y_position = tblDisassembly.rowViewportPosition(con.origRow)# + idxNGDef)#(1 if con.origRow == 0 else 0))
-                y_position2 = tblDisassembly.rowViewportPosition(con.destRow)# + idxNGDef)#(1 if con.destRow == 0 else 0) + 0)
+                y_position = tblDisassembly.rowViewportPosition(con.destRow)# + idxNGDef)#(1 if con.origRow == 0 else 0))
+                y_position2 = tblDisassembly.rowViewportPosition(con.origRow)# + idxNGDef)#(1 if con.destRow == 0 else 0) + 0)
 
             logDbgC(f"Connection ({idx}) => fromY: {y_position} / toY: {y_position2} / con.origRow: {con.origRow} / con.destRow: {con.destRow}")
             nRowHeight = 21
