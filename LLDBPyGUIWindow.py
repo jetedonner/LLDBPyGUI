@@ -1125,8 +1125,9 @@ class LLDBPyGUIWindow(QMainWindow):
 
 
 	def test_clicked(self):
-		self.wdtControlFlow.logViewportHeight()
+		# self.wdtControlFlow.logViewportHeight()
 		# self.wdtControlFlow.loadConnections()
+		pass
 
 	def stopTarget(self):
 		# self.driver
@@ -1676,7 +1677,7 @@ class LLDBPyGUIWindow(QMainWindow):
 #		print(f"Current RIP: {self.rip} / {hex(self.rip)} / DRIVER: {self.driver.getPC()} / {self.driver.getPC(True)}")
 		QApplication.processEvents()
 		self.txtMultiline.setPC(self.driver.getPC(), True)
-		logDbg(f"self.driver.getPC(): {hex(self.driver.getPC())} / {self.driver.getPC()}")
+		logDbgC(f"self.driver.getPC(): {hex(self.driver.getPC())} / {self.driver.getPC()}", DebugLevel.Verbose)
 		self.wdtControlFlow.draw_instructions()
 		return
 		self.start_loadRegisterWorker()
@@ -1688,9 +1689,6 @@ class LLDBPyGUIWindow(QMainWindow):
 		# self.tabWatchpoints.reloadWatchpoints(True)
 		self.loadStacktrace()
 		self.setProgressValue(70)
-		# QApplication.processEvents()
-#		print(f'self.rip => {self.rip}')
-
 		QApplication.processEvents()
 
 		frame = self.driver.getTarget().GetProcess().GetThreadAtIndex(0).GetFrameAtIndex(0)
@@ -1841,7 +1839,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		else:
 			self.txtSource.setText("<Source code NOT available>")
 
-		logDbgC(f"Calling 'self.wdtControlFlow.loadConnections()' from 'handle_loadSourceFinished'")
+		# logDbgC(f"Calling 'self.wdtControlFlow.loadConnections()' from 'handle_loadSourceFinished'")
 		# self.wdtControlFlow.loadConnections()
 		# self.worker.endLoadControlFlowCallback.emit(True)
 
@@ -1849,15 +1847,10 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.wdtControlFlow.loadConnections()
 		self.worker.endLoadControlFlowCallback.emit(True)
 		oepMain = find_main(self.driver.debugger)
-		logDbgC(f"OEP: {hex(oepMain)} / {oepMain}")
-		# logDbgC(f"Going to OEP: {oepMain} / {hex(oepMain)}")
+		logDbgC(f"OEP: {getAddrStr(oepMain)}", DebugLevel.Verbose)
 		self.txtMultiline.viewAddress(hex(oepMain))
-		logDbgC(f"self.txtMultiline.table.verticalScrollBar().value(): {self.txtMultiline.table.verticalScrollBar().value()} / self.wdtControlFlow.view.verticalScrollBar().value(): {self.wdtControlFlow.view.verticalScrollBar().value()}")
 		self.wdtControlFlow.view.verticalScrollBar().setValue(self.txtMultiline.table.verticalScrollBar().value())
 		QApplication.processEvents()
-		# logDbgC(
-		# 	f"=> self.txtMultiline.table.verticalScrollBar().value(): {self.txtMultiline.table.verticalScrollBar().value()} / self.wdtControlFlow.view.verticalScrollBar().value(): {self.wdtControlFlow.view.verticalScrollBar().value()}")
-		# self.wdtControlFlow.view.verticalScrollBar().setValue(self.txtMultiline.table.verticalScrollBar().value())
 
 	def loadStacktrace(self):
 		self.process = self.driver.getTarget().GetProcess()

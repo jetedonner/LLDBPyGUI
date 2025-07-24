@@ -1,21 +1,16 @@
 from PyQt6.QtGui import QColor
 import random
 import time
-# utils.py
 
-# # app_context.py
-# main_window = None
+from ui.helper.dbgOutputHelper import DebugLevel, logDbgC
 
 def global_function():
     print("This function is available everywhere!")
 
-# def do_magic():
-#     main_window.updateStatusBar("Boom!")
-#
 def setStatusBar(msg):
-    print(f"setStausBAr was removed ... message is: {msg}")
+    logDbgC(f"setStausBAr was removed ... message is: {msg}", DebugLevel.Info)
+    #     main_window.updateStatusBar(msg)
     pass
-#     main_window.updateStatusBar(msg)
 
 def random_qcolor():
     random.seed(time.time())

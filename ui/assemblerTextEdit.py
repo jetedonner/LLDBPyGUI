@@ -776,7 +776,7 @@ class AssemblerTextEdit(QWidget):
 		pass
 		
 	def setPC(self, pc, pushLocation = False):
-		logDbgC(f"pc: {pc}")
+		logDbgC(f"pc: {getAddrStr(pc)}")
 		if isinstance(pc, str):
 			currentPC = pc.lower()
 		else:

@@ -8,7 +8,7 @@ class DebugLevel(Enum):
     Error = 3
     Verbose = 4
 
-currentDebugLevel = DebugLevel.Error
+currentDebugLevel = DebugLevel.Verbose
 # global mainWindowNG
 mainWindowNG = None
 
@@ -35,3 +35,9 @@ def logDbg(logMsg="", alsoPrintToConsole = False, dbgLevel = DebugLevel.Info):
 
 def logDbgC(logMsg="", dbgLevel = DebugLevel.Info):
     logDbg(logMsg, True, dbgLevel)
+
+def getAddrStr(addrIn, getIntAlso=True):
+    sRet = f"{hex(addrIn)}"
+    if getIntAlso:
+        sRet += f" / {addrIn}"
+    return sRet

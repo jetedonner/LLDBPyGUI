@@ -22,7 +22,8 @@ class Worker(QObject):
 	finished = pyqtSignal()
 	show_dialog = pyqtSignal()
 	logDbg = pyqtSignal(str)
-	logDbgC = pyqtSignal(str)
+	logDbgC = pyqtSignal(str, object)
+	# = pyqtSignal(str)
 
 	# updateProgress = pyqtSignal(int)
 
@@ -97,20 +98,22 @@ class Worker(QObject):
 		self.logDbg.emit(f"loadNewExecutableFile({self.fileToLoad})...")
 		self.targetBasename = os.path.basename(self.fileToLoad)
 		self.loadNewExecutableFile(self.fileToLoad)
-		self.logDbgC.emit(f"self.mainWin.driver.debugger.GetNumTargets() (baseWorkerNG): {self.mainWin.driver.debugger.GetNumTargets()}")
+		self.logDbgC.emit(f"self.mainWin.driver.debugger.GetNumTargets() (baseWorkerNG): {self.mainWin.driver.debugger.GetNumTargets()}", DebugLevel.Verbose)
 		if self.mainWin.driver.debugger.GetNumTargets() > 0:
-			for i in range(self.mainWin.driver.debugger.GetNumTargets()):
-				self.logDbgC.emit(f"self.mainWin.driver.debugger.GetTargetAtIndex({i}) (baseWorkerNG): {self.mainWin.driver.debugger.GetTargetAtIndex(i)}")
+			# for i in range(self.mainWin.driver.debugger.GetNumTargets()):
+			# 	self.logDbgC.emit(f"self.mainWin.driver.debugger.GetTargetAtIndex({i}) (baseWorkerNG): {self.mainWin.driver.debugger.GetTargetAtIndex(i)}", DebugLevel.Verbose)
 
 			self.target = self.mainWin.driver.getTarget()
-			self.logDbgC.emit(f"self.target (baseWorkerNG): {self.target}")
+			self.logDbgC.emit(f"self.target (baseWorkerNG): {self.target}", DebugLevel.Verbose)
 			if self.target:
-				logDbgC(f"self.target.GetExecutable().GetFilename(): {self.target.GetExecutable().GetFilename()}")
+				logDbgC(f"self.target.GetExecutable().GetFilename(): {self.target.GetExecutable().GetFilename()}", DebugLevel.Verbose)
 				exe = self.target.GetExecutable().GetDirectory() + "/" + self.target.GetExecutable().GetFilename()
 				# self.targetBasename = os.path.basename(exe)
 				mach_header = GetFileHeader(exe)
+				self.logDbgC.emit(f"mach_header = GetFileHeader(exe): {mach_header}", DebugLevel.Verbose)
 				self.loadFileInfosCallback.emit(mach_header, self.target)
-				self.mainWin.devHelper.setupDevHelper()
+				self.logDbgC.emit(f"after self.loadFileInfosCallback.emit(...)", DebugLevel.Verbose)
+				# self.mainWin.devHelper.setupDevHelper()
 				self.loadFileStats()
 
 		self.finished.emit()
@@ -123,11 +126,11 @@ class Worker(QObject):
 		self.finishedLoadControlFlow = True
 
 	def runLoadControlFlow(self):
-		self.logDbg.emit(f"runLoadControlFlow ... ")
+		self.logDbgC.emit(f"runLoadControlFlow ... ", DebugLevel.Info)
 		while not self.finishedLoadControlFlow:
-			self.logDbg.emit(f"... ")
+			# self.logDbg.emit(f"... ")
 			time.sleep(0.5)
-		self.logDbg.emit(f"Finished loading control flow ... continuing ...")
+		self.logDbgC.emit(f"Finished loading control flow ... continuing ...", DebugLevel.Verbose)
 
 		# if self.setHelper.getChecked(SettingsValues.BreakpointAtMainFunc):
 		# 	self.bpHelper.enableBP(hex(addrObj2), True, False)
@@ -152,7 +155,7 @@ class Worker(QObject):
 		source_mgr = self.driver.debugger.GetSourceManager()
 		# Use a string stream as the destination.
 		linesOfCode = self.count_lines_of_code(self.sourceFile)
-		print(f"linesOfCode: {linesOfCode} / {linesOfCode - self.lineNum}")
+		self.logDbgC.emit(f"linesOfCode: {linesOfCode} / {linesOfCode - self.lineNum}", DebugLevel.Verbose)
 		stream = lldb.SBStream()
 		source_mgr.DisplaySourceLinesWithLineNumbers(filespec, self.lineNum, self.lineNum,
 													 linesOfCode - self.lineNum, '=>', stream)
@@ -165,6 +168,7 @@ class Worker(QObject):
 		self.runControlFlow_loadConnections.emit()
 		# QCoreApplication.processEvents()
 		# QApplication.processEvents()
+		self.logDbgC.emit(f"BEFORE self.runLoadControlFlow() => runLoadSourceCode()", DebugLevel.Info)
 		self.runLoadControlFlow()
 
 	def count_lines_of_code(self, file_path):
@@ -295,7 +299,8 @@ class Worker(QObject):
 					# QCoreApplication.processEvents()
 		self.loadBPsWPs()
 		self.runLoadSourceCode()
-		self.runLoadControlFlow()
+		# self.logDbgC.emit(f"BEFORE self.runLoadControlFlow() => loadRegisters()", DebugLevel.Info)
+		# self.runLoadControlFlow()
 
 	def char_array_to_string(self, char_array_value):
 		byte_array = char_array_value.GetPointeeData(0, char_array_value.GetByteSize())
@@ -311,7 +316,7 @@ class Worker(QObject):
 		"""
 
 		# self.thread = self.target.GetProcess().GetSelectedThread()
-		self.logDbgC.emit(f"Starting to disassemble => continuing ...")
+		self.logDbgC.emit(f"Starting to disassemble => continuing ...", DebugLevel.Verbose)
 		# print(f"Starting to disassemble => continuing ...")
 		idxOuter = 0
 		for module in self.target.module_iter():
@@ -325,25 +330,25 @@ class Worker(QObject):
 				# Check if the section is readable
 				#				if not section.IsReadable():
 				#					continue
-				self.logDbgC.emit(f"section.GetName(): {section.GetName()}")
+				self.logDbgC.emit(f"section.GetName(): {section.GetName()}", DebugLevel.Verbose)
 				if section.GetName() == "__TEXT":  # or  section.GetName() == "__PAGEZERO":
 					# if idx != 1:
 					# 	idx += 1
 					# 	continue
 
 					for subsec in section:
-						self.logDbgC.emit(f"subsec.GetName(): {subsec.GetName()}")
+						self.logDbgC.emit(f"subsec.GetName(): {subsec.GetName()}", DebugLevel.Verbose)
 						if subsec.GetName() == "__text" or subsec.GetName() == "__stubs":
 
 							idxSym = 0
 							lstSym = module.symbol_in_section_iter(subsec)
 							# {len(lstSym)}
-							self.logDbgC.emit(f"lstSym: {lstSym} / subsec.GetName(): {subsec.GetName()}")
+							self.logDbgC.emit(f"lstSym: {lstSym} / subsec.GetName(): {subsec.GetName()}", DebugLevel.Verbose)
 
 							if subsec.GetName() == "__stubs":
 								start_addr = subsec.GetLoadAddress(self.target)
 								size = subsec.GetByteSize()
-								self.logDbgC.emit(f"size of __stubs: {hex(size)} / {hex(start_addr)}")
+								self.logDbgC.emit(f"size of __stubs: {hex(size)} / {hex(start_addr)}", DebugLevel.Verbose)
 								# Disassemble instructions
 								end_addr = start_addr + size
 								# func_start = subsec.GetStartAddress()
@@ -354,14 +359,14 @@ class Worker(QObject):
 								# insts = target.ReadInstructions(lldb.SBAddress(start_addr, target), lldb.SBAddress(end_addr, target))
 								for inst in insts:
 									# result.PutCString(str(inst))
-									self.logDbgC.emit(str(inst))
+									self.logDbgC.emit(str(inst), DebugLevel.Verbose)
 									self.loadInstructionCallback.emit(inst)
 								continue
 							# return
 
 							secLen = module.num_symbols  # len(lstSym)
 							for sym in lstSym:
-								self.logDbgC.emit(f"sym: {sym}")
+								self.logDbgC.emit(f"sym: {sym}", DebugLevel.Verbose)
 								#								print(f'get_instructions_from_current_target => {sym.get_instructions_from_current_target()}')
 								#								if idxSym != 0:
 								#									idxSym += 1
@@ -405,7 +410,7 @@ class Worker(QObject):
 								##								(50*100)/200
 								#								print(f'sym.GetStartAddress().GetFunction() => {sym.GetStartAddress().GetFunction()}')
 								self.logDbgC.emit(
-									f"Analyzing instructions: {len(sym.GetStartAddress().GetFunction().GetInstructions(self.target))}")
+									f"Analyzing instructions: {len(sym.GetStartAddress().GetFunction().GetInstructions(self.target))}", DebugLevel.Verbose)
 								if len(sym.GetStartAddress().GetFunction().GetInstructions(self.target)) <= 0:
 									self.logDbgC.emit(f"{sym.GetStartAddress().GetFunction()}")
 
@@ -444,10 +449,10 @@ class Worker(QObject):
 		# self.logDbg.emit(f"loadTarget() started Num Targets: {self.driver.debugger.GetNumTargets()} ...")
 		# if self.driver.debugger.GetNumTargets() > 0:
 			# self.target = self.driver.getTarget()
-		self.logDbg.emit(f"loadTarget() => Target: {self.target} ...")
+		self.logDbgC.emit(f"loadTarget() => Target: {self.target} ...", DebugLevel.Verbose)
 		if self.target:
 			self.process = self.target.GetProcess()
-			self.logDbg.emit(f"loadTarget() => Process: {self.process} ...")
+			self.logDbgC.emit(f"loadTarget() => Process: {self.process} ...", DebugLevel.Verbose)
 			if self.process:
 				self.listener = LLDBListener(self.process, self.driver.debugger)
 				self.listener.setHelper = self.mainWin.setHelper
@@ -458,23 +463,23 @@ class Worker(QObject):
 				self.listener.start()
 
 				self.thread = self.process.GetThreadAtIndex(0)
-				self.logDbg.emit(f"loadTarget() => Thread: {self.thread} ...")
+				self.logDbgC.emit(f"loadTarget() => Thread: {self.thread} ...", DebugLevel.Verbose)
 				if self.thread:
-					self.logDbg.emit(f"loadTarget() => Thread.GetNumFrames(): {self.thread.GetNumFrames()} ...")
+					self.logDbgC.emit(f"loadTarget() => Thread.GetNumFrames(): {self.thread.GetNumFrames()} ...", DebugLevel.Verbose)
 					for z in range(self.thread.GetNumFrames()):
 						frame = self.thread.GetFrameAtIndex(z)
 						self.loadModulesCallback.emit(frame, self.target.modules)
 						# self.tabWidgetStruct.cmbModules.addItem(
 						# 	frame.GetModule().GetFileSpec().GetFilename() + " (" + str(
 						# 		frame.GetFrameID()) + ")")
-						self.logDbg.emit(f"loadTarget() => Frame: {frame} ...")
+						self.logDbgC.emit(f"loadTarget() => Frame: {frame} ...", DebugLevel.Verbose)
 						if frame.GetModule().GetFileSpec().GetFilename() != self.target.GetExecutable().GetFilename():
-							self.logDbg.emit(f"Module for FileStzuct IS NOT equal executable => continuing ...")
+							self.logDbgC.emit(f"Module for FileStzuct IS NOT equal executable => continuing ...", DebugLevel.Verbose)
 							continue
 						else:
-							self.logDbg.emit(f"Module for FileStzuct IS equal executable => scanning ...")
+							self.logDbgC.emit(f"Module for FileStzuct IS equal executable => scanning ...", DebugLevel.Verbose)
 						if frame:
-							self.logDbg.emit(f"BEFORE DISASSEMBLE!!!!")
+							self.logDbgC.emit(f"BEFORE DISASSEMBLE!!!!", DebugLevel.Verbose)
 							# self.start_loadDisassemblyWorker(self.loadInstructionCallback, self.finishedLoadInstructionsCallback, True)
 							# self.disassembleTarget()
 							self.disassemble_entire_target()
@@ -482,11 +487,15 @@ class Worker(QObject):
 							# context = frame.GetSymbolContext(lldb.eSymbolContextEverything)
 
 	def loadFileStats(self):
+		self.logDbgC.emit(f"def loadFileStats(...)", DebugLevel.Verbose)
 		statistics = self.driver.getTarget().GetStatistics()
+		self.logDbgC.emit(f"def loadFileStats(...) => after statistics = self.driver.getTarget().GetStatistics()", DebugLevel.Verbose)
 		stream = lldb.SBStream()
 		success = statistics.GetAsJSON(stream)
+		self.logDbgC.emit(f"def loadFileStats(...) => after success = statistics.GetAsJSON(stream)", DebugLevel.Verbose)
 		if success:
 			self.loadJSONCallback.emit(str(stream.GetData()))
+			self.logDbgC.emit(f"def loadFileStats(...) => after self.loadJSONCallback.emit(str(stream.GetData()))", DebugLevel.Verbose)
 
 	def on_scanf_hit(frame, bp_loc, dict):
 		print("✅ Breakpoint hit at scanf!")
@@ -504,19 +513,15 @@ class Worker(QObject):
 		self.driver.debugger.SetAsync(False)
 		self.driver.signals.event_queued.connect(self.mainWin.handle_event_queued)
 		self.driver.start()
-		self.logDbgC.emit(f"createTarget({filename})")
+		self.logDbgC.emit(f"createTarget({filename})", DebugLevel.Info)
 		self.target = self.driver.createTarget(filename, self.arch, self.args)
 
 		if self.target.IsValid():
 			self.mainWin.target = self.target
-			self.logDbgC.emit(f"target: {self.target}")
+			self.logDbgC.emit(f"target: {self.target}", DebugLevel.Verbose)
 			
 			if self.mainWin.setHelper.getValue(SettingsValues.BreakpointAtMainFunc):
-				# self.driver.debugger.SetAsync(True)
-
 				self.driver.debugger.HandleCommand('process launch --stop-at-entry')
-
-				# main_bp2 = self.enableBPCallback.emit("0x100000ab0", True, False)
 
 				# if len(self.driver.getTarget().modules) > 0:
 				# 	self.logDbg.emit(f"self.driver.getTarget().GetModuleAtIndex(0) (len: {len(self.driver.getTarget().modules)}): {self.driver.getTarget().GetModuleAtIndex(0)}")
@@ -536,12 +541,12 @@ class Worker(QObject):
 					self.driver.scanfID = bp.GetID()
 					self.driver.debugger.HandleCommand(f'br name add -N scanf {bp.GetID()}')
 					bp.SetScriptCallbackFunction("on_scanf_hit")
-					self.logDbgC.emit(f'breakpoint set "scanf": {bp}')
+					self.logDbgC.emit(f'breakpoint set "scanf": {bp}', DebugLevel.Verbose)
 
 				self.driver.debugger.HandleCommand('breakpoint set --name main')
-				self.driver.debugger.HandleCommand(f'br list')
+				# self.driver.debugger.HandleCommand(f'br list')
 				self.driver.debugger.HandleCommand('process continue')
 
 			self.loadTarget()
 		else:
-			print(f"Error creating target!!!")
+			self.logDbgC.emit(f"Error creating target!!!")

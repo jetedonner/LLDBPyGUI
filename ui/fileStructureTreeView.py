@@ -73,17 +73,17 @@ class FileStructureWidget(QWidget):
 			# print(f"cmbModules_changed => {index}")
 			self.loadFileStruct(index)
 		
-	def loadFileStruct(self, index):
+	def loadFileStruct(self, index = 0):
 		# self.thread.GetFrameAtIndex(1)
 		target = self.driver.getTarget()
-		logDbg(f"loadFileStruct => target: {target}")
+		logDbgC(f"loadFileStruct => target: {target}", DebugLevel.Verbose)
 		process = target.GetProcess()
-		logDbg(f"loadFileStruct => process: {process}")
-		logDbg(f"loadFileStruct => process.num_threads: {process.num_threads}")
-		self.thread = process.GetThreadAtIndex(0)
+		logDbgC(f"loadFileStruct => process: {process}", DebugLevel.Verbose)
+		logDbgC(f"loadFileStruct => process.num_threads: {process.num_threads}", DebugLevel.Verbose)
+		self.thread = process.GetThreadAtIndex(index)
 		self.treFile.clear()
-		logDbg(f"loadFileStruct => thread: {self.thread}")
-		logDbg(f"loadFileStruct => thread.num_frames: {self.thread.num_frames}")
+		logDbgC(f"loadFileStruct => thread: {self.thread}", DebugLevel.Verbose)
+		logDbgC(f"loadFileStruct => thread.num_frames: {self.thread.num_frames}", DebugLevel.Verbose)
 
 		for i in range(self.thread.num_frames):
 			module = self.thread.GetFrameAtIndex(i).GetModule()

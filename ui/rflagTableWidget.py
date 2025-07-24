@@ -13,7 +13,7 @@ from PyQt6 import uic, QtWidgets
 from prettyflags import pfl_cmd
 from ui.baseTableWidget import *
 from config import *
-from ui.helper.dbgOutputHelper import logDbgC, get_main_window
+from ui.helper.dbgOutputHelper import logDbgC, get_main_window, DebugLevel
 
 
 class RFlagWidget(QWidget):
@@ -164,10 +164,25 @@ class RFlagTableWidget(BaseTableWidget):
 
 		self.rflags_value = rflags_reg.GetValueAsUnsigned()
 		# rflags_value = self.rflags_value
-		logDbgC(f"rflags_value: {hex(self.rflags_value)}")
+		logDbgC(f"rflags_value: {hex(self.rflags_value)}", DebugLevel.Verbose)
 
 		# flags = []
 
+		res = 0
+		# self.wdtLabel.setText(
+		# 	"rFlags / eFlags: ")  # + hex(self.tblRFlag.rflags_value) + " / " + format(self.tblRFlag.rflags_value, 'b') + " / " + pfl_cmd(get_main_window().driver.debugger, "", res, []))
+		self.addRow("--- DATA TYPE ---", "--- VALUE ---", "--- INFOS ---")
+		self.addRow("int", str(self.rflags_value), "Complete Flag with all bits as INT")
+		self.addRow("hex", hex(self.rflags_value), "Complete Flag with all bits as HEX")
+		self.addRow("binary", format(self.rflags_value, 'b'), "Complete Flag with all bits as BINARY")
+		self.addRow("quick", pfl_cmd(get_main_window().driver.debugger, "", res, []), "Quickview all flags")
+		logDbgC(
+			f"rFlags / eFlags:\n- Unsigned: {hex(self.rflags_value)} / {self.rflags_value}\n- Binary: " + format(
+				self.rflags_value, 'b') + "\n- Flags: " + pfl_cmd(get_main_window().driver.debugger, "", res,
+																		   []), DebugLevel.Verbose)
+		logDbgC(f"RFLAGS: 0x{self.rflags_value:016x}", DebugLevel.Verbose)
+
+		self.addRow("--- FLAG NAME ---", "--- OPTION ---", "--- DESCRIPTION ---")
 		# Define the flags and their bit positions
 		# (Bit 0 to 21 are the most common ones to check)
 		if (self.rflags_value >> 0) & 1:
@@ -265,19 +280,7 @@ class RFlagTableWidget(BaseTableWidget):
 
 		if (self.rflags_value >> 21) & 1: self.addRow("ID", "ID Flag", "Able to use CPUID instruction (Pentium+) - Mask: 0x0020 0000") # flags.append("ID (ID Flag)")
 
-		res = 0
-		# self.wdtLabel.setText(
-		# 	"rFlags / eFlags: ")  # + hex(self.tblRFlag.rflags_value) + " / " + format(self.tblRFlag.rflags_value, 'b') + " / " + pfl_cmd(get_main_window().driver.debugger, "", res, []))
-		self.addRow("--- FLAG TYPE ---", "--- VALUE ---", "--- INFOS ---")
-		self.addRow("int", str(self.rflags_value), "Complete Flag with all bits as INT")
-		self.addRow("hex", hex(self.rflags_value), "Complete Flag with all bits as HEX")
-		self.addRow("binary", format(self.rflags_value, 'b'), "Complete Flag with all bits as BINARY")
-		self.addRow("quick", pfl_cmd(get_main_window().driver.debugger, "", res, []), "Quickview all flags")
-		logDbgC(
-			f"rFlags / eFlags:\n- Unsigned: {hex(self.rflags_value)} / {self.rflags_value}\n- Binary: " + format(
-				self.rflags_value, 'b') + "\n- Flags: " + pfl_cmd(get_main_window().driver.debugger, "", res,
-																		   []))
-		logDbgC(f"RFLAGS: 0x{self.rflags_value:016x}")
+
 
 		# result.AppendMessage(f"RFLAGS: 0x{rflags_value:016x} [{', '.join(flags)}]")
 		# logDbgC(f"flags: {flags}")

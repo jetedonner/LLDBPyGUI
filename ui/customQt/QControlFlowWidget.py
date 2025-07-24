@@ -267,7 +267,7 @@ class QControlFlowWidget(QWidget):
     def checkHideOverflowConnections(self):
         nVisibleCon = 0
         for con in self.connections:
-            con.origRow
+            # con.origRow
             view_rect = self.view.mapToScene(
                 self.view.viewport().rect()).boundingRect()
             line_rect = con.mainLine.mapToScene(
@@ -319,21 +319,20 @@ class QControlFlowWidget(QWidget):
             logDbgC(f"Exception: {e}")
             return False
 
-
     def loadConnectionsThreadingStart(self):
         tblDisassembly = self.window().txtMultiline.table
         scrollOrig = tblDisassembly.verticalScrollBar().value()
         tblDisassembly.verticalScrollBar().setValue(0)
 
     def loadConnections(self):
-        logDbgC(f"Control Flow loadConnections() ... (from inside func) ...")
+        # logDbgC(f"Control Flow loadConnections() ... (from inside func) ...")
         # radius = 140
         radius = 10
 
         tblDisassembly = self.window().txtMultiline.table
         scrollOrig = tblDisassembly.verticalScrollBar().value()
         scrollOrig2 = self.view.verticalScrollBar().value()
-        logDbgC(f"Control Flow loadConnections() => scrollOrig: {scrollOrig} / {scrollOrig2}")
+        logDbgC(f"Control Flow loadConnections() => scrollOrig: {scrollOrig} / {scrollOrig2}", DebugLevel.Verbose)
         tblDisassembly.verticalScrollBar().setValue(0)
         self.isInsideTextSectionGetRangeVarsReady()
         for row in range(tblDisassembly.rowCount()):
@@ -405,27 +404,27 @@ class QControlFlowWidget(QWidget):
             con.bottomArc = arc_item2
 
             if con.switched:
-                arrowStart = QPointF(xOffset + (radius / 2) - 6 - 2, y_position + (
+                arrowStart = QPointF(xOffset + (radius / 2) - 6 + 2, y_position + (
                         nRowHeight / 2))
-                arrowEnd = QPointF(xOffset + (radius / 2) - 2, y_position + (nRowHeight / 2))
+                arrowEnd = QPointF(xOffset + (radius / 2) + 2, y_position + (nRowHeight / 2))
                 con.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
             else:
-                arrowEnd = QPointF(xOffset + (radius / 2) - 6 - 2, y_position + (
+                arrowEnd = QPointF(xOffset + (radius / 2) - 6 + 2, y_position + (
                         nRowHeight / 2))
-                arrowStart = QPointF(xOffset + (radius / 2) - 2,
+                arrowStart = QPointF(xOffset + (radius / 2) + 2,
                                      y_position + (nRowHeight / 2))
                 con.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
 
             if con.switched:
-                arrowEnd = QPointF(xOffset + (radius / 2) - 6 - 2, y_position2 + (
+                arrowEnd = QPointF(xOffset + (radius / 2) - 6 + 2, y_position2 + (
                         nRowHeight / 2))
-                arrowStart = QPointF(xOffset + (radius / 2) - 2,
+                arrowStart = QPointF(xOffset + (radius / 2) + 2,
                                      y_position2 + (nRowHeight / 2))
                 con.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
             else:
-                arrowStart = QPointF(xOffset + (radius / 2) - 6 - 2, y_position2 + (
+                arrowStart = QPointF(xOffset + (radius / 2) - 6 + 2, y_position2 + (
                         nRowHeight / 2))
-                arrowEnd = QPointF(xOffset + (radius / 2) - 2,
+                arrowEnd = QPointF(xOffset + (radius / 2) + 2,
                                    y_position2 + (nRowHeight / 2))
                 con.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
 
@@ -516,7 +515,7 @@ class QControlFlowWidget(QWidget):
         end = QPointF(15, 0)
         # print(f"self.tableView.viewport().height() => {self.tableView.table.viewport().height()}")
         line1 = QGraphicsLineItem(start.x() + 20, 0, end.x() + 20, self.tableView.table.viewport().height() - 5)
-        self.logViewportHeight()
+        # self.logViewportHeight()
         line1.setPen(QPen(QColor("transparent"), 0))
         self.scene.addItem(line1)
     
@@ -535,7 +534,7 @@ class QControlFlowWidget(QWidget):
             # [end, p1, p2],
             polygon,
             QPen(QColor("lightgreen")),
-            QBrush(QColor("transparent")) # lightgreen")) #
+            QBrush(QColor("transparent")) if arrow_size == 8 else QBrush(QColor("lightgreen")) # lightgreen")) #
         )
         arrow_head.fromPos = fromPos
         arrow_head.toPos = toPos
