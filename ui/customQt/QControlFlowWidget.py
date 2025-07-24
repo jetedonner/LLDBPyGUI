@@ -486,8 +486,9 @@ class QControlFlowWidget(QWidget):
 
                 if start <= con.destAddr < end:
                     logDbgC(f"Current symbol '{symbol.GetName()}' is number {idxNG} in the disassembly order.")
-                    idxNGDef = idxNG -1
+                    # idxNGDef = idxNG - 1
                     break
+                idxNGDef += 1
 
 
 
@@ -496,10 +497,10 @@ class QControlFlowWidget(QWidget):
             #         logDbgC(f"Current symbol '{symbol.GetName()}' is number {idx + 1} in the disassembly order.")
             #         break
 
-            y_position = tblDisassembly.rowViewportPosition(con.origRow + idxNGDef + 1)#(1 if con.origRow == 0 else 0))
-            y_position2 = tblDisassembly.rowViewportPosition(con.destRow - idxNGDef + 3)#(1 if con.destRow == 0 else 0) + 0)
+            y_position = tblDisassembly.rowViewportPosition(con.origRow + idxNGDef)#(1 if con.origRow == 0 else 0))
+            y_position2 = tblDisassembly.rowViewportPosition(con.destRow - idxNGDef)#(1 if con.destRow == 0 else 0) + 0)
             if(con.origRow > con.destRow):
-                y_position = tblDisassembly.rowViewportPosition(con.origRow + idxNGDef - 3)#(1 if con.origRow == 0 else 0))
+                y_position = tblDisassembly.rowViewportPosition(con.origRow + idxNGDef)#(1 if con.origRow == 0 else 0))
                 y_position2 = tblDisassembly.rowViewportPosition(con.destRow + idxNGDef)#(1 if con.destRow == 0 else 0) + 0)
 
             logDbgC(f"Connection ({idx}) => fromY: {y_position} / toY: {y_position2} / con.origRow + 2: {con.origRow + 2} / con.destRow + 2: {con.destRow + 2}")
