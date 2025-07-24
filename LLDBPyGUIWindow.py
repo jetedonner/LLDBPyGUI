@@ -1403,10 +1403,10 @@ class LLDBPyGUIWindow(QMainWindow):
 							self.tabWidgetStruct.cmbModules.addItem(frame.GetModule().GetFileSpec().GetFilename() + " (" + str(frame.GetFrameID()) + ")")
 							if frame.GetModule().GetFileSpec().GetFilename() != target.GetExecutable().GetFilename():
 #								self.process.Continue()
-								logDbgC(f"Module for FileStzuct IS NOT equal executable => continuing ...")
+								logDbgC(f"Module for FileStruct IS NOT equal executable => continuing ...")
 								continue
 							else:
-								logDbgC(f"Module for FileStzuct IS equal executable => scanning ...")
+								logDbgC(f"Module for FileStruct IS equal executable => scanning ...")
 #							print(f"frame.GetModule() => {frame.GetModule().GetFileSpec().GetFilename()}")
 #							frame = self.thread.GetFrameAtIndex(z)
 							if frame:
@@ -1673,9 +1673,10 @@ class LLDBPyGUIWindow(QMainWindow):
 
 		pass
 
-	def handle_workerFinished(self):
+	def handle_workerFinished(self, connections = []):
 #		print(f"Current RIP: {self.rip} / {hex(self.rip)} / DRIVER: {self.driver.getPC()} / {self.driver.getPC(True)}")
 		QApplication.processEvents()
+		self.wdtControlFlow.loadConnectionsFromWorker(connections)
 		self.txtMultiline.setPC(self.driver.getPC(), True)
 		logDbgC(f"self.driver.getPC(): {hex(self.driver.getPC())} / {self.driver.getPC()}", DebugLevel.Verbose)
 		self.wdtControlFlow.draw_instructions()

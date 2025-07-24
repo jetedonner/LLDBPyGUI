@@ -61,7 +61,7 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 	bp_loc = 0
 
 	def getTimestamp(self):
-		now = datetime.datetime.now()
+		now = datetime.now()
 		# self.setHelper.getValue(SettingsValues.EventListenerTimestampFormat)
 		return now.strftime(self.setHelper.getValue(SettingsValues.EventListenerTimestampFormat)) #"%H:%M:%S") # "%Y-%m-%d %H:%M:%S"
 	

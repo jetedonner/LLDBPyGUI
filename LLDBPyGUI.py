@@ -126,7 +126,7 @@ def launchtest(debugger, command, result, internal_dict):
 	debugger.SetAsync(False)
 
 	# Step 1: Create target from executable
-	target = debugger.CreateTarget("./testtarget/amicable_numbers")
+	target = debugger.CreateTarget("./_testtarget/amicable_numbers")
 	if not target.IsValid():
 		print("Failed to create target.")
 		exit(1)

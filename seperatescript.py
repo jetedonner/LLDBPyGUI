@@ -7,7 +7,7 @@ def launchtest(debugger, command, result, internal_dict):
 	print(f"HELLO FROM SCRIPT!!!!")
 	debugger.SetAsync(False)
 
-	target = debugger.CreateTarget("./testtarget/amicable_numbers")
+	target = debugger.CreateTarget("./_testtarget/amicable_numbers")
 	launch_info = lldb.SBLaunchInfo([])
 	launch_info.SetStopAtEntry(True)
 

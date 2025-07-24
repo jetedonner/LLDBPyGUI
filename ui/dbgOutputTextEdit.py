@@ -83,13 +83,14 @@ class DbgOutputTextEdit(QTextEdit):
         # self.setFontFamily("Courier New")
 
     def logDbg(self, logMsg):
-        sDateTimeFormat = "%H:%M:%S"
-        if SettingsHelper().getValue(SettingsValues.ShowDateInLogView):
-            sDateTimeFormat = "%Y-%m-%d %H:%M:%S"
-        now = datetime.now()
-        timestamp = now.strftime(sDateTimeFormat)  # Format as 'YYYY-MM-DD HH:MM:SS'
-
-        self.append(f"{timestamp}: {logMsg}")
+        # sDateTimeFormat = "%H:%M:%S"
+        # if SettingsHelper().getValue(SettingsValues.ShowDateInLogView):
+        #     sDateTimeFormat = "%Y-%m-%d %H:%M:%S"
+        # now = datetime.now()
+        # timestamp = now.strftime(sDateTimeFormat)  # Format as 'YYYY-MM-DD HH:MM:SS'
+        #
+        # self.append(f"{timestamp}: {logMsg}")
+        self.append(logMsg)
     # def keyPressEvent(self, event):
     #     cursor = self.textCursor()
     #     doc_text = self.toPlainText()

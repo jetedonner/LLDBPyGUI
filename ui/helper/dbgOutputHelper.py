@@ -1,6 +1,9 @@
 from enum import Enum
-
+from datetime import datetime
 from PyQt6.QtWidgets import QApplication, QMainWindow
+
+from lib.settings import SettingsHelper, SettingsValues
+
 
 class DebugLevel(Enum):
     Info = 1
@@ -24,14 +27,23 @@ def get_main_window():
     return mainWindowNG
 
 def logDbg(logMsg="", alsoPrintToConsole = False, dbgLevel = DebugLevel.Info):
-    # global currentDebugLevel
+
     if currentDebugLevel.value < dbgLevel.value:
         return
+
+    sDateTimeFormat = "%H:%M:%S"
+    if SettingsHelper().getValue(SettingsValues.ShowDateInLogView):
+        sDateTimeFormat = "%Y-%m-%d %H:%M:%S"
+    now = datetime.now()
+    timestamp = now.strftime(sDateTimeFormat)  # Format as 'YYYY-MM-DD HH:MM:SS'
+    logMsgNG = f"{timestamp}: {logMsg}"
+
+    # global currentDebugLevel
     mainWin = get_main_window()
     if mainWin is not None:
-        mainWin.wdtDbg.logDbg(logMsg)
+        mainWin.wdtDbg.logDbg(logMsgNG)
     if alsoPrintToConsole:
-        print(logMsg)
+        print(logMsgNG)
 
 def logDbgC(logMsg="", dbgLevel = DebugLevel.Info):
     logDbg(logMsg, True, dbgLevel)

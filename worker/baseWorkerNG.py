@@ -16,6 +16,7 @@ except ImportError:
 import dbg.debuggerdriver
 from dbg.fileInfos import *
 from dbg.memoryHelper import *
+from ui.customQt.QControlFlowWidget import *
 
 class Worker(QObject):
 
@@ -33,7 +34,7 @@ class Worker(QObject):
 	loadModulesCallback = pyqtSignal(object, object)
 	enableBPCallback = pyqtSignal(str, bool, bool)
 	loadInstructionCallback = pyqtSignal(object)
-	finishedLoadInstructionsCallback = pyqtSignal()
+	finishedLoadInstructionsCallback = pyqtSignal(object)
 	loadRegisterCallback = pyqtSignal(str)
 	loadRegisterValueCallback = pyqtSignal(int, str, str, str)
 	loadVariableValueCallback = pyqtSignal(str, str, str, str, str)
@@ -65,6 +66,8 @@ class Worker(QObject):
 	arch = ""
 	args = ""
 	targetBasename = ""
+	startAddr = 0x0
+	endAddr = 0x0
 
 
 	def __init__(self, mainWinToUse, filename, initTable=True, sourceFile=""):
@@ -87,6 +90,8 @@ class Worker(QObject):
 		self.isLoadSourceCodeActive = False
 		self.sourceFile = sourceFile
 		self.lineNum = 0
+		self.startAddr = 0x0
+		self.endAddr = 0x0
 		self.allInstructions = []
 		self.finishedLoadControlFlow = False
 		self.endLoadControlFlowCallback.connect(self.handle_endLoadControlFlowCallback)
@@ -342,6 +347,7 @@ class Worker(QObject):
 
 							idxSym = 0
 							lstSym = module.symbol_in_section_iter(subsec)
+							idxInstructions = 0
 							# {len(lstSym)}
 							self.logDbgC.emit(f"lstSym: {lstSym} / subsec.GetName(): {subsec.GetName()}", DebugLevel.Verbose)
 
@@ -429,6 +435,9 @@ class Worker(QObject):
 										#										print(f'sym.GetName() => {sym.GetName()} / instruction.GetAddress().GetFunction().GetName() => {instruction.GetAddress().GetFunction().GetName()}')
 										#										print(f'COMMENT => {instruction.GetComment(self.target)}')
 										self.loadInstructionCallback.emit(instruction)
+										self.checkLoadConnection(instruction, idxInstructions)
+										idxInstructions += 1
+										# doFlowControl
 								# else:
 								# 	print(f"symFuncName != instr....GetName()")
 								idxSym += 1
@@ -437,8 +446,173 @@ class Worker(QObject):
 					break
 				idx += 1
 			idxOuter += 1
-		self.finishedLoadInstructionsCallback.emit()
+
+		idxInst = 0
+		for inst in self.allInstructions:
+			for con in self.connections:
+				if con.destAddr == int(str(inst.GetAddress().GetLoadAddress(self.target)), 10):
+					if (idxInst < con.origRow):
+						con.destRow = con.origRow
+						con.origRow = idxInst
+						con.jumpDistInRows = abs(con.destRow - con.origRow) * -1
+					else:
+						con.destRow = idxInst
+						con.jumpDistInRows = abs(con.destRow - con.origRow)
+			idxInst += 1
+
+		for con in self.connections:
+			logDbgC(f"===>>> Connection: {hex(con.origAddr)} / {hex(con.destAddr)} => {con.origRow} / {con.destRow}")
+			# pass
+		
+		self.connections.sort(key=lambda x: abs(x.jumpDist), reverse=True)
+		self.finishedLoadInstructionsCallback.emit(self.connections)
 		self.loadRegisters()
+
+	radius = 15
+	connections = []
+
+	def get_line_number(self, address_int):
+		# target = debugger.GetSelectedTarget()
+		addr = lldb.SBAddress(address_int, self.target)
+		                            
+		# Resolve symbol context with line entry info
+		context = self.target.ResolveSymbolContextForAddress(
+	        addr,
+	        lldb.eSymbolContextLineEntry
+		)
+
+		line_entry = context.GetLineEntry()
+		if line_entry.IsValid():
+			file_spec = line_entry.GetFileSpec()
+			line = line_entry.GetLine()
+			print(f"📍 Address 0x{address_int:x} maps to {file_spec.GetFilename()}:{line}")
+			return line # file_spec.GetFilename(), 
+		else:
+			print("❌ No line info found for this address.")
+		return None
+
+	def isInsideTextSectionGetRangeVarsReady(self):
+		self.thread = self.process.GetThreadAtIndex(0)
+		module = self.thread.GetFrameAtIndex(0).GetModule()
+		for sec in module.section_iter():
+			for idx3 in range(sec.GetNumSubSections()):
+				subSec = sec.GetSubSectionAtIndex(idx3)
+				if subSec.GetName() == "__text":
+					self.startAddr = subSec.GetFileAddress()
+					self.endAddr = subSec.GetFileAddress() + subSec.GetByteSize()
+
+	def isInsideTextSection(self, addr):
+		try:
+			return self.endAddr > int(addr, 16) >= self.startAddr
+		except Exception as e:
+			logDbgC(f"Exception: {e}", DebugLevel.Error)
+			return False
+
+	
+	def checkLoadConnection(self, instruction, idxInstructions):
+
+		sMnemonic = instruction.GetMnemonic(self.target)
+		if sMnemonic is not None and sMnemonic.startswith(JMP_MNEMONICS) and not sMnemonic.startswith(JMP_MNEMONICS_EXCLUDE):
+			sAddrJumpTo = instruction.GetOperands(self.target)
+			if self.isInsideTextSection(sAddrJumpTo):
+				sAddrJumpFrom = hex(int(str(instruction.GetAddress().GetLoadAddress(self.target)), 10))
+				rowStart = idxInstructions#int(self.get_line_number(int(sAddrJumpFrom, 16)))
+				rowEnd = int(self.get_line_number(int(sAddrJumpTo, 16)))
+				logDbgC(f"Found connection from line: {rowStart} to: {rowEnd} ({sAddrJumpFrom} / {sAddrJumpTo})")
+		# pass
+		# 	sAddrJumpTo = tblDisassembly.item(row, 4).text()
+        #     if self.isInsideTextSection(sAddrJumpTo):
+        #         sAddrJumpFrom = tblDisassembly.item(row, 2).text()
+        #         # logDbg(f"Found instruction with jump @: {sAddrJumpFrom} / isInside: {sAddrJumpTo}!")
+        #         rowStart = int(tblDisassembly.getRowForAddress(sAddrJumpFrom))
+        #         rowEnd = int(tblDisassembly.getRowForAddress(sAddrJumpTo))
+		#
+				if (rowStart < rowEnd):
+					newConObj = QControlFlowWidget.draw_flowConnectionNG(rowStart, rowEnd, int(sAddrJumpFrom, 16), int(sAddrJumpTo, 16), None, QColor("lightblue"), self.radius) # self.window().txtMultiline.table
+				else:
+					newConObj = QControlFlowWidget.draw_flowConnectionNG(rowStart, rowEnd, int(sAddrJumpFrom, 16), int(sAddrJumpTo, 16), None, QColor("lightgreen"), self.radius, 1, True)
+				# newConObj.parentControlFlow = self
+				# self.addConnection(newConObj)
+				self.connections.append(newConObj)
+				if self.radius <= 130:
+					self.radius += 15
+				# self.connections.sort(key=lambda x: abs(x.jumpDist), reverse=True)
+				#
+				# idx = 1
+				# radius = 10
+				# con = newConObj
+				# # for con in self.connections:
+				# y_position = self.mainWin.txtMultiline.table.rowViewportPosition(con.origRow)
+				# y_position2 = self.mainWin.txtMultiline.table.rowViewportPosition(con.destRow)
+				#
+				# nRowHeight = 21
+				# nOffsetAdd = 23
+				# xOffset = (controlFlowWidth / 2) + (((controlFlowWidth - radius) / 2)) # + (radius / 2)
+				#
+				# self.yPosStart = y_position + (nRowHeight / 2) + (radius / 2)
+				# self.yPosEnd = y_position2 + (nRowHeight / 2) - (radius / 2)
+				# line = HoverLineItem(xOffset, self.yPosStart, xOffset,
+				# 					 self.yPosEnd, con)  # 1260)
+				# line.setPen(QPen(con.color, con.lineWidth))
+				# self.scene.addItem(line)
+				#
+				# ellipse_rect = QRectF(xOffset, y_position + (nRowHeight / 2), radius, radius)
+				#
+				# # Create a painter path and draw a 90° arc
+				# path = QPainterPath()
+				# path.arcMoveTo(ellipse_rect, 90)  # Start at 0 degrees
+				# path.arcTo(ellipse_rect, 90, 90)  # Draw 90-degree arc clockwise
+				#
+				# # Add the path to the scene
+				# arc_item = HoverPathItem(path, con)
+				# arc_item.setPen(QPen(con.color, con.lineWidth))
+				# self.scene.addItem(arc_item)
+				# con.topArc = arc_item
+				#
+				# ellipse_rect2 = QRectF(xOffset, y_position2 + (nRowHeight / 2) - (radius), radius,
+				# 					   radius)
+				# # Create a painter path and draw a 90° arc
+				# path2 = QPainterPath()
+				# path2.arcMoveTo(ellipse_rect2, 180)  # Start at 0 degrees
+				# path2.arcTo(ellipse_rect2, 180, 90)  # Draw 90-degree arc clockwise
+				#
+				# # Add the path to the scene
+				# arc_item2 = HoverPathItem(path2, con)
+				# arc_item2.setPen(QPen(con.color, con.lineWidth))
+				# self.scene.addItem(arc_item2)
+				# con.bottomArc = arc_item2
+				#
+				# if con.switched:
+				# 	arrowStart = QPointF(xOffset + (radius / 2) - 6 + 2, y_position + (
+				# 			nRowHeight / 2))
+				# 	arrowEnd = QPointF(xOffset + (radius / 2) + 2, y_position + (nRowHeight / 2))
+				# 	con.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+				# else:
+				# 	arrowEnd = QPointF(xOffset + (radius / 2) - 6 + 2, y_position + (
+				# 			nRowHeight / 2))
+				# 	arrowStart = QPointF(xOffset + (radius / 2) + 2,
+				# 						 y_position + (nRowHeight / 2))
+				# 	con.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+				#
+				# if con.switched:
+				# 	arrowEnd = QPointF(xOffset + (radius / 2) - 6 + 2, y_position2 + (
+				# 			nRowHeight / 2))
+				# 	arrowStart = QPointF(xOffset + (radius / 2) + 2,
+				# 						 y_position2 + (nRowHeight / 2))
+				# 	con.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+				# else:
+				# 	arrowStart = QPointF(xOffset + (radius / 2) - 6 + 2, y_position2 + (
+				# 			nRowHeight / 2))
+				# 	arrowEnd = QPointF(xOffset + (radius / 2) + 2,
+				# 					   y_position2 + (nRowHeight / 2))
+				# 	con.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+				#
+				# con.setToolTip(f"Branch\n-from: {hex(con.origAddr)}\n-to: {hex(con.destAddr)}\n-distance: {hex(con.jumpDist)}")
+				# if radius <= 130:
+				# 	radius += 15
+				# idx += 1
+
+				
 
 	def disassembleTarget(self):
 		self.logDbg.emit(f"HELLO WORLD DISASSEBLE ;-=")
@@ -461,6 +635,7 @@ class Worker(QObject):
 				self.thread = self.process.GetThreadAtIndex(0)
 				self.logDbgC.emit(f"loadTarget() => Thread: {self.thread} ...", DebugLevel.Verbose)
 				if self.thread:
+					self.isInsideTextSectionGetRangeVarsReady()
 					self.logDbgC.emit(f"loadTarget() => Thread.GetNumFrames(): {self.thread.GetNumFrames()} ...", DebugLevel.Verbose)
 					for z in range(self.thread.GetNumFrames()):
 						frame = self.thread.GetFrameAtIndex(z)
@@ -470,10 +645,10 @@ class Worker(QObject):
 						# 		frame.GetFrameID()) + ")")
 						self.logDbgC.emit(f"loadTarget() => Frame: {frame} ...", DebugLevel.Verbose)
 						if frame.GetModule().GetFileSpec().GetFilename() != self.target.GetExecutable().GetFilename():
-							self.logDbgC.emit(f"Module for FileStzuct IS NOT equal executable => continuing ...", DebugLevel.Verbose)
+							self.logDbgC.emit(f"Module for FileStruct IS NOT equal executable => continuing ...", DebugLevel.Verbose)
 							continue
 						else:
-							self.logDbgC.emit(f"Module for FileStzuct IS equal executable => scanning ...", DebugLevel.Verbose)
+							self.logDbgC.emit(f"Module for FileStruct IS equal executable => scanning ...", DebugLevel.Verbose)
 						if frame:
 							self.logDbgC.emit(f"BEFORE DISASSEMBLE!!!!", DebugLevel.Verbose)
 							# self.start_loadDisassemblyWorker(self.loadInstructionCallback, self.finishedLoadInstructionsCallback, True)
@@ -498,7 +673,7 @@ class Worker(QObject):
 		return True  # Returning True tells LLDB to stop here	# return
 
 	def loadNewExecutableFile(self, filename):
-		
+
 		global event_queue
 		self.mainWin.event_queue = queue.Queue()
 		self.mainWin.driver.should_quit = False

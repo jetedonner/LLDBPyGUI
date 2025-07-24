@@ -327,6 +327,7 @@ class QControlFlowWidget(QWidget):
     def loadConnections(self):
         # logDbgC(f"Control Flow loadConnections() ... (from inside func) ...")
         # radius = 140
+        return
         radius = 10
 
         tblDisassembly = self.window().txtMultiline.table
@@ -339,6 +340,7 @@ class QControlFlowWidget(QWidget):
             if tblDisassembly.item(row, 3) is None:
                 continue
 
+            # doDisassemble FlowControl
             sMnemonic = tblDisassembly.item(row, 3).text()
             if sMnemonic is not None and sMnemonic.startswith(JMP_MNEMONICS) and not sMnemonic.startswith(JMP_MNEMONICS_EXCLUDE):
                 sAddrJumpTo = tblDisassembly.item(row, 4).text()
@@ -437,6 +439,84 @@ class QControlFlowWidget(QWidget):
         tblDisassembly.verticalScrollBar().setValue(scrollOrig)
         self.view.verticalScrollBar().setValue(scrollOrig)
         # pass
+
+    def loadConnectionsFromWorker(self, workerConnections):
+        tblDisassembly = self.window().txtMultiline.table
+        idx = 1
+        radius = 10
+        self.connections = workerConnections
+        for con in self.connections:
+            con.parentControlFlow = self
+            y_position = tblDisassembly.rowViewportPosition(con.origRow)# + (0 if con.origRow == 0 else 0))
+            y_position2 = tblDisassembly.rowViewportPosition(con.destRow)# - (0 if con.destRow == 0 else 0) + 0)
+            logDbgC(f"Connection ({idx}) => fromY: {y_position} / toY: {y_position2} / con.origRow + 2: {con.origRow + 2} / con.destRow + 2: {con.destRow + 2}")
+            nRowHeight = 21
+            nOffsetAdd = 23
+            xOffset = (controlFlowWidth / 2) + (((controlFlowWidth - radius) / 2))  # + (radius / 2)
+
+            self.yPosStart = y_position + (nRowHeight / 2) + (radius / 2)
+            self.yPosEnd = y_position2 + (nRowHeight / 2) - (radius / 2)
+            line = HoverLineItem(xOffset, self.yPosStart, xOffset,
+                                 self.yPosEnd, con)  # 1260)
+            line.setPen(QPen(con.color, con.lineWidth))
+            self.scene.addItem(line)
+
+            ellipse_rect = QRectF(xOffset, y_position + (nRowHeight / 2), radius, radius)
+
+            # Create a painter path and draw a 90° arc
+            path = QPainterPath()
+            path.arcMoveTo(ellipse_rect, 90)  # Start at 0 degrees
+            path.arcTo(ellipse_rect, 90, 90)  # Draw 90-degree arc clockwise
+
+            # Add the path to the scene
+            arc_item = HoverPathItem(path, con)
+            arc_item.setPen(QPen(con.color, con.lineWidth))
+            self.scene.addItem(arc_item)
+            con.topArc = arc_item
+
+            ellipse_rect2 = QRectF(xOffset, y_position2 + (nRowHeight / 2) - (radius), radius,
+                                   radius)
+            # Create a painter path and draw a 90° arc
+            path2 = QPainterPath()
+            path2.arcMoveTo(ellipse_rect2, 180)  # Start at 0 degrees
+            path2.arcTo(ellipse_rect2, 180, 90)  # Draw 90-degree arc clockwise
+
+            # Add the path to the scene
+            arc_item2 = HoverPathItem(path2, con)
+            arc_item2.setPen(QPen(con.color, con.lineWidth))
+            self.scene.addItem(arc_item2)
+            con.bottomArc = arc_item2
+
+            if con.switched:
+                arrowStart = QPointF(xOffset + (radius / 2) - 6 + 2, y_position + (
+                        nRowHeight / 2))
+                arrowEnd = QPointF(xOffset + (radius / 2) + 2, y_position + (nRowHeight / 2))
+                con.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+            else:
+                arrowEnd = QPointF(xOffset + (radius / 2) - 6 + 2, y_position + (
+                        nRowHeight / 2))
+                arrowStart = QPointF(xOffset + (radius / 2) + 2,
+                                     y_position + (nRowHeight / 2))
+                con.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+
+            if con.switched:
+                arrowEnd = QPointF(xOffset + (radius / 2) - 6 + 2, y_position2 + (
+                        nRowHeight / 2))
+                arrowStart = QPointF(xOffset + (radius / 2) + 2,
+                                     y_position2 + (nRowHeight / 2))
+                con.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+            else:
+                arrowStart = QPointF(xOffset + (radius / 2) - 6 + 2, y_position2 + (
+                        nRowHeight / 2))
+                arrowEnd = QPointF(xOffset + (radius / 2) + 2,
+                                   y_position2 + (nRowHeight / 2))
+                con.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+
+            con.setToolTip(
+                f"Branch\n-from: {hex(con.origAddr)}\n-to: {hex(con.destAddr)}\n-distance: {hex(con.jumpDist)}")
+            if radius <= 130:
+                radius += 15
+            idx += 1
 
     def loadInstructions(self):
         radius = 75
