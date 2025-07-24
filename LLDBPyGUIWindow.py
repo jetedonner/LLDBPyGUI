@@ -859,6 +859,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			self.worker.fileToLoad = ctd.txtTarget.text()
 			self.worker.arch = ctd.cmbArch.currentText()
 			self.worker.args = ctd.txtArgs.text()
+			self.worker.loadSourceCode = ctd.loadSourceCode
 
 			self.txtMultiline.resetContent()
 			self.bpHelper.deleteAllBPs()
@@ -1640,7 +1641,9 @@ class LLDBPyGUIWindow(QMainWindow):
 	def start_loadRegisterWorker(self, initTabs = True):
 		self.workerManager.start_loadRegisterWorker(self.handle_loadRegister, self.handle_loadRegisterValue, self.handle_updateRegisterValue, self.handle_loadVariableValue, self.handle_updateVariableValue, self.handle_loadRegisterFinished, initTabs)
 
+	instCnt = 0
 	def handle_loadInstruction(self, instruction):
+		self.instCnt += 1
 		target = self.driver.getTarget()
 
 		if self.symFuncName != instruction.GetAddress().GetFunction().GetName():
@@ -1669,7 +1672,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			daDataNg = ""
 #		self.txtMultiline.appendAsmText(hex(int(str(instruction.GetAddress().GetLoadAddress(target)), 10)), instruction.GetMnemonic(target),  instruction.GetOperands(target), instruction.GetComment(target), str(instruction.GetData(target)).replace("                             ", "\t\t").replace("		            ", "\t\t\t").replace("		         ", "\t\t").replace("		      ", "\t\t").replace("			   ", "\t\t\t"), True)
 
-		self.txtMultiline.appendAsmText(hex(int(str(instruction.GetAddress().GetLoadAddress(target)), 10)), instruction.GetMnemonic(target),  instruction.GetOperands(target), instruction.GetComment(target), daHex, "".join(str(daDataNg).split()), True)
+		self.txtMultiline.appendAsmText(hex(int(str(instruction.GetAddress().GetLoadAddress(target)), 10)), instruction.GetMnemonic(target),  instruction.GetOperands(target), instruction.GetComment(target), daHex, "".join(str(daDataNg).split()), True, "", self.instCnt)
 
 		pass
 

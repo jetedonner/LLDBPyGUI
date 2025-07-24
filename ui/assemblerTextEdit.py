@@ -712,11 +712,13 @@ class AssemblerTextEdit(QWidget):
 		# logDbg(f"Row height: {height}")
 		pass
 		
-	def appendAsmText(self, addr, instr, args, comment, data, dataNg, addLineNum = True, rip = ""):
+	def appendAsmText(self, addr, instr, args, comment, data, dataNg, addLineNum = True, rip = "", lineNo = -1):
 #		if addLineNum:
 #			self.table.addRow(0, addr, instr, args, comment, data, rip)
 #		else:
 		item = self.table.addRow(0, addr, instr, args, comment, data, dataNg, rip)
+		self.table.item(item.row(), 0).setText(str(lineNo))
+		# item.setBPOn()
 		# row_index = item.row()  # Get the row of the item
 		# height = self.table.verticalHeader().sectionSize(row_index)
 		# logDbg(f"Row height: {height}")

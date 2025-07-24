@@ -8,14 +8,20 @@ from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 from PyQt6 import uic, QtWidgets
 from config import *
+from ui.customQt.QSwitch import QSwitch, SwitchSize, SwitchLabelPos
 from ui.dialogs.dialogHelper import showOpenFileDialog
 
 
 #from ui.settingsDialog import *
 
 class CreateTargetDialog(QDialog):
+
+	loadSourceCode = True
+
 	def __init__(self, title = "Create Target - Options", prompt = "Enter options for creating a new target"):
 		super().__init__()
+
+		self.loadSourceCode = True
 		
 		self.setWindowTitle(title)
 		self.setMinimumWidth(720)
@@ -92,11 +98,23 @@ class CreateTargetDialog(QDialog):
 		# self.chkOrderByName.clicked.connect(self.chkOrderByName_clicked)
 		# self.layout.addWidget(self.chkOrderByName)
 		self.layout.addWidget(self.wdtManual)
+
+		self.swtLoadSourceCode = QSwitch("Load sourcecode", SwitchSize.Small, SwitchLabelPos.Trailing)
+		self.swtLoadSourceCode.checked.connect(self.swtLoadSourceCode_checked)
+		self.swtLoadSourceCode.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
+		self.swtLoadSourceCode.setChecked(True)
+		self.swtLoadSourceCode.setContentsMargins(0, 0, 0, 0)
+		# self.laySearchTop.addWidget(self.swtCaseSensitive)
+		self.layout.addWidget(self.swtLoadSourceCode)
+
 		self.layout.addWidget(self.buttonBox)
 		self.wdtInner.setLayout(self.layout)
 		self.layoutMain.addWidget(self.wdtInner)
 		self.setLayout(self.layoutMain)
 		# self.loadPIDs()
+
+	def swtLoadSourceCode_checked(self, checked):
+		self.loadSourceCode = checked
 
 	def openTarget_clicked(self):
 		filename = showOpenFileDialog()

@@ -80,6 +80,7 @@ class Worker(QObject):
 		self.fileToLoad = filename
 		self.arch = ""
 		self.args = ""
+		self.loadSourceCode = True
 		self.driver = None
 		self.target = None
 		self.process = None
@@ -303,7 +304,14 @@ class Worker(QObject):
 
 					# QCoreApplication.processEvents()
 		self.loadBPsWPs()
-		self.runLoadSourceCode()
+		if self.loadSourceCode:
+			self.runLoadSourceCode()
+		else:
+			self.runControlFlow_loadConnections.emit()
+			# QCoreApplication.processEvents()
+			# QApplication.processEvents()
+			self.logDbgC.emit(f"BEFORE self.runLoadControlFlow() => runLoadSourceCode()", DebugLevel.Info)
+			self.runLoadControlFlow()
 		# self.logDbgC.emit(f"BEFORE self.runLoadControlFlow() => loadRegisters()", DebugLevel.Info)
 		# self.runLoadControlFlow()
 
@@ -340,14 +348,14 @@ class Worker(QObject):
 					# if idx != 1:
 					# 	idx += 1
 					# 	continue
-
+					idxInstructions = 0
 					for subsec in section:
 						self.logDbgC.emit(f"subsec.GetName(): {subsec.GetName()}", DebugLevel.Verbose)
 						if subsec.GetName() == "__text" or subsec.GetName() == "__stubs":
 
 							idxSym = 0
 							lstSym = module.symbol_in_section_iter(subsec)
-							idxInstructions = 0
+							# idxInstructions = 0
 							# {len(lstSym)}
 							self.logDbgC.emit(f"lstSym: {lstSym} / subsec.GetName(): {subsec.GetName()}", DebugLevel.Verbose)
 
@@ -385,6 +393,7 @@ class Worker(QObject):
 								#								print(f'start_address => {start_address} / {hex(start_address)}, end_address => {end_address} / {hex(end_address)}  => SIZE: {size}')
 								#								print(sym)
 								symFuncName = sym.GetStartAddress().GetFunction().GetName()
+								self.logDbgC.emit(f"symFuncName: {symFuncName}", DebugLevel.Verbose)
 								#								print(f'sym.GetName() => {sym.GetName()} / sym.GetStartAddress().GetFunction().GetName() => {sym.GetStartAddress().GetFunction().GetName()}')
 								###								start_address = subsec.GetLoadAddress(self.target)
 								###								print(f'start_address => {start_address} / {hex(start_address)}')
@@ -437,8 +446,9 @@ class Worker(QObject):
 										self.loadInstructionCallback.emit(instruction)
 										# if  instruction.GetMnemonic(self.target) is None:
 										# 	continue
-										self.checkLoadConnection(instruction, idxInstructions)
 										idxInstructions += 1
+										self.checkLoadConnection(instruction, idxInstructions + (idxSym + 1))
+
 										# doFlowControl
 								# else:
 								# 	print(f"symFuncName != instr....GetName()")
