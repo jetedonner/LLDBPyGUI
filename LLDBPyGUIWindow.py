@@ -1128,6 +1128,7 @@ class LLDBPyGUIWindow(QMainWindow):
 	def test_clicked(self):
 		# self.wdtControlFlow.logViewportHeight()
 		# self.wdtControlFlow.loadConnections()
+		logDbgC(f"self.wdtControlFlow.scene.sceneRect(): {self.wdtControlFlow.scene.sceneRect()}")
 		pass
 
 	def stopTarget(self):

@@ -452,6 +452,15 @@ class QControlFlowWidget(QWidget):
 
     def loadConnectionsFromWorker(self, workerConnections):
         tblDisassembly = self.window().txtMultiline.table
+
+        self.scene.setSceneRect(35, 0, 79.5, tblDisassembly.get_total_table_height() - 2)
+        rect = self.scene.sceneRect()
+        logDbgC(f"rect: {rect}, tblDisassembly.get_total_table_height(): {tblDisassembly.get_total_table_height()}")
+        # rect.setHeight(tblDisassembly.get_total_table_height() - 2 + 250)
+        # # self.scene.setSceneRect(rect)
+        # self.scene.setMinimumRenderSize(QSize(75, tblDisassembly.get_total_table_height() - 2 + 250))
+        #
+        # # self.scene.sceneRect().setHeight(tblDisassembly.get_total_table_height() - 2 + 250)
         tblDisassembly.verticalScrollBar().setValue(0)
         idx = 1
         radius = 15
@@ -578,7 +587,7 @@ class QControlFlowWidget(QWidget):
                 con.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
 
             con.setToolTip(
-                f"Branch\n-from: {hex(con.origAddr)}\n-to: {hex(con.destAddr)}\n-distance: {hex(con.jumpDist)}")
+                f"Branch\n- from: {hex(con.origAddr)}\n- to: {hex(con.destAddr)}\n- distance: {hex(con.jumpDist)}")
             if radius <= 130:
                 radius += 15
             idx += 1
@@ -659,7 +668,7 @@ class QControlFlowWidget(QWidget):
         start = QPointF(15, 0)
         end = QPointF(15, 0)
         # print(f"self.tableView.viewport().height() => {self.tableView.table.viewport().height()}")
-        line1 = QGraphicsLineItem(start.x() + 20, 0, end.x() + 20, self.tableView.table.viewport().height() - 5)
+        line1 = QGraphicsLineItem(start.x() + 20, 0, end.x() + 20, self.tableView.table.viewport().height() - 5 + 250)
         # self.logViewportHeight()
         line1.setPen(QPen(QColor("transparent"), 0))
         self.scene.addItem(line1)
