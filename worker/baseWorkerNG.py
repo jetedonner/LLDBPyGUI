@@ -375,6 +375,8 @@ class Worker(QObject):
 									# result.PutCString(str(inst))
 									self.logDbgC.emit(str(inst), DebugLevel.Verbose)
 									self.loadInstructionCallback.emit(inst)
+									idxInstructions += 1
+									self.checkLoadConnection(inst, idxInstructions + (idxSym + 1))
 								continue
 							# return
 
@@ -513,6 +515,9 @@ class Worker(QObject):
 				if subSec.GetName() == "__text":
 					self.startAddr = subSec.GetFileAddress()
 					self.endAddr = subSec.GetFileAddress() + subSec.GetByteSize()
+				# elif subSec.GetName() == "__stubs":
+				# 	logDbgC(f"GOT __stubs: {subSec.GetName()} => subSec.GetFileAddress(): {subSec.GetFileAddress()}, subSec.GetByteSize(): {subSec.GetByteSize()}, self.endAddr: {self.endAddr}")
+				# 	self.endAddr = subSec.GetFileAddress() + subSec.GetByteSize()
 
 	def isInsideTextSection(self, addr):
 		try:

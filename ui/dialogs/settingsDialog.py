@@ -60,6 +60,8 @@ class SettingsDialog(QDialog):
 		self.settings.setValue(SettingsValues.ShowDateInLogView.value[0], True)
 		self.settings.setValue(SettingsValues.AutoBreakpointForScanf.value[0], True)
 		self.settings.setValue(SettingsValues.AutoScrollDbgOutput.value[0], True)
+		self.settings.setValue(SettingsValues.ShowLineNumInDisassembly.value[0], True)
+
 
 		self.settings.setValue(SettingsValues.LoadTestTarget.value[0], True)
 		self.settings.setValue(SettingsValues.LoadTestBPs.value[0], True)
@@ -113,7 +115,7 @@ class SettingsDialog(QDialog):
 			self.tblGeneral.item(13, i).setCheckState(self.setHelper.getChecked(SettingsValues.ShowDateInLogView))
 			self.tblGeneral.item(15, i).setCheckState(self.setHelper.getChecked(SettingsValues.AutoBreakpointForScanf))
 			self.tblGeneral.item(16, i).setCheckState(self.setHelper.getChecked(SettingsValues.AutoScrollDbgOutput))
-
+			self.tblGeneral.item(17, i).setCheckState(self.setHelper.getChecked(SettingsValues.ShowLineNumInDisassembly))
 
 			if i == 0:
 				item = QTableWidgetItem("Input handling (i.e. scanf)")
@@ -198,6 +200,7 @@ class SettingsDialog(QDialog):
 		self.setHelper.setChecked(SettingsValues.ShowDateInLogView, self.tblGeneral.item(13, colCheckBox))
 		self.setHelper.setChecked(SettingsValues.AutoBreakpointForScanf, self.tblGeneral.item(15, colCheckBox))
 		self.setHelper.setChecked(SettingsValues.AutoScrollDbgOutput, self.tblGeneral.item(16, colCheckBox))
+		self.setHelper.setChecked(SettingsValues.ShowLineNumInDisassembly, self.tblGeneral.item(17, colCheckBox))
 
 		self.setHelper.setChecked(SettingsValues.LoadTestTarget, self.tblDeveloper.item(0, 0))
 		self.setHelper.setChecked(SettingsValues.LoadTestBPs, self.tblDeveloper.item(1, 1))

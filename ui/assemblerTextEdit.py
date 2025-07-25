@@ -87,7 +87,7 @@ class CustomStyledItemDelegate(QStyledItemDelegate):
 		# 	color = QtGui.QColor("#FFFFFF")
 		# elif index.column() == 3:
 		# 	color = QtGui.QColor("#9546c7")
-		if index.column() == 0:
+		if index.column() == COL_PC or index.column() == COL_LINE:
 			color = QtGui.QColor("#000000")
 
 			cg = (
@@ -115,7 +115,7 @@ class CustomStyledItemDelegate(QStyledItemDelegate):
 	# 		option.palette.setColor(QPalette.ColorRole.Text, fg)
 
 	def paint(self, painter, option, index):
-		if index.column() == 0:
+		if index.column() == COL_PC or index.column() == COL_LINE:
 			color = QtGui.QColor("#000000")
 			painter._color = color
 
@@ -151,10 +151,15 @@ class CustomStyledItemDelegate(QStyledItemDelegate):
 			
 			painter.drawImage(option.rect, image)#option.background())
 
-
-
-
-
+COL_LINE = -1
+COL_PC = 0
+COL_BP = 1
+COL_ADDRESS = 2
+COL_MNEMONIC = 3
+COL_OPERANDS = 4
+COL_HEX = 5
+COL_DATA = 6
+COL_COMMENT = 7
 		# painter.setBrush(QBrush(QColor("black")))
 		# painter.end()
 		
@@ -165,6 +170,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 	
 	actionShowMemory = None
 	quickToolTip = QuickToolTip()
+	showLineNumber = False
 	
 #	def getSelectedRow(self):
 #		if self.selectedItems() != None and len(self.selectedItems()) > 0:
@@ -179,7 +185,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 		
 	def handle_copyHexValue(self):
 #		selItem = self.getSelectedItem(5)
-		if (selItem := self.getSelectedItem(5)) != None:
+		if (selItem := self.getSelectedItem(COL_HEX)) != None:
 			pyperclip.copy(selItem.text())
 			lib.utils.setStatusBar(f"Copied to clipboard HEX value: {selItem.text()}")
 #		if self.item(self.selectedItems()[0].row(), 5) != None:
@@ -190,34 +196,34 @@ class DisassemblyTableWidget(BaseTableWidget):
 #		if self.item(self.selectedItems()[0].row(), 3) != None and self.item(self.selectedItems()[0].row(), 4) != None:
 #			itemMnem = self.item(self.selectedItems()[0].row(), 3)
 #			itemOps = self.item(self.selectedItems()[0].row(), 4)
-		if (itemMnem := self.getSelectedItem(3)) != None:
-			if (itemOps := self.getSelectedItem(4)) != None:
+		if (itemMnem := self.getSelectedItem(COL_MNEMONIC)) != None:
+			if (itemOps := self.getSelectedItem(COL_OPERANDS)) != None:
 				pyperclip.copy(itemMnem.text() + " " + itemOps.text())
 				lib.utils.setStatusBar(f"Copied to clipboard instruction: {itemMnem.text()} {itemOps.text()}")
 		
 	def handle_copyAddress(self):
-		if self.item(self.selectedItems()[0].row(), 2) != None:
-			item = self.item(self.selectedItems()[0].row(), 2)
+		if self.item(self.selectedItems()[0].row(), COL_ADDRESS) != None:
+			item = self.item(self.selectedItems()[0].row(), COL_ADDRESS)
 			pyperclip.copy(item.text())
 			lib.utils.setStatusBar(f"Copied to clipboard address: {item.text()}")
 		
 	def handle_toggleBP(self):
-		if self.item(self.selectedItems()[0].row(), 1) != None:
-			item = self.item(self.selectedItems()[0].row(), 1)
+		if self.item(self.selectedItems()[0].row(), COL_BP) != None:
+			item = self.item(self.selectedItems()[0].row(), COL_BP)
 			item.toggleBPOn()
-			lib.utils.setStatusBar(f"Toggled breakpoint @: {self.item(self.selectedItems()[0].row(), 2).text()} to: {item.isBPOn}")
-			self.sigBPOn.emit(self.item(self.selectedItems()[0].row(), 2).text(), item.isBPOn)
+			lib.utils.setStatusBar(f"Toggled breakpoint @: {self.item(self.selectedItems()[0].row(), COL_ADDRESS).text()} to: {item.isBPOn}")
+			self.sigBPOn.emit(self.item(self.selectedItems()[0].row(), COL_ADDRESS).text(), item.isBPOn)
 		pass
 	
 	def handle_deleteAllBPs(self):
 		for i in range(self.rowCount()):
-			if self.item(i, 1) != None:
-				self.item(i, 1).setBPOn(False)
+			if self.item(i, COL_BP) != None:
+				self.item(i, COL_BP).setBPOn(False)
 		
 	def enableBP(self, address, enabled):
 		for i in range(self.rowCount()):
-			if self.item(i, 2) != None and self.item(i, 2).text() == address:
-				item = self.item(i, 1)
+			if self.item(i, COL_ADDRESS) != None and self.item(i, COL_ADDRESS).text() == address:
+				item = self.item(i, COL_BP)
 #				item.toggleBPEnabled()
 				item.enableBP(enabled)
 				lib.utils.setStatusBar(f"Enabled breakpoint @: 0x{address:X} ({enabled})")
@@ -226,7 +232,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 
 	def getRowForAddress(self, address):
 		for i in range(self.rowCount()):
-			if self.item(i, 2) != None and self.item(i, 2).text() == address:
+			if self.item(i, COL_ADDRESS) != None and self.item(i, COL_ADDRESS).text() == address:
 				return i
 				# item = self.item(i, 1)
 				# #				item.toggleBPEnabled()
@@ -237,24 +243,24 @@ class DisassemblyTableWidget(BaseTableWidget):
 		
 	def handle_editBP(self):
 #		self.sigEnableBP.emit(self.item(self.selectedItems()[0].row(), 3).text(), item.isBPEnabled)
-		if self.item(self.selectedItems()[0].row(), 2) != None:
+		if self.item(self.selectedItems()[0].row(), COL_ADDRESS) != None:
 			self.window().tabWidgetDbg.setCurrentIndex(2)
 			self.window().wdtBPsWPs.treBPs.setFocus()
-			self.window().wdtBPsWPs.treBPs.selectBPRow(self.item(self.selectedItems()[0].row(), 2).text())
+			self.window().wdtBPsWPs.treBPs.selectBPRow(self.item(self.selectedItems()[0].row(), COL_ADDRESS).text())
 #		pass
 		
 	def handle_enableBP(self):
-		if self.item(self.selectedItems()[0].row(), 1) != None:
-			item = self.item(self.selectedItems()[0].row(), 1)
+		if self.item(self.selectedItems()[0].row(), COL_BP) != None:
+			item = self.item(self.selectedItems()[0].row(), COL_BP)
 			item.enableBP(not item.isBPEnabled)
 #			self.window().wdtBPsWPs.treBPs.enableBPByAddress(self.item(self.selectedItems()[0].row(), 2).text(),  item.isBPEnabled)
 		
 	def handle_editCondition(self):
-		BreakpointHelper(self.window(), self.window().driver).handle_editCondition(self, 2, 5)
+		BreakpointHelper(self.window(), self.window().driver).handle_editCondition(self, COL_ADDRESS, 5)
 		
 	def handle_setPC(self):
-		if self.item(self.selectedItems()[0].row(), 2) != None:
-			dlg = InputDialog("Set new PC", "Please enter address for PC", self.item(self.selectedItems()[0].row(), 2).text())
+		if self.item(self.selectedItems()[0].row(), COL_ADDRESS) != None:
+			dlg = InputDialog("Set new PC", "Please enter address for PC", self.item(self.selectedItems()[0].row(), COL_ADDRESS).text())
 			if dlg.exec():
 				# print(f'dlg.txtInput: {dlg.txtInput.text()}')
 				
@@ -272,8 +278,8 @@ class DisassemblyTableWidget(BaseTableWidget):
 		return total_height
 
 	def handle_gotoAddr(self):
-		if self.item(self.selectedItems()[0].row(), 2) != None:
-			gotoDlg = GotoAddressDialog(self.item(self.selectedItems()[0].row(), 2).text())
+		if self.item(self.selectedItems()[0].row(), COL_ADDRESS) != None:
+			gotoDlg = GotoAddressDialog(self.item(self.selectedItems()[0].row(), COL_ADDRESS).text())
 			if gotoDlg.exec():
 				# print(f"GOING TO ADDRESS: {gotoDlg.txtInput.text()}")
 				# lib.utils.setStatusBar(f"Go to address to clipboard instruction: {gotoDlg.txtInput.text()} {temOps.text()}")
@@ -323,12 +329,12 @@ class DisassemblyTableWidget(BaseTableWidget):
 		self.driver = driver
 		self.bpHelper = bpHelper
 		self.parent = parent
+		self.showLineNumber = SettingsHelper().getValue(SettingsValues.ShowLineNumInDisassembly)
 
 		# self.setStyle(QStyleFactory.create("Fusion"))
 		# self.setItemDelegate(ForegroundFixDelegate(self))
 
 		self.context_menu = QMenu(self)
-		
 		self.actionEnableBP = self.context_menu.addAction("Enable / Disable Breakpoint")
 		self.actionEnableBP.triggered.connect(self.handle_enableBP)
 		self.actionDeleteBP = self.context_menu.addAction("Delete Breakpoint")
@@ -366,20 +372,50 @@ class DisassemblyTableWidget(BaseTableWidget):
 		self.actionRememberLoc.triggered.connect(self.handle_RememberLoc)
 		self.actionRememberLocBlack = self.context_menu.addAction("Remember Location BLACK")
 		self.actionRememberLocBlack.triggered.connect(self.handle_RememberLocBlack)
-		
-		self.setColumnCount(8)
-		self.setColumnWidth(0, 42)
-		self.setColumnWidth(1, 32)
-		self.setColumnWidth(2, 108)
-		self.setColumnWidth(3, 84)
-		self.setColumnWidth(4, 256)
-		self.setColumnWidth(5, 240)
-		self.setColumnWidth(6, 180)
-		self.setColumnWidth(7, 300)
+
+		colCount = 9 if self.showLineNumber else 8
+		self.setColumnCount(colCount)
+		curCol = 0
+		# labels = []
+		if self.showLineNumber:
+			self.setColumnWidth(curCol, 42)
+			labels = ['No.', 'PC', 'BP', 'Address', 'Mnemonic', 'Operands', 'Hex', 'Data', 'Comment']
+			global COL_LINE
+			COL_LINE = curCol
+			curCol += 1
+		else:
+			labels = ['PC', 'BP', 'Address', 'Mnemonic', 'Operands', 'Hex', 'Data', 'Comment']
+
+		global COL_PC
+		COL_PC = curCol + 0
+		global COL_BP
+		COL_BP = curCol + 1
+		global COL_ADDRESS
+		COL_ADDRESS = curCol + 2
+		global COL_MNEMONIC
+		COL_MNEMONIC = curCol + 3
+		global COL_OPERANDS
+		COL_OPERANDS = curCol + 4
+		global COL_HEX
+		COL_HEX = curCol + 5
+		global COL_DATA
+		COL_DATA = curCol + 6
+		global COL_COMMENT
+		COL_COMMENT = curCol + 7
+
+		# self.setColumnWidth(0, 32)
+		self.setColumnWidth(curCol, 42)
+		self.setColumnWidth(curCol + 1, 32)
+		self.setColumnWidth(curCol + 2, 108)
+		self.setColumnWidth(curCol + 3, 84)
+		self.setColumnWidth(curCol + 4, 256)
+		self.setColumnWidth(curCol + 5, 240)
+		self.setColumnWidth(curCol + 6, 180)
+		self.setColumnWidth(curCol + 7, 300)
 		self.verticalHeader().hide()
 		self.horizontalHeader().show()
 		self.horizontalHeader().setHighlightSections(False)
-		self.setHorizontalHeaderLabels(['PC', 'BP', 'Address', 'Mnemonic', 'Operands', 'Hex', 'Data', 'Comment']) # '#', 
+		self.setHorizontalHeaderLabels(labels) # '#',
 		self.horizontalHeaderItem(0).setFont(ConfigClass.font)
 		self.horizontalHeaderItem(1).setFont(ConfigClass.font)
 		self.horizontalHeaderItem(2).setFont(ConfigClass.font)
@@ -397,6 +433,10 @@ class DisassemblyTableWidget(BaseTableWidget):
 		self.horizontalHeaderItem(5).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
 		self.horizontalHeaderItem(6).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
 		self.horizontalHeaderItem(7).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
+
+		if self.showLineNumber:
+			self.horizontalHeaderItem(8).setFont(ConfigClass.font)
+			self.horizontalHeaderItem(8).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
 
 		# Usage (assuming you have a created table widget named `table`):
 		self.delegate = CustomStyledItemDelegate()
@@ -431,17 +471,26 @@ class DisassemblyTableWidget(BaseTableWidget):
 		self.window().forward_clicked()
 
 	itemOld = None
-	
+
+	# COL_PC = 0
+	# COL_BP = 1
+	# COL_ADDRESS = 2
+	# COL_MNEMONIC = 3
+	# COL_OPERANDS = 4
+	# COL_HEX = 5
+	# COL_DATA = 6
+	# COL_COMMENT = 7
+
 	def mouseMoveEvent(self, event):	
 		pos = event.pos()
 		item = self.itemAt(pos)
 		
 		if item != None and self.itemOld != item:
 			row, col = item.row(), item.column()
-			if col == 4:
+			if col == COL_OPERANDS:
 #				print(f"Cell: ({row}, {col}), Mouse: ({pos.x()}, {pos.y()})")
 				item.setToolTip(self.quickToolTip.getQuickToolTip(item.text(), self.driver.debugger))
-				itemMnem = self.item(row, 3)
+				itemMnem = self.item(row, COL_MNEMONIC)
 				if itemMnem.text() in ("jmp", "jne", "jnz", "je", "jz", "call"):
 					self.window().updateStatusBar(f"DoubleClick to jump to {item.text()}", False)
 				else:
@@ -456,11 +505,12 @@ class DisassemblyTableWidget(BaseTableWidget):
 		super().mouseMoveEvent(event)
 		
 	def on_double_click(self, row, col):
-		if col in range(2):
+		if col in range(3 if self.showLineNumber else 2):
 #			self.toggleBPOn(row)
 			# bp = self.driver.getTarget().BreakpointCreateByAddress(int(self.item(self.selectedItems()[0].row(), 2).text(), 16))
-			if self.item(self.selectedItems()[0].row(), 2) is not None and self.item(self.selectedItems()[0].row(), 1) is not None:
-				self.bpHelper.enableBP(self.item(self.selectedItems()[0].row(), 2).text(), not self.item(self.selectedItems()[0].row(), 1).isBPEnabled, False)
+			if self.item(self.selectedItems()[0].row(), COL_ADDRESS) is not None and self.item(self.selectedItems()[0].row(), COL_BP) is not None:
+				logDbgC(f"BP double_clickediclick ... COL_ADDRESS: {COL_ADDRESS} / COL_BP: {COL_BP}")
+				self.bpHelper.enableBP(self.item(self.selectedItems()[0].row(), COL_ADDRESS).text(), not self.item(self.selectedItems()[0].row(), COL_BP).isBPEnabled, False)
 			pass
 		# elif col == 4:
 		# elif col == 4:
@@ -468,14 +518,14 @@ class DisassemblyTableWidget(BaseTableWidget):
 		# 	x = self.columnViewportPosition(4)
 		#
 		# 	print(f'y: {y} / {QPoint(x, y)} / {self.viewport().mapToGlobal(QPoint(x, y))} / {self.verticalHeader().sectionPosition(row)}')
-		elif col == 5:
+		elif col == COL_HEX:
 			lib.utils.setStatusBar(f"Editing data @: {str(self.item(self.selectedItems()[0].row(), 2).text())}")
-		elif col in range(3, 5):
-			if self.item(self.selectedItems()[0].row(), 3) != None:
+		elif col in range(4 if self.showLineNumber else 3, 6 if self.showLineNumber else 5):
+			if self.item(self.selectedItems()[0].row(), COL_MNEMONIC) != None:
 				# arrJumpMnemonics = ("call", "jmp", "jne", "jz", "je", "jnz", "jle", "jl", "jge", "jg")
-				if self.item(self.selectedItems()[0].row(), 3).text().startswith(JMP_MNEMONICS): #("call", "jmp", "jne", "jz", "je", "jnz", "jle", "jl", "jge", "jg")):
-					jumpAddr = str(self.item(self.selectedItems()[0].row(), 4).text())
-					self.parent.locationStack.pushLocation(str(self.item(self.selectedItems()[0].row(), 2).text()))
+				if self.item(self.selectedItems()[0].row(), COL_MNEMONIC).text().startswith(JMP_MNEMONICS): #("call", "jmp", "jne", "jz", "je", "jnz", "jle", "jl", "jge", "jg")):
+					jumpAddr = str(self.item(self.selectedItems()[0].row(), COL_OPERANDS).text())
+					self.parent.locationStack.pushLocation(str(self.item(self.selectedItems()[0].row(), COL_ADDRESS).text()))
 					self.parent.locationStack.pushLocation(jumpAddr)
 					self.parent.viewAddress(jumpAddr)
 					# newPC = str(gotoDlg.txtInput.text())
@@ -485,18 +535,18 @@ class DisassemblyTableWidget(BaseTableWidget):
 	def contextMenuEvent(self, event):
 		if len(self.selectedItems()) <= 0:
 			return
-		if self.item(self.selectedItems()[0].row(), 1) != None:
-			if self.item(self.selectedItems()[0].row(), 1).isBPEnabled:
+		if self.item(self.selectedItems()[0].row(), COL_BP) != None:
+			if self.item(self.selectedItems()[0].row(), COL_BP).isBPEnabled:
 				self.actionEnableBP.setText("Disable Breakpoint")
 			else:
 				self.actionEnableBP.setText("Enable Breakpoint")
-			self.actionEnableBP.setData(self.item(self.selectedItems()[0].row(), 1).isBPEnabled)
+			self.actionEnableBP.setData(self.item(self.selectedItems()[0].row(), COL_BP).isBPEnabled)
 			
 			self.actionShowMemoryFor.setText("Show memory for:")
 			self.actionShowMemoryFor.setEnabled(False)
 			self.actionShowMemoryFor.setData("")
-			if self.item(self.selectedItems()[0].row(), 4) != None:
-				operandsText = self.quickToolTip.getOperandsText(self.item(self.selectedItems()[0].row(), 4).text())
+			if self.item(self.selectedItems()[0].row(), COL_MNEMONIC) != None:
+				operandsText = self.quickToolTip.getOperandsText(self.item(self.selectedItems()[0].row(), COL_MNEMONIC).text())
 				if operandsText != "":
 					self.actionShowMemoryFor.setText("Show memory for: " + operandsText)
 					self.actionShowMemoryFor.setEnabled(True)
@@ -509,15 +559,15 @@ class DisassemblyTableWidget(BaseTableWidget):
 		pass
 		
 	def deleteBP_clicked(self):
-		self.bpHelper.deleteBP(self.item(self.selectedItems()[0].row(), 2).text())
+		self.bpHelper.deleteBP(self.item(self.selectedItems()[0].row(), COL_ADDRESS).text())
 		pass
 		
 	def deleteBP(self, address):
 		for row in range(self.rowCount()):
 #			print(f'CHECKING BREAKPOINT AT ADDRESS: {self.item(row, 3).text()}')
-			if self.item(row, 2) != None and self.item(row, 2).text().lower() == address.lower():
+			if self.item(row, COL_ADDRESS) != None and self.item(row, COL_ADDRESS).text().lower() == address.lower():
 #				self.toggleBPOn(row, updateBPWidget)
-				self.item(row, 1).setBPOn(False)
+				self.item(row, COL_BP).setBPOn(False)
 				break
 		
 	def getSelItemText(self, col):
@@ -527,7 +577,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 			return ""
 	
 	def handle_findReferences(self):
-		address = self.getSelItemText(2)
+		address = self.getSelItemText(COL_ADDRESS)
 		self.window().start_findReferencesWorker(address)
 		
 	def handle_showMemoryFor(self):
@@ -547,25 +597,25 @@ class DisassemblyTableWidget(BaseTableWidget):
 #		print(f"Triggering QAction: {action.text()}")
 
 	def handle_RememberLocBlack(self):
-		if self.item(self.selectedItems()[0].row(), 2) != None:
-			self.item(self.selectedItems()[0].row(), 0).setForeground(QBrush(QColor("black")))
+		if self.item(self.selectedItems()[0].row(), COL_ADDRESS) != None:
+			self.item(self.selectedItems()[0].row(), COL_PC).setForeground(QBrush(QColor("black")))
 
-			logDbgC(f"Foreground: {self.item(self.selectedItems()[0].row(), 0).foreground()} / {self.item(self.selectedItems()[0].row(), 0).foreground().color().name()}")
+			logDbgC(f"Foreground: {self.item(self.selectedItems()[0].row(), COL_PC).foreground()} / {self.item(self.selectedItems()[0].row(), COL_PC).foreground().color().name()}")
 
 	def handle_RememberLoc(self):
 		logDbgC(f"handle_RememberLoc ...")
-		if self.item(self.selectedItems()[0].row(), 2) != None:
-			arrRememberedLocs[self.getSelItemText(2)] = {"id": len(arrRememberedLocs), "address": self.getSelItemText(2), "opcode": self.getSelItemText(3), "params": self.getSelItemText(4), "hex": self.getSelItemText(5), "data": self.getSelItemText(6), "comment": self.getSelItemText(7)}
-			self.setBGColor(self.selectedItems()[0].row(), True, QColor("yellow"), range(1), QColor("black"))
-			address = self.getSelItemText(2)
+		if self.item(self.selectedItems()[0].row(), COL_ADDRESS) != None:
+			arrRememberedLocs[self.getSelItemText(COL_ADDRESS)] = {"id": len(arrRememberedLocs), "address": self.getSelItemText(COL_ADDRESS), "opcode": self.getSelItemText(COL_MNEMONIC), "params": self.getSelItemText(COL_OPERANDS), "hex": self.getSelItemText(COL_HEX), "data": self.getSelItemText(COL_DATA), "comment": self.getSelItemText(COL_COMMENT)}
+			self.setBGColor(self.selectedItems()[0].row(), True, QColor("yellow"), range(COL_BP), QColor("black"))
+			address = self.getSelItemText(COL_ADDRESS)
 			logDbg(f"Remember Location ... {address}")
-			if self.item(self.selectedItems()[0].row(), 0).text().endswith(">"):
-				self.item(self.selectedItems()[0].row(), 0).setText(self.item(self.selectedItems()[0].row(), 0).text() + "I")
-				self.window().handle_loadRememberLocation("TestLoc", self.getSelItemText(3), self.getSelItemText(5), self.getSelItemText(4), self.getSelItemText(2), self.getSelItemText(7))
-			elif not self.item(self.selectedItems()[0].row(), 0).text().endswith("I"):
-				self.item(self.selectedItems()[0].row(), 0).setText("I")
-				self.window().handle_loadRememberLocation("TestLoc", self.getSelItemText(3), self.getSelItemText(5), self.getSelItemText(4), self.getSelItemText(2), self.getSelItemText(7))
-			print(arrRememberedLocs[self.getSelItemText(2)])
+			if self.item(self.selectedItems()[0].row(), COL_PC).text().endswith(">"):
+				self.item(self.selectedItems()[0].row(), COL_PC).setText(self.item(self.selectedItems()[0].row(), COL_PC).text() + "I")
+				self.window().handle_loadRememberLocation("TestLoc", self.getSelItemText(COL_MNEMONIC), self.getSelItemText(COL_HEX), self.getSelItemText(COL_OPERANDS), self.getSelItemText(COL_ADDRESS), self.getSelItemText(COL_COMMENT))
+			elif not self.item(self.selectedItems()[0].row(), COL_PC).text().endswith("I"):
+				self.item(self.selectedItems()[0].row(), COL_PC).setText("I")
+				self.window().handle_loadRememberLocation("TestLoc", self.getSelItemText(COL_MNEMONIC), self.getSelItemText(COL_HEX), self.getSelItemText(COL_OPERANDS), self.getSelItemText(COL_ADDRESS), self.getSelItemText(COL_COMMENT))
+			print(arrRememberedLocs[self.getSelItemText(COL_ADDRESS)])
 		pass
 			
 	def doReadMemory(self, address, size = 0x100):
@@ -581,17 +631,17 @@ class DisassemblyTableWidget(BaseTableWidget):
 			
 	def toggleBPOn(self, row, updateBPWidget = True):
 #		print(f'TOGGLE BP: {self.item(row, 3).text()}')
-		if self.item(row, 1) != None:
-			item = self.item(row, 1)
+		if self.item(row, COL_BP) != None:
+			item = self.item(row, COL_BP)
 			item.toggleBPOn()
 			if updateBPWidget:
-				self.sigBPOn.emit(self.item(row, 2).text(), item.isBPOn)
+				self.sigBPOn.emit(self.item(row, COL_ADDRESS).text(), item.isBPOn)
 		pass
 		
 	def toggleBPAtAddress(self, address, updateBPWidget = True):
 		for row in range(self.rowCount()):
 #			print(f'CHECKING BREAKPOINT AT ADDRESS: {self.item(row, 3).text()}')
-			if self.item(row, 3) != None and self.item(row, 2).text() == address:
+			if self.item(row, COL_MNEMONIC) != None and self.item(row, COL_ADDRESS).text() == address:
 				self.toggleBPOn(row, updateBPWidget)
 				break
 		pass
@@ -599,16 +649,16 @@ class DisassemblyTableWidget(BaseTableWidget):
 	def enableBP(self, address, enabled = True):
 		for row in range(self.rowCount()):
 #			print(f'CHECKING BREAKPOINT AT ADDRESS: {self.item(row, 3).text()}')
-			if self.item(row, 2) != None and self.item(row, 2).text().lower() == address.lower():
+			if self.item(row, COL_ADDRESS) != None and self.item(row, COL_ADDRESS).text().lower() == address.lower():
 #				self.toggleBPOn(row, updateBPWidget)
-				self.item(row, 1).enableBP(enabled)
+				self.item(row, COL_BP).enableBP(enabled)
 				break
 		
 	def setBPAtAddress(self, address, on = True, updateBPWidget = True):
 		for row in range(self.rowCount()):
-			if self.item(row, 2) != None and self.item(row, 2).text() == address:
-				if self.item(row, 1) != None:
-					self.item(row, 1).setBPOn(on)
+			if self.item(row, COL_ADDRESS) != None and self.item(row, COL_ADDRESS).text() == address:
+				if self.item(row, COL_BP) != None:
+					self.item(row, COL_BP).setBPOn(on)
 					if updateBPWidget:
 						self.sigBPOn.emit(self.item(row, 2).text(), on)
 					break
@@ -616,9 +666,9 @@ class DisassemblyTableWidget(BaseTableWidget):
 		
 	def removeBPAtAddress(self, address):
 		for row in range(self.rowCount()):
-			if self.item(row, 2) != None and self.item(row, 2).text() == address:
-				if self.item(row, 1) != None:
-					self.item(row, 1).setBPOn(False)
+			if self.item(row, COL_ADDRESS) != None and self.item(row, COL_ADDRESS).text() == address:
+				if self.item(row, COL_BP) != None:
+					self.item(row, COL_BP).setBPOn(False)
 	#				if updateBPWidget:
 	#					self.sigBPOn.emit(self.item(row, 3).text(), on)
 					break
@@ -632,15 +682,19 @@ class DisassemblyTableWidget(BaseTableWidget):
 		self.setRowCount(currRowCount + 1)
 		
 		item = DisassemblyImageTableWidgetItem()
-		
-		self.addItem(currRowCount, 0, ('>' if rip == address else '') + ('I' if False else ''))
-		self.setItem(currRowCount, 1, item)
-		self.addItem(currRowCount, 2, address)
-		self.addItem(currRowCount, 3, instr)
-		self.addItem(currRowCount, 4, args)
-		self.addItem(currRowCount, 5, data)
-		self.addItem(currRowCount, 6, dataNg)
-		self.addItem(currRowCount, 7, comment)
+		curCol = 0
+		if self.showLineNumber:
+			self.addItem(currRowCount, curCol, str(lineNum))
+			curCol += 1
+
+		self.addItem(currRowCount, curCol + 0, ('>' if rip == address else '') + ('I' if False else ''))
+		self.setItem(currRowCount, curCol + 1, item)
+		self.addItem(currRowCount, curCol + 2, address)
+		self.addItem(currRowCount, curCol + 3, instr)
+		self.addItem(currRowCount, curCol + 4, args)
+		self.addItem(currRowCount, curCol + 5, data)
+		self.addItem(currRowCount, curCol + 6, dataNg)
+		self.addItem(currRowCount, curCol + 7, comment)
 		
 		self.setRowHeight(currRowCount, 14)
 		# print(f"address: {address}")
@@ -650,7 +704,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 	def addItem(self, row, col, txt):
 		
 		item = QTableWidgetItem(txt, QTableWidgetItem.ItemType.Type)
-		if col != 5:
+		if col != COL_HEX:
 			item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable) #Qt.ItemFlag.ItemIsSelectable)
 		
 		# Insert the items into the row
@@ -659,22 +713,11 @@ class DisassemblyTableWidget(BaseTableWidget):
 	def scrollToRow(self, row):
 		allHeight = 0
 		for i in range(self.rowCount()):
-			# logDbgC(f"self.rowHeight({i}) => {self.rowHeight(i)}....")
 			allHeight += self.rowHeight(i)
 			if i == row:
 				break
 		allHeight -= (self.viewport().height() / 2) + (self.rowHeight(1) / 2)
-		# logDbgC(f"allHeight: {allHeight} / row: {row}")
 		self.verticalScrollBar().setValue(int(allHeight))
-# 		if self.rowCount() >= 1:
-# 			row_to_scroll = row + self.symbolCount
-# 			scroll_value = (row_to_scroll - self.viewport().height() / (2 * self.rowHeight(1))) * self.rowHeight(1)
-# #			print(f'scroll_value => {scroll_value}')
-# 			self.verticalScrollBar().setValue(int(scroll_value))
-# #			print(f'self.verticalScrollBar().value() => {self.verticalScrollBar().value()}')
-# 			QApplication.processEvents()
-# 			# self.act = QAction("onScroll")
-
 		
 class AssemblerTextEdit(QWidget):
 	
@@ -716,8 +759,9 @@ class AssemblerTextEdit(QWidget):
 #		if addLineNum:
 #			self.table.addRow(0, addr, instr, args, comment, data, rip)
 #		else:
-		item = self.table.addRow(0, addr, instr, args, comment, data, dataNg, rip)
-		self.table.item(item.row(), 0).setText(str(lineNo))
+		item = self.table.addRow(lineNo, addr, instr, args, comment, data, dataNg, rip)
+		# if self.table.showLineNumber:
+		# 	self.table.item(item.row(), 0).setText(str(lineNo))
 		# item.setBPOn()
 		# row_index = item.row()  # Get the row of the item
 		# height = self.table.verticalHeader().sectionSize(row_index)
@@ -728,8 +772,8 @@ class AssemblerTextEdit(QWidget):
 		pass
 	
 	def getAddressFromSelected(self):
-		if self.table.selectedItems()[0].row() != None and self.table.item(self.table.selectedItems()[0].row(), 2) != None:
-			return self.table.item(self.table.selectedItems()[0].row(), 2).text()
+		if self.table.selectedItems()[0].row() != None and self.table.item(self.table.selectedItems()[0].row(), COL_ADDRESS) != None:
+			return self.table.item(self.table.selectedItems()[0].row(), COL_ADDRESS).text()
 		return None
 	
 	def pushAddressFromSelected(self):
@@ -751,8 +795,8 @@ class AssemblerTextEdit(QWidget):
 
 	def viewAddress(self, address, pushLocation = True):
 		for row in range(self.table.rowCount()):
-			if self.table.item(row, 2) != None:
-				if self.table.item(row, 2).text().lower() == address.lower():
+			if self.table.item(row, COL_ADDRESS) != None:
+				if self.table.item(row, COL_ADDRESS).text().lower() == address.lower():
 #					self.table.item(row, 0).setText('>')
 					self.table.setFocus(Qt.FocusReason.NoFocusReason)
 					self.table.selectRow(row)
@@ -764,18 +808,18 @@ class AssemblerTextEdit(QWidget):
 	currentPCRow = -1
 	def clearPC(self):
 		logDbgC(f"clearPC ...")
-		if self.table.item(self.currentPCRow, 0) != None:
-			if self.table.item(self.currentPCRow, 0).text().endswith("I"):
-				self.table.item(self.currentPCRow, 0).setText('I')
+		if self.table.item(self.currentPCRow, COL_PC) != None:
+			if self.table.item(self.currentPCRow, COL_PC).text().endswith("I"):
+				self.table.item(self.currentPCRow, COL_PC).setText('I')
 			else:
-				if self.table.item(self.currentPCRow, 0).text().isdigit():
+				if self.table.item(self.currentPCRow, COL_PC).text().isdigit():
 					pass
 				else:
-					self.table.item(self.currentPCRow, 0).setText('')
-			curRememberLoc = arrRememberedLocs.get(self.table.item(self.currentPCRow, 2).text())
+					self.table.item(self.currentPCRow, COL_PC).setText('')
+			curRememberLoc = arrRememberedLocs.get(self.table.item(self.currentPCRow, COL_ADDRESS).text())
 			if curRememberLoc is not None:
 				self.table.setBGColor(self.currentPCRow, False, QColor(220, 220, 255, 0), range(1, 8))
-				self.table.item(self.currentPCRow, 0).setForeground(QColor("black"))
+				self.table.item(self.currentPCRow, COL_PC).setForeground(QColor("black"))
 			else:
 				self.table.setBGColor(self.currentPCRow, False)
 		pass
@@ -789,10 +833,10 @@ class AssemblerTextEdit(QWidget):
 
 		# logDbgC(f"setPC: {currentPC} ({pc})")
 		for row in range(self.table.rowCount()):
-			if self.table.item(row, 2) != None:
-				if self.table.item(row, 2).text().lower() == currentPC:
+			if self.table.item(row, COL_ADDRESS) != None:
+				if self.table.item(row, COL_ADDRESS).text().lower() == currentPC:
 					self.currentPCRow = row
-					# self.table.item(row, 0).setText('>')
+					self.table.item(row, COL_PC).setText('>')
 					# logDbgC(f"setPC => row: {row}")
 					self.table.setFocus(Qt.FocusReason.NoFocusReason)
 					self.table.selectRow(row)
@@ -801,20 +845,20 @@ class AssemblerTextEdit(QWidget):
 					# self.viewAddress()
 					self.table.setBGColor(row, True)
 				else:
-					if self.table.item(row, 0).text().isdigit():
-						pass
-					else:
-						self.table.item(row, 0).setText('')
+					# if self.table.item(row, COL_PC).text().isdigit():
+					# 	pass
+					# else:
+					self.table.item(row, COL_PC).setText('')
 					self.table.setBGColor(row, False, QColor(220, 220, 255, 0), range(1, 8))
 
-				curRememberLoc = arrRememberedLocs.get(self.table.item(row, 2).text())
+				curRememberLoc = arrRememberedLocs.get(self.table.item(row, COL_ADDRESS).text())
 				if curRememberLoc is not None:
-					self.table.setBGColor(row, True, QColor("yellow"), range(1), QColor("black"))
-					if not self.table.item(row, 0).text().endswith('I'):
+					self.table.setBGColor(row, True, QColor("yellow"), range(COL_BP), QColor("black"))
+					if not self.table.item(row, COL_PC).text().endswith('I'):
 					# 	self.table.item(row, 0).setText(self.table.item(row, 0).text())
 					# else:
-						self.table.item(row, 0).setText(self.table.item(row, 0).text() + 'I') #  + 'I'
-						self.table.item(row, 0).setForeground(QColor("black"))
+						self.table.item(row, COL_PC).setText(self.table.item(row, COL_PC).text() + 'I') #  + 'I'
+						self.table.item(row, COL_PC).setForeground(QColor("black"))
 		
 		if pushLocation:
 			self.locationStack.pushLocation(currentPC)

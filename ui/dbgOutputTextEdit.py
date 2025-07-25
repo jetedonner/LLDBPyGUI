@@ -39,7 +39,8 @@ class DbgOutputWidget(QWidget):
         # self.chkAutoscroll = QCheckBox(f"")
         # self.chkAutoscroll.setIcon()
         self.swtAutoscroll = QSwitch(f"")
-        self.swtAutoscroll.setChecked(SettingsHelper().getValue(SettingsValues.AutoScrollDbgOutput))
+        doAutoscroll = SettingsHelper().getValue(SettingsValues.AutoScrollDbgOutput)
+        self.swtAutoscroll.setChecked(doAutoscroll)
         self.swtAutoscroll.checked.connect(self.swtAutoscroll_changed)
         self.swtAutoscroll.setContentsMargins(0, 0, 0, 0)
         self.swtAutoscroll.setStatusTip(f"Autoscroll the debug output")
@@ -51,6 +52,7 @@ class DbgOutputWidget(QWidget):
         self.wdtCtrls.setLayout(self.layCtrls)
         self.layHMain.addWidget(self.wdtCtrls)
         self.txtDbg = DbgOutputTextEdit()
+        self.txtDbg.setAutoscroll(doAutoscroll)
         self.txtDbg.setContentsMargins(0, 0, 0, 0)
         self.layHMain.addWidget(self.txtDbg)
         self.layHMain.setContentsMargins(0, 0, 0, 0)
@@ -93,6 +95,9 @@ class DbgOutputTextEdit(QTextEdit):
                 font: 12px 'Courier New';
             }
         """)
+
+    def setAutoscroll(self, doAutoscroll = True):
+        self.autoscroll = doAutoscroll
 
     def logDbg(self, logMsg):
 

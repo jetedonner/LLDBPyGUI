@@ -14,6 +14,8 @@ from PyQt6 import uic, QtWidgets
 
 from ui.customQt.QHexTableWidget import *
 from ui.customQt.QHexTextEdit import *
+from ui.helper.dbgOutputHelper import logDbgC
+
 
 class QMemoryViewer(QWidget):
 	
@@ -172,6 +174,7 @@ class QMemoryViewer(QWidget):
 				self.tblHex.addRow(hex(self.startAddress + i), current_string, rawData)
 			
 	def click_ReadMemory(self):
+		logDbgC(f"click_ReadMemory() in QMemoryViewer ...")
 		try:
 			self.handle_readMemory(self.driver.debugger, int(self.txtMemAddr.text(), 16), int(self.txtMemSize.text(), 16))
 		except Exception as e:
