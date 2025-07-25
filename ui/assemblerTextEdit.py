@@ -738,9 +738,10 @@ class AssemblerTextEdit(QWidget):
 		
 		# Insert a new row
 		table_widget.insertRow(row_count)
-		
+
+		# titleLabel = text or "__stubs" # text if text is not None else "__stubs"
 		# Create a spanning cell item
-		item = QTableWidgetItem(f'{text}')
+		item = QTableWidgetItem(f'{text or "__stubs"}')
 		item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
 		item.setBackground(QColor(64, 0, 255, 96))
 		item.setForeground(QColor("black"))
@@ -756,18 +757,8 @@ class AssemblerTextEdit(QWidget):
 		pass
 		
 	def appendAsmText(self, addr, instr, args, comment, data, dataNg, addLineNum = True, rip = "", lineNo = -1):
-#		if addLineNum:
-#			self.table.addRow(0, addr, instr, args, comment, data, rip)
-#		else:
 		item = self.table.addRow(lineNo, addr, instr, args, comment, data, dataNg, rip)
-		# if self.table.showLineNumber:
-		# 	self.table.item(item.row(), 0).setText(str(lineNo))
-		# item.setBPOn()
-		# row_index = item.row()  # Get the row of the item
-		# height = self.table.verticalHeader().sectionSize(row_index)
-		# logDbg(f"Row height: {height}")
 
-			
 	def setTextColor(self, color = "black", lineNum = False):
 		pass
 	

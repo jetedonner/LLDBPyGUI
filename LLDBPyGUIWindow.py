@@ -1195,6 +1195,7 @@ class LLDBPyGUIWindow(QMainWindow):
 #				#				global driver
 		self.inited = False
 		self.worker.listener.should_quit = False
+		self.stubsLoading = False
 		self.driver = dbg.debuggerdriver.createDriver(self.driver.debugger, event_queue)
 #		self.driver.debugger.SetLoggingCallback(self.my_custom_log_callback)
 		self.driver.debugger.SetAsync(False)
@@ -1642,14 +1643,38 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.workerManager.start_loadRegisterWorker(self.handle_loadRegister, self.handle_loadRegisterValue, self.handle_updateRegisterValue, self.handle_loadVariableValue, self.handle_updateVariableValue, self.handle_loadRegisterFinished, initTabs)
 
 	instCnt = 0
+	stubsLoading = False
 	def handle_loadInstruction(self, instruction):
 		self.instCnt += 1
 		target = self.driver.getTarget()
 
+		stubsFunctName = None
 		if self.symFuncName != instruction.GetAddress().GetFunction().GetName():
 			self.symFuncName = instruction.GetAddress().GetFunction().GetName()
 
-			self.txtMultiline.appendAsmSymbol(str(instruction.GetAddress().GetLoadAddress(target)), self.symFuncName)
+			if self.symFuncName is None and not self.stubsLoading:
+				# Assuming you have an SBInstruction object called 'instruction'
+				address = instruction.GetAddress()
+				symbol = address.GetSymbol()
+				logDbgC(f"==========>>>>>>> symbol: {symbol}")
+				# self.symFuncName = symbol.name
+				stubsFunctName = symbol.name
+				self.symFuncName = "__stubs"
+				# if not self.stubsLoading:
+				self.stubsLoading = True
+				self.txtMultiline.appendAsmSymbol(str(instruction.GetAddress().GetLoadAddress(target)), self.symFuncName)
+			else:
+				if not self.stubsLoading:
+					self.txtMultiline.appendAsmSymbol(str(instruction.GetAddress().GetLoadAddress(target)),
+												  self.symFuncName)
+				# else:
+				# 	address = instruction.GetAddress()
+				# 	stubsFunctName = address.GetSymbol().name
+
+		if self.symFuncName is None and self.stubsLoading:
+			# self.txtMultiline.appendAsmSymbol(str(instruction.GetAddress().GetLoadAddress(target)), self.symFuncName)
+			address = instruction.GetAddress()
+			stubsFunctName = address.GetSymbol().name
 
 #		print(f'instruction.GetComment(target) => {instruction.GetComment(target)}')
 
@@ -1671,8 +1696,8 @@ class LLDBPyGUIWindow(QMainWindow):
 			daHex = ""
 			daDataNg = ""
 #		self.txtMultiline.appendAsmText(hex(int(str(instruction.GetAddress().GetLoadAddress(target)), 10)), instruction.GetMnemonic(target),  instruction.GetOperands(target), instruction.GetComment(target), str(instruction.GetData(target)).replace("                             ", "\t\t").replace("		            ", "\t\t\t").replace("		         ", "\t\t").replace("		      ", "\t\t").replace("			   ", "\t\t\t"), True)
-
-		self.txtMultiline.appendAsmText(hex(int(str(instruction.GetAddress().GetLoadAddress(target)), 10)), instruction.GetMnemonic(target),  instruction.GetOperands(target), instruction.GetComment(target), daHex, "".join(str(daDataNg).split()), True, "", self.instCnt)
+		comment = stubsFunctName or instruction.GetComment(target)
+		self.txtMultiline.appendAsmText(hex(int(str(instruction.GetAddress().GetLoadAddress(target)), 10)), instruction.GetMnemonic(target),  instruction.GetOperands(target), comment, daHex, "".join(str(daDataNg).split()), True, "", self.instCnt)
 
 		pass
 
