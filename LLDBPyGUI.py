@@ -233,7 +233,6 @@ def StartLLDBPyGUI(debugger, command, result, dict):
 	
 	tmrAppStarted = QtCore.QTimer()
 	tmrAppStarted.singleShot(500, pyGUIWindow.onQApplicationStarted)
-	
 	# sys.exit(pyGUIApp.exec())
 	# pyGUIApp.exec()
 	try:

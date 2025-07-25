@@ -26,7 +26,7 @@ class SpinnerDialog(QDialog):
 		layout.addWidget(self.lblMsg, alignment=Qt.AlignmentFlag.AlignCenter)
 	
 		# Load and set the animated GIF
-		self.movie = QMovie("./resources/img/DoubleRingSpinner.gif")
+		self.movie = QMovie("./resources/img/Bean-Eater@1x-1.0s-200px-200px.gif") #DoubleRingSpinner.gif") #Loading-Eclipse-200pxX200px.gif") #
 		self.movie.setScaledSize(QSize(64, 64))
 		self.gif_label.setMovie(self.movie)
 		self.movie.start()

@@ -10,6 +10,7 @@ import lib.utils
 from ui.consoleWidget import ConsoleWidget
 from ui.customQt.QControlFlowWidget import QControlFlowWidget
 from ui.dialogs.createTargetDialog import CreateTargetDialog
+from ui.dialogs.userActionNeededDialog import UserActionNeededDialog
 from ui.rememberLocationsTableWidget import RememberLocationsTableWidget
 from ui.rflagTableWidget import RFlagTableWidget, RFlagWidget
 
@@ -1128,7 +1129,10 @@ class LLDBPyGUIWindow(QMainWindow):
 	def test_clicked(self):
 		# self.wdtControlFlow.logViewportHeight()
 		# self.wdtControlFlow.loadConnections()
-		logDbgC(f"self.wdtControlFlow.scene.sceneRect(): {self.wdtControlFlow.scene.sceneRect()}")
+		# logDbgC(f"self.wdtControlFlow.scene.sceneRect(): {self.wdtControlFlow.scene.sceneRect()}")
+		self.usrAct = UserActionNeededDialog()
+		self.usrAct.show()
+
 		pass
 
 	def stopTarget(self):

@@ -547,13 +547,15 @@ class Worker(QObject):
         #         # logDbg(f"Found instruction with jump @: {sAddrJumpFrom} / isInside: {sAddrJumpTo}!")
         #         rowStart = int(tblDisassembly.getRowForAddress(sAddrJumpFrom))
         #         rowEnd = int(tblDisassembly.getRowForAddress(sAddrJumpTo))
-		#
+		#		rad = self.radius
 				if (rowStart < rowEnd):
 					newConObj = QControlFlowWidget.draw_flowConnectionNG(rowStart, rowEnd, int(sAddrJumpFrom, 16), int(sAddrJumpTo, 16), None, QColor("lightblue"), self.radius) # self.window().txtMultiline.table
 				else:
 					newConObj = QControlFlowWidget.draw_flowConnectionNG(rowStart, rowEnd, int(sAddrJumpFrom, 16), int(sAddrJumpTo, 16), None, QColor("lightgreen"), self.radius, 1, True)
 				# newConObj.parentControlFlow = self
 				# self.addConnection(newConObj)
+				if abs(newConObj.jumpDist / 2) <= (newConObj.radius / 2):
+					newConObj.radius = newConObj.jumpDist / 2
 				self.connections.append(newConObj)
 				if self.radius <= 130:
 					self.radius += 15

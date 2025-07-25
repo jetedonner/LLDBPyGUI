@@ -468,6 +468,9 @@ class QControlFlowWidget(QWidget):
         for con in self.connections:
             con.parentControlFlow = self
             con.asmTable = tblDisassembly
+            if abs(con.jumpDist / 2) <= (radius / 2):
+                con.radius = abs(con.jumpDist / 2)
+                radius = con.radius
             # if con. is None:
             #     continue
 

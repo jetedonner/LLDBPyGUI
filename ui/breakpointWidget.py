@@ -210,15 +210,19 @@ class BreakpointTreeWidget(BaseTreeWidget):
 						for i in range(subitem.columnCount()):
 							subitem.setBackground(i, ConfigClass.colorTransparent)
 
-	def show_notification(self, message):
+	def show_notification(self, message=""):
 		# self.window().tabWidgetDbg.setCurrentWidget(self.window().tabWidgetConsoles)
 		self.window().tabWidgetDbg.setCurrentIndex(8)
 		self.window().tabWidgetConsoles.setCurrentIndex(0)
 		self.window().wdtCommands.txtCmd.setFocus()
-		self.window().wdtCommands.txtCommands.append(f"#================ !!! SCANF HIT !!! ================#")
-		self.window().wdtCommands.txtCommands.append(f"| Please enter your input string in the LLDB        |")
-		self.window().wdtCommands.txtCommands.append(f"| console tab to continue with 'feedinput <input>'  |")
-		self.window().wdtCommands.txtCommands.append(f"#===================================================#")
+		if message is None or message == "":
+			self.window().wdtCommands.txtCommands.append(f"#================ !!! SCANF HIT !!! ================#")
+			self.window().wdtCommands.txtCommands.append(f"| Please enter your input string in the LLDB        |")
+			self.window().wdtCommands.txtCommands.append(f"| console tab to continue with 'feedinput <input>'  |")
+			self.window().wdtCommands.txtCommands.append(f"#===================================================#")
+		else:
+			self.window().wdtCommands.txtCommands.append(message)
+
 		# notification = Notification(self, message)
 		# # notification.show()
 
