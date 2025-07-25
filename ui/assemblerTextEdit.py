@@ -849,7 +849,7 @@ class AssemblerTextEdit(QWidget):
 					# 	pass
 					# else:
 					self.table.item(row, COL_PC).setText('')
-					self.table.setBGColor(row, False, QColor(220, 220, 255, 0), range(1, 8))
+					self.table.setBGColor(row, False, QColor(220, 220, 255, 0), range(1, 9 if self.table.showLineNumber else 8))
 
 				curRememberLoc = arrRememberedLocs.get(self.table.item(row, COL_ADDRESS).text())
 				if curRememberLoc is not None:

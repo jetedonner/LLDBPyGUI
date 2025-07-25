@@ -367,6 +367,7 @@ class Worker(QObject):
 								end_addr = start_addr + size
 								# func_start = subsec.GetStartAddress()
 								# func_end = subsec.GetEndAddress()
+								logDbgC(f"__stubs: start_addr: {start_addr} / end_addr: {end_addr}")
 								estimated_count = size // 6
 								insts = self.target.ReadInstructions(lldb.SBAddress(start_addr, self.target),
 																int(estimated_count))

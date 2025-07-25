@@ -1,0 +1,695 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>640</width>
+    <height>480</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>LLDBPyGUI - Settings</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="tabGeneral">
+      <attribute name="title">
+       <string>General</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QTableWidget" name="tblGeneral">
+         <property name="textElideMode">
+          <enum>Qt::TextElideMode::ElideRight</enum>
+         </property>
+         <property name="showGrid">
+          <bool>false</bool>
+         </property>
+         <attribute name="horizontalHeaderDefaultSectionSize">
+          <number>256</number>
+         </attribute>
+         <attribute name="horizontalHeaderStretchLastSection">
+          <bool>true</bool>
+         </attribute>
+         <attribute name="verticalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
+         <row>
+          <property name="text">
+           <string>ConfirmRestartTarget</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>ConfirmQuit</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>DisassemblerShowQuickTooltip</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Add commands to History</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>MemoryViewer show selected address range statusbar message</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>VisualizeCurrentBP</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Use native Dialogs</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Selected row color</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Event-Listener Timestamp Format</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Keep Watchpoints enabled / disabled</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Hex-Value Grouping</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>StatusBar Message Timeout (ms)</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Exit LLDB on App exit</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Show date in logView</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>GROUPTEST</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Auto Breakpoint for scanf</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Autoscroll Debug Output</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Show Line-No. in Disassembly</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>ASM-Lines max lines</string>
+          </property>
+         </row>
+         <column>
+          <property name="text">
+           <string>Setting</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Value</string>
+          </property>
+         </column>
+         <item row="0" column="0">
+          <property name="text">
+           <string>Confirm restart target</string>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+         <item row="0" column="1">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+         <item row="1" column="0">
+          <property name="text">
+           <string>Confirm Quit App</string>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+         <item row="1" column="1">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+         <item row="2" column="0">
+          <property name="text">
+           <string>Disassembler show Quick-ToolTip</string>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+         <item row="2" column="1">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+         <item row="3" column="0">
+          <property name="text">
+           <string>Add commands to history</string>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+         <item row="3" column="1">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+         <item row="4" column="0">
+          <property name="text">
+           <string>MemoryViewer show selected address range statusbar message</string>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+         <item row="4" column="1">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+         <item row="5" column="0">
+          <property name="text">
+           <string>Visuzalize current breakpoint</string>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+         <item row="5" column="1">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+         <item row="6" column="0">
+          <property name="text">
+           <string>Use native Dialogs</string>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+         <item row="6" column="1">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+         <item row="7" column="0">
+          <property name="text">
+           <string>Selected row color</string>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+         <item row="7" column="1">
+          <property name="text">
+           <string>Selected row color</string>
+          </property>
+         </item>
+         <item row="8" column="0">
+          <property name="text">
+           <string>Event-Listener Timestamp Format</string>
+          </property>
+         </item>
+         <item row="8" column="1">
+          <property name="text">
+           <string>%Y-%m-%d %H:%M:%S</string>
+          </property>
+         </item>
+         <item row="9" column="0">
+          <property name="text">
+           <string>Keep Watchpoints enabled / disabled</string>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+         </item>
+         <item row="9" column="1">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+         </item>
+         <item row="10" column="0">
+          <property name="text">
+           <string>Hex-Value Grouping</string>
+          </property>
+         </item>
+         <item row="10" column="1">
+          <property name="text">
+           <string/>
+          </property>
+         </item>
+         <item row="11" column="0">
+          <property name="text">
+           <string>StatusBar Message Timeout (ms)</string>
+          </property>
+         </item>
+         <item row="11" column="1">
+          <property name="text">
+           <string>1500</string>
+          </property>
+         </item>
+         <item row="12" column="0">
+          <property name="text">
+           <string>Exit LLDB on App exit</string>
+          </property>
+         </item>
+         <item row="12" column="1">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+         </item>
+         <item row="13" column="0">
+          <property name="text">
+           <string>Show date in logView</string>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+         </item>
+         <item row="13" column="1">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+         </item>
+         <item row="14" column="0">
+          <property name="text">
+           <string>GROUPTEST</string>
+          </property>
+          <property name="flags">
+           <set>NoItemFlags</set>
+          </property>
+         </item>
+         <item row="15" column="0">
+          <property name="text">
+           <string>Auto breakpoints for scanf</string>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+         </item>
+         <item row="15" column="1">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+         </item>
+         <item row="16" column="0">
+          <property name="text">
+           <string>Autoscroll Debug Output</string>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+         </item>
+         <item row="16" column="1">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+         </item>
+         <item row="17" column="0">
+          <property name="text">
+           <string>Show Line-No. in Disassembly</string>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+         </item>
+         <item row="17" column="1">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+         </item>
+         <item row="18" column="0">
+          <property name="text">
+           <string>ASM-Lines max lines</string>
+          </property>
+         </item>
+         <item row="18" column="1">
+          <property name="text">
+           <string>5</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tabDeveloper">
+      <attribute name="title">
+       <string>Developer</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="1" column="0">
+        <widget class="QPushButton" name="cmdTest">
+         <property name="text">
+          <string>Test Button</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QPushButton" name="cmdLoadDefaults">
+         <property name="text">
+          <string>Load Default Config</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QTableWidget" name="tblDeveloper">
+         <attribute name="horizontalHeaderDefaultSectionSize">
+          <number>200</number>
+         </attribute>
+         <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+          <bool>false</bool>
+         </attribute>
+         <attribute name="horizontalHeaderStretchLastSection">
+          <bool>true</bool>
+         </attribute>
+         <attribute name="verticalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
+         <row>
+          <property name="text">
+           <string>Load test target</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Load test breakpoints</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Stop at entry</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Break at main function</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Set Breakpoint at main function</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Clear Console complete (with 1 click)</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Persistent command history</string>
+          </property>
+         </row>
+         <column>
+          <property name="text">
+           <string>Key</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Value</string>
+          </property>
+         </column>
+         <item row="0" column="0">
+          <property name="text">
+           <string>Load test target</string>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+         <item row="0" column="1">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+         <item row="1" column="0">
+          <property name="text">
+           <string>Load test breakpoints</string>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+         <item row="1" column="1">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+          <property name="flags">
+           <set>ItemIsSelectable|ItemIsUserCheckable|ItemIsEnabled</set>
+          </property>
+         </item>
+         <item row="2" column="0">
+          <property name="text">
+           <string>Stop at entry</string>
+          </property>
+         </item>
+         <item row="2" column="1">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checkState">
+           <enum>Unchecked</enum>
+          </property>
+         </item>
+         <item row="3" column="0">
+          <property name="text">
+           <string>Break at main function</string>
+          </property>
+         </item>
+         <item row="3" column="1">
+          <property name="text">
+           <string>main</string>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+         </item>
+         <item row="4" column="0">
+          <property name="text">
+           <string>Set Breakpoint at main function</string>
+          </property>
+         </item>
+         <item row="4" column="1">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+         </item>
+         <item row="5" column="0">
+          <property name="text">
+           <string>Clear console complete with one click</string>
+          </property>
+         </item>
+         <item row="5" column="1">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+         </item>
+         <item row="6" column="0">
+          <property name="text">
+           <string>Persistent command history</string>
+          </property>
+         </item>
+         <item row="6" column="1">
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
+     </property>
+     <property name="centerButtons">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>Dialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>Dialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

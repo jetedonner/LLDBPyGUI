@@ -243,6 +243,7 @@ class QControlFlowWidget(QWidget):
     def __init__(self, tableView, driver):
         super().__init__()
 
+        self.setHelper = SettingsHelper()
         self.currStep = 0
         self.startAddr = 0x0
         self.endAddr = 0x0
@@ -268,7 +269,11 @@ class QControlFlowWidget(QWidget):
     def checkHideOverflowConnections(self):
         nVisibleCon = 0
         for con in self.connections:
+            print(f"con: {con}, con.mainLine: {con.mainLine}")
             # con.origRow
+            if con.mainLine is None or con.startArrow is None or con.endArrow is None:
+                continue
+
             view_rect = self.view.mapToScene(
                 self.view.viewport().rect()).boundingRect()
             line_rect = con.mainLine.mapToScene(
@@ -280,7 +285,7 @@ class QControlFlowWidget(QWidget):
 
             if view_rect.intersects(line_rect):
                 nVisibleCon += 1
-                if nVisibleCon >= 4 and not view_rect.intersects(startarrow_rect) and not view_rect.intersects(endarrow_rect):
+                if nVisibleCon >= int(self.setHelper.getValue(SettingsValues.ASMMaxLines)) and not view_rect.intersects(startarrow_rect) and not view_rect.intersects(endarrow_rect):
                     con.mainLine.setVisible(False)
                     con.startArrow.setVisible(False)
                     con.endArrow.setVisible(False)
@@ -309,6 +314,9 @@ class QControlFlowWidget(QWidget):
                 subSec = sec.GetSubSectionAtIndex(idx3)
                 if subSec.GetName() == "__text":
                     self.startAddr = subSec.GetFileAddress()
+                    self.endAddr = subSec.GetFileAddress() + subSec.GetByteSize()
+                elif subSec.GetName() == "__stubs":
+                    # self.startAddr = subSec.GetFileAddress()
                     self.endAddr = subSec.GetFileAddress() + subSec.GetByteSize()
 
     def isInsideTextSection(self, addr):
@@ -379,6 +387,7 @@ class QControlFlowWidget(QWidget):
                                  self.yPosEnd, con)  # 1260)
             line.setPen(QPen(con.color, con.lineWidth))
             self.scene.addItem(line)
+            con.mainLine = line
 
             ellipse_rect = QRectF(xOffset, y_position + (nRowHeight / 2), radius, radius)
 
@@ -515,6 +524,7 @@ class QControlFlowWidget(QWidget):
                                  self.yPosEnd, con)  # 1260)
             line.setPen(QPen(con.color, con.lineWidth))
             self.scene.addItem(line)
+            con.mainLine = line
 
             ellipse_rect = QRectF(xOffset, y_position + (nRowHeight / 2), radius, radius)
 

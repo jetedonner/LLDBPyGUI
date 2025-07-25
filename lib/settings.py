@@ -27,7 +27,8 @@ class SettingsValues(Enum):
 	AutoBreakpointForScanf = ("Automatically set breakpoints for scanf calls", True, bool)
 	AutoScrollDbgOutput = ("Automatically scroll the debug output log", True, bool)
 	ShowLineNumInDisassembly = ("Show line number in disassembly", True, bool)
-	
+	ASMMaxLines = ("Disassembly flow max lines", 5, int)
+
 	# Developer Settings
 	LoadTestTarget = ("Load test target", True, bool)
 	LoadTestBPs = ("Load test breakpoints", True, bool)
@@ -78,6 +79,7 @@ class SettingsHelper(QObject):
 		self.settings.setValue(SettingsValues.AutoBreakpointForScanf.value[0], True)
 		self.settings.setValue(SettingsValues.AutoScrollDbgOutput.value[0], True)
 		self.settings.setValue(SettingsValues.ShowLineNumInDisassembly.value[0], True)
+		self.settings.setValue(SettingsValues.ASMMaxLines.value[0], 5)
 
 
 		self.settings.setValue(SettingsValues.LoadTestTarget.value[0], True)

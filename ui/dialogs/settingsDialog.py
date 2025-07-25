@@ -61,6 +61,7 @@ class SettingsDialog(QDialog):
 		self.settings.setValue(SettingsValues.AutoBreakpointForScanf.value[0], True)
 		self.settings.setValue(SettingsValues.AutoScrollDbgOutput.value[0], True)
 		self.settings.setValue(SettingsValues.ShowLineNumInDisassembly.value[0], True)
+		self.settings.setValue(SettingsValues.ASMMaxLines.value[0], 5)
 
 
 		self.settings.setValue(SettingsValues.LoadTestTarget.value[0], True)
@@ -117,6 +118,7 @@ class SettingsDialog(QDialog):
 			self.tblGeneral.item(16, i).setCheckState(self.setHelper.getChecked(SettingsValues.AutoScrollDbgOutput))
 			self.tblGeneral.item(17, i).setCheckState(self.setHelper.getChecked(SettingsValues.ShowLineNumInDisassembly))
 
+
 			if i == 0:
 				item = QTableWidgetItem("Input handling (i.e. scanf)")
 			else:
@@ -128,6 +130,7 @@ class SettingsDialog(QDialog):
 			self.tblGeneral.setItem(14, i, item)
 
 		self.tblGeneral.item(11, 1).setText(str(self.setHelper.getValue(SettingsValues.StatusBarMsgTimeout)))
+		self.tblGeneral.item(18, 1).setText(str(self.setHelper.getValue(SettingsValues.ASMMaxLines)))
 
 		self.cmbGrouping = QComboBox()
 		member_names = list(ByteGrouping.__members__.keys())
@@ -201,6 +204,7 @@ class SettingsDialog(QDialog):
 		self.setHelper.setChecked(SettingsValues.AutoBreakpointForScanf, self.tblGeneral.item(15, colCheckBox))
 		self.setHelper.setChecked(SettingsValues.AutoScrollDbgOutput, self.tblGeneral.item(16, colCheckBox))
 		self.setHelper.setChecked(SettingsValues.ShowLineNumInDisassembly, self.tblGeneral.item(17, colCheckBox))
+		self.setHelper.setValue(SettingsValues.ASMMaxLines, int(self.tblGeneral.item(18, 1).text()))
 
 		self.setHelper.setChecked(SettingsValues.LoadTestTarget, self.tblDeveloper.item(0, 0))
 		self.setHelper.setChecked(SettingsValues.LoadTestBPs, self.tblDeveloper.item(1, 1))
