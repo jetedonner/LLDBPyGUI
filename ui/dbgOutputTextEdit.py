@@ -5,8 +5,11 @@ from datetime import datetime
 
 from config import *
 from lib.settings import *
+from ui.customQt.QSwitch import QSwitch
+
 
 class DbgOutputWidget(QWidget):
+
     def __init__(self):
         super().__init__()
 
@@ -29,9 +32,18 @@ class DbgOutputWidget(QWidget):
         self.cmdClear.setMaximumWidth(18)
         self.cmdClear.clicked.connect(self.cmdClear_clicked)
         self.cmdClear.setContentsMargins(0, 0, 0, 0)
-        self.cmdShrink.setStatusTip(f"Clear debug output console...")
+        self.cmdShrink.setStatusTip(f"Clear debug output console")
         # self.layCtrls.setContentsMargins(10, 0, 0, 0)
         self.layCtrls.addWidget(self.cmdClear)
+
+        # self.chkAutoscroll = QCheckBox(f"")
+        # self.chkAutoscroll.setIcon()
+        self.swtAutoscroll = QSwitch(f"")
+        self.swtAutoscroll.setChecked(SettingsHelper().getValue(SettingsValues.AutoScrollDbgOutput))
+        self.swtAutoscroll.checked.connect(self.swtAutoscroll_changed)
+        self.swtAutoscroll.setContentsMargins(0, 0, 0, 0)
+        self.swtAutoscroll.setStatusTip(f"Autoscroll the debug output")
+        self.layCtrls.addWidget(self.swtAutoscroll)
 
         # Add stretch to push everything above it to the top
         self.layCtrls.addStretch()
@@ -54,18 +66,19 @@ class DbgOutputWidget(QWidget):
     def cmdClear_clicked(self):
         self.txtDbg.setText("")
         pass
+    def swtAutoscroll_changed(self, checked):
+        self.txtDbg.autoscroll = checked
+        SettingsHelper().setValue(SettingsValues.AutoScrollDbgOutput, checked)# Qt.CheckState.Checked if checked else Qt.CheckState.Unchecked)
+        pass
 
 class DbgOutputTextEdit(QTextEdit):
+
+    autoscroll = True
+
     def __init__(self):
         super().__init__()
-        # self.setFontFamily("Courier")
-        # self.setText("Welcome to the PyQt Console!\ndave@Mia /: ")
-        # self.prompt = ">>> "
 
-        # self.layHMain = QHBoxLayout()
-        # self.wdtHMain = QWidget()
-
-        # self.setText("Output: ...")
+        self.autoscroll = True
         self.setReadOnly(True)
         self.setUndoRedoEnabled(False)
         self.setTabChangesFocus(True)
@@ -80,45 +93,16 @@ class DbgOutputTextEdit(QTextEdit):
                 font: 12px 'Courier New';
             }
         """)
-        # self.setFontFamily("Courier New")
 
     def logDbg(self, logMsg):
-        # sDateTimeFormat = "%H:%M:%S"
-        # if SettingsHelper().getValue(SettingsValues.ShowDateInLogView):
-        #     sDateTimeFormat = "%Y-%m-%d %H:%M:%S"
-        # now = datetime.now()
-        # timestamp = now.strftime(sDateTimeFormat)  # Format as 'YYYY-MM-DD HH:MM:SS'
-        #
-        # self.append(f"{timestamp}: {logMsg}")
-        self.append(logMsg)
-    # def keyPressEvent(self, event):
-    #     cursor = self.textCursor()
-    #     doc_text = self.toPlainText()
-    #     last_line_start = doc_text.rfind('\n') + 1
-    #     prompt_pos = doc_text.rfind(self.prompt, last_line_start)
-    #
-    #     cursor_pos = cursor.position()
-    #     input_start = prompt_pos + len(self.prompt)
-    #
-    #     # Prevent backspacing into prompt
-    #     if event.key() == Qt.Key.Key_Backspace:
-    #         if cursor_pos <= input_start:
-    #             return  # Block backspace
-    #     elif cursor_pos < input_start:
-    #         # Move cursor back into safe zone
-    #         cursor.setPosition(len(doc_text))
-    #         self.setTextCursor(cursor)
-    #
-    #     if event.key() == Qt.Key.Key_Return:
-    #         user_input = doc_text[input_start:]
-    #         self.append(f"{user_input}\n")
-    #         self.insertPlainText(f"{self.prompt}")
-    #         self.moveCursor(QTextCursor.MoveOperation.End)
-    #     else:
-    #         super().keyPressEvent(event)
 
-# app = QApplication([])
-# console = ConsoleWidget()
-# console.resize(600, 400)
-# console.show()
-# app.exec()
+        if self.autoscroll:
+            self.append(logMsg)
+            cursor = self.textCursor()
+            cursor.movePosition(QTextCursor.MoveOperation.End)
+            self.setTextCursor(cursor)
+            self.ensureCursorVisible()
+        else:
+            oldScrollPos = self.verticalScrollBar().value()
+            self.append(logMsg)
+            self.verticalScrollBar().setValue(oldScrollPos)

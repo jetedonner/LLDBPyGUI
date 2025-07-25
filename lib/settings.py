@@ -25,7 +25,7 @@ class SettingsValues(Enum):
 	ExitLLDBOnAppExit = ("Exit LLDB on App exit", True, bool)
 	ShowDateInLogView = ("Show date in logView", True, bool)
 	AutoBreakpointForScanf = ("Automatically set breakpoints for scanf calls", True, bool)
-
+	AutoScrollDbgOutput = ("Automatically scroll the debug output log", True, bool)
 	
 	# Developer Settings
 	LoadTestTarget = ("Load test target", True, bool)
@@ -75,6 +75,9 @@ class SettingsHelper(QObject):
 		self.settings.setValue(SettingsValues.ExitLLDBOnAppExit.value[0], True)
 		self.settings.setValue(SettingsValues.ShowDateInLogView.value[0], True)
 		self.settings.setValue(SettingsValues.AutoBreakpointForScanf.value[0], True)
+		self.settings.setValue(SettingsValues.AutoScrollDbgOutput.value[0], True)
+
+
 
 		
 		self.settings.setValue(SettingsValues.LoadTestTarget.value[0], True)

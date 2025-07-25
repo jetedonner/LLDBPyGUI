@@ -19,8 +19,11 @@ class SpinnerDialog(QDialog):
 		# Create layout and label for the GIF
 		layout = QVBoxLayout()
 		self.gif_label = QLabel()
+		# self.gif_label.setFixedSize(QSize(96, 96))
 		layout.addWidget(self.gif_label, alignment=Qt.AlignmentFlag.AlignCenter)
 		self.setLayout(layout)
+		self.lblMsg = QLabel(f"Loading target ...")
+		layout.addWidget(self.lblMsg, alignment=Qt.AlignmentFlag.AlignCenter)
 	
 		# Load and set the animated GIF
 		self.movie = QMovie("./resources/img/DoubleRingSpinner.gif")
@@ -33,7 +36,7 @@ class SpinnerDialog(QDialog):
 		palette = self.palette()
 		palette.setColor(palette.ColorRole.Window, bg_color)
 		self.setPalette(palette)
-		self.setFixedSize(150, 75)
+		self.setFixedSize(150, 115)
 		# Set default corner radius
 		self.corner_radius = 10
 		self.border_width = 5
