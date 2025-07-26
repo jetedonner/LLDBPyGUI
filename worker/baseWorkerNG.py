@@ -1,5 +1,5 @@
 import lldb
-
+import os
 import time
 from PyQt6.QtCore import QObject, QThread, pyqtSignal
 
@@ -162,14 +162,14 @@ class Worker(QObject):
 		# Use a string stream as the destination.
 		linesOfCode = self.count_lines_of_code(self.sourceFile)
 		self.logDbgC.emit(f"linesOfCode: {linesOfCode} / {linesOfCode - self.lineNum}", DebugLevel.Verbose)
-		stream = lldb.SBStream()
-		source_mgr.DisplaySourceLinesWithLineNumbers(filespec, self.lineNum, self.lineNum,
-													 linesOfCode - self.lineNum, '=>', stream)
-		#		print(stream.GetData())
+		if linesOfCode > 0:
+			stream = lldb.SBStream()
+			source_mgr.DisplaySourceLinesWithLineNumbers(filespec, self.lineNum, self.lineNum, linesOfCode - self.lineNum, '=>', stream)
 
 		self.isLoadSourceCodeActive = False
 		self.finishedLoadControlFlow = False
-		self.finishedLoadingSourceCodeCallback.emit(stream.GetData())
+		if linesOfCode > 0:
+			self.finishedLoadingSourceCodeCallback.emit(stream.GetData())
 		# startLoadControlFlowSignal
 		self.runControlFlow_loadConnections.emit()
 		# QCoreApplication.processEvents()
@@ -178,8 +178,12 @@ class Worker(QObject):
 		self.runLoadControlFlow()
 
 	def count_lines_of_code(self, file_path):
-		with open(file_path, 'r') as file:
-			lines = file.readlines()
+		lines = []
+		if os.path.exists(file_path):
+			with open(file_path, 'r') as file:
+				lines = file.readlines()
+		else:
+			logDbgC(f"The source code file: {file_path} could not be found!")
 
 		# code_lines = [
 		# 	line for line in lines

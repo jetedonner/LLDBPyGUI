@@ -27,6 +27,7 @@ class UserActionNeededDialog(QDialog):
 		# # self.gif_label.setFixedSize(QSize(96, 96))
 		# layout.addWidget(self.gif_label, alignment=Qt.AlignmentFlag.AlignCenter)
 		self.lblMsg = QLabel(f"")
+		self.lblMsg2 = QLabel(f"")
 		self.setRemainingTimer(self.timerSteps)
 		self.lblTitle = QLabel("User action needed!")
 		self.fntTitle = QFont()
@@ -49,6 +50,7 @@ class UserActionNeededDialog(QDialog):
 		self.setLayout(layout)
 
 		layout.addWidget(self.lblMsg, alignment=Qt.AlignmentFlag.AlignCenter)
+		layout.addWidget(self.lblMsg2, alignment=Qt.AlignmentFlag.AlignCenter)
 	
 		# Load and set the animated GIF
 		# self.movie = QMovie("./resources/img/Bean-Eater@1x-1.0s-200px-200px.gif") #DoubleRingSpinner.gif") #Loading-Eclipse-200pxX200px.gif") #
@@ -77,9 +79,8 @@ class UserActionNeededDialog(QDialog):
 		self.startCloseTimer()
 
 	def setRemainingTimer(self, remainingSecs):
-		# self.lblMsg = QLabel(f"!!! scanf hit!!!\nGoing to lldb console in {remainingSecs} sec ...")
-		self.lblMsg.setText(f"!!! scanf hit!!!\nGoing to lldb console in {remainingSecs} sec ...")
-		pass
+		self.lblMsg.setText(f"!!! SCANF HIT !!!")
+		self.lblMsg2.setText(f"Going to LLDB Console in {remainingSecs} sec ...")
 
 	def startCloseTimer(self):
 		self.timerSteps = 3

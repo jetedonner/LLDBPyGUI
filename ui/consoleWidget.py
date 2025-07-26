@@ -23,6 +23,8 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, QObject, pyqtSignal
 
+from ui.helper.dbgOutputHelper import logDbgC
+
 
 # 1. Custom Stream for Redirecting Output
 # This class acts as a file-like object that redirects write calls to a PyQt signal.
@@ -328,6 +330,7 @@ class ConsoleWidget(QWidget):
     #			print(match)
 
     def execCommand_clicked(self):
+        logDbgC(f"execCommand_clicked() in consoleWidget ...")
         if self.setHelper.getValue(SettingsValues.CmdHistory):
             self.txtCmd.addCommandToHistory()
 

@@ -197,6 +197,13 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 				else:
 					print(f"APP NOT STOOOOOOOOOOOOOOOPPPPPPPPPPPEEEEEEEEEEDDDDDDDDDD!!!!!!!!")
 					self.readSTDOUT(process)
+			elif event.GetType() == lldb.SBProcess.eBroadcastBitStateChanged:
+				process = self.driver.getTarget().GetProcess()
+				if process.GetState() == lldb.eStateRunning : #or process.GetState() == lldb.eStateStepping:
+					self.window().setWinTitleWithState("Running")
+					self.window().txtMultiline.clearPC()
+					pass
+				pass
 				
 				
 		elif SBBreakpoint.EventIsBreakpointEvent(event):

@@ -10,6 +10,9 @@ from PyQt6 import uic, QtWidgets, QtCore
 import json
 from pathlib import Path
 
+from lib.settings import SettingsHelper, SettingsValues
+from ui.helper.dbgOutputHelper import logDbgC
+
 HISTORY_FILE = Path("./input_history.json")
 
 
@@ -23,8 +26,15 @@ class QHistoryLineEdit(QLineEdit):
 	persistentHistory = False
 
 	def save_history(self, history):
-		with open(HISTORY_FILE, "w") as f:
-			json.dump(history, f)
+		count = 0
+		with open(HISTORY_FILE, 'r', encoding='utf-8') as f:
+			for chunk in iter(lambda: f.read(8192), ''):  # Read in small blocks
+				count += len(chunk)
+
+		print(f"Total characters: {count}... Char count inside boundaries: {'yes' if count <= SettingsHelper().getValue(SettingsValues.MaxCommandHistoryCharCount) else 'no'}")
+		if count <= SettingsHelper().getValue(SettingsValues.MaxCommandHistoryCharCount):
+			with open(HISTORY_FILE, "w") as f:
+				json.dump(history, f)
 
 	def clear_history(self):
 		with open(HISTORY_FILE, "w") as f:
@@ -105,11 +115,12 @@ class QHistoryLineEdit(QLineEdit):
 			# Prevent event from being passed to QLineEdit for default behavior
 			event.accept()
 
-		elif event.key() == Qt.Key.Key_Return:
-			if self.doAddCmdToHist:
-				self.addCommandToHistory()
-			super(QHistoryLineEdit, self).keyPressEvent(event)
-			pass
+		# elif event.key() == Qt.Key.Key_Return:
+		# 	if self.doAddCmdToHist:
+		# 		logDbgC(f"keyPressEvent() in QHistoryLineEdit ...")
+		# 		self.addCommandToHistory()
+		# 	super(QHistoryLineEdit, self).keyPressEvent(event)
+		# 	pass
 		else:
 			super(QHistoryLineEdit, self).keyPressEvent(event)
 		

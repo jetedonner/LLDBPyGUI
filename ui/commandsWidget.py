@@ -14,6 +14,8 @@ from ui.customQt.QConsoleTextEdit import *
 
 from lib.settings import *
 from config import *
+from ui.helper.dbgOutputHelper import logDbgC
+
 
 class CommandsWidget(QWidget):
 	
@@ -133,6 +135,7 @@ class CommandsWidget(QWidget):
 #			print(match)
 		
 	def execCommand_clicked(self):
+		logDbgC(f"execCommand_clicked() in commandsWidget ...")
 		if self.setHelper.getValue(SettingsValues.CmdHistory):
 			self.txtCmd.addCommandToHistory()
 			
