@@ -3,6 +3,8 @@ from PyQt6.QtGui import QTextCursor, QKeyEvent
 from PyQt6.QtCore import Qt
 
 from config import *
+from ui.helper.dbgOutputHelper import logDbgC
+
 
 class ConsoleWidget(QTextEdit):
     def __init__(self):
@@ -27,6 +29,8 @@ class ConsoleWidget(QTextEdit):
         # self.setFontFamily("Courier New")
 
     def keyPressEvent(self, event):
+        logDbgC(f"ConsoleWidget => keyPressEvent: {event}...")
+
         cursor = self.textCursor()
         doc_text = self.toPlainText()
         last_line_start = doc_text.rfind('\n') + 1

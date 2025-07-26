@@ -58,6 +58,9 @@ def __lldb_init_module(debugger, internal_dict):
 	ci.HandleCommand(f"command script add -h '({PROMPT_TEXT}) Start the {APP_NAME}.' -f LLDBPyGUI.StartLLDBPyGUI pyg", res)
 
 	ci.HandleCommand(f"command script add -h '({PROMPT_TEXT}) Display {APP_NAME} banner.' --function LLDBPyGUI.cmd_banner banner", res)
+	ci.HandleCommand(
+		f"command script add -h '({PROMPT_TEXT}) Display (LLDBs) Python path and version.' --function LLDBPyGUI.cmd_pyvers pyvers",
+		res)
 
 	ci.HandleCommand('command script add -f LLDBPyGUI.feed_input feedinput', res)
 	ci.HandleCommand('command script add -f LLDBPyGUI.launchtest launchtest', res)
@@ -188,7 +191,12 @@ def cmd_banner(debugger,command,result,dict):
 	print(f"| Kim David Hauser (JeTeDonner), (C.) by kimhauser.ch 1991-2024                   |")
 	print(f"#=================================================================================#" + RESET)
 #   return(sys.stdout)
-	
+
+def cmd_pyvers(debugger,command,result,dict):
+	import sys
+	print(f"Python path: {sys.executable} ...")
+	print(f"System version: {sys.version} ...")
+	pass
 	
 def close_application():
 #	global driver

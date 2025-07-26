@@ -750,6 +750,8 @@ class LLDBPyGUIWindow(QMainWindow):
 
 	def setWinTitleWithState(self, state):
 		self.setWindowTitle(APP_NAME + " " + APP_VERSION + " - " + APP_RELEASE_DATE + " - " + self.targetBasename + " - " + state)
+		# QCoreApplication.processEvents()
+		# QApplication.processEvents()
 
 	def handle_showMemoryFor(self):
 		sender = self.sender()  # get the sender object

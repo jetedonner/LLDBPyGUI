@@ -20,6 +20,7 @@ from PyQt6.QtWidgets import *
 from PyQt6 import uic, QtWidgets
 
 from config import ConfigClass
+from ui.helper.dbgOutputHelper import logDbgC
 
 APP_NAME = "ConsoleTextEditWindow-TEST"
 WINDOW_SIZE = 720
@@ -47,6 +48,30 @@ class QConsoleTextEdit(QTextEdit):
 			}
 		""")
 		self.setFont(ConfigClass.font)
+
+		self.installEventFilter(self)
+		# self.keyPressEvent = self._custom_key_press_event
+
+	# def __init__(self):
+	# 	QtGui.QWidget.__init__(self)
+	# 	self.edit = QtGui.QTextEdit(self)
+	# 	self.edit.installEventFilter(self)
+	# 	layout = QtGui.QVBoxLayout(self)
+	# 	layout.addWidget(self.edit)
+
+	def eventFilter(self, widget, event):
+		# logDbgC(f"IN EVENTFILTER")
+		if event.type() == QEvent.Type.KeyPress and widget is self:
+			key = event.key()
+			if key == Qt.Key.Key_Escape:
+				logDbgC(f'escape')
+			else:
+				if key == Qt.Key.Key_Return:
+					self.append('return')
+				elif key == Qt.Key.Key_Enter:
+					self.append('enter')
+				return True
+		return QWidget.eventFilter(self, widget, event)
 
 	def setEscapedText(self, text):
 		formattedText = self.formatText(text)
@@ -102,7 +127,16 @@ class QConsoleTextEdit(QTextEdit):
 		formattedText2 += "</span>"
 
 		return formattedText2
-	
+
+	# def _custom_key_press_event(self, event):
+	# 	logDbgC(f"keyPressEvent: {event}")
+	# 	pass
+	#
+	# def keyPressEvent(self, event):
+	# 	# cursor = self.textCursor()
+	# 	logDbgC(f"keyPressEvent: {event}")
+
+
 class QConsoleTextEditWindow(QMainWindow):
 	
 	mytext = "thread #1: tid = 0xa8f62d, 0x0000000100003f40 hello_world_test_loop`main, queue = \x1b[32m'com.apple.main-thread'\x1b[0m, stop reason = \x1b[31mbreakpoint 1.1\x1b[0m\nthread #2: tid = 0xa8f62d, 0x0000000100003f40 hello_world_test_loop`main, queue = \x1b[35m'com.apple.main-thread'\x1b[0m, stop reason = \x1b[36mbreakpoint 1.1\x1b[0m"

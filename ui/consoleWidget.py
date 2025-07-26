@@ -42,6 +42,7 @@ class ConsoleStream(QObject):
         self.new_text.emit(text)
         # Optional: Keep the original stdout/stderr for debugging the console itself
         sys.__stdout__.write(text)  # Uncomment for console debugging
+        self.flush()
 
     def flush(self):
         """
@@ -97,7 +98,7 @@ class PyQtInteractiveConsole(code.InteractiveConsole):
         old_stderr = sys.stderr
         sys.stdout = self.output_stream
         sys.stderr = self.output_stream
-        print(f"ConsoleWidget => CHANGING STDOUT!!!!")
+        logDbgC(f"ConsoleWidget => CHANGING STDOUT!!!!")
         try:
             # Use 'push' for multi-line input handling, though for single-line
             # QLineEdit, it behaves like 'runsource'.
@@ -236,98 +237,53 @@ class PyQtConsoleWidget(QWidget):
         """
         command = self.input_line_edit.text()
         self.input_line_edit.clear()
+        if command != "exit()":
 
-        # if command.strip().lower() == 'exit()':
-        #     # Handle exit command to close the console window or hide it
-        #     self.parentWidget().close() # Assuming parent is a window
-        #     return
+            # if command.strip().lower() == 'exit()':
+            #     # Handle exit command to close the console window or hide it
+            #     self.parentWidget().close() # Assuming parent is a window
+            #     return
 
-        # Execute the command using the interactive console
-        self.console.run_command(command)
+            # Execute the command using the interactive console
+            self.console.run_command(command)
+        else:
+            self.output_text_edit.append(f"Sorry, but as of now you cannot use 'exit()' in this console emulator")
+            logDbgC(f"Sorry, but as of now you cannot use 'exit()' in this console emulator")
+
 
 
 class ConsoleWidget(QWidget):
-    #	actionShowMemory = None
+
     workerManager = None
 
     def __init__(self, workerManager):
         super().__init__()
-
         self.workerManager = workerManager
-
+        logDbgC(f"inside constructor of ConsoleWidget ...")
         self.setHelper = SettingsHelper()
 
         self.wdgCmd = QWidget()
-        #		self.wdgCommands = QWidget()
         self.layCmdParent = QVBoxLayout()
         self.layCmd = QHBoxLayout()
         self.wdgCmd.setLayout(self.layCmd)
         self.setLayout(self.layCmdParent)
 
-        # self.lblCmd = QLabel("Command: ")
-        # self.lblCmd.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
-        #
-        # self.txtCmd = QHistoryLineEdit(self.setHelper.getValue(SettingsValues.CmdHistory))
-        # self.txtCmd.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
-        # self.txtCmd.setText(ConfigClass.initialCommand)
-        # self.txtCmd.returnPressed.connect(self.execCommand_clicked)
-        # self.txtCmd.availCompletitions.connect(self.handle_availCompletitions)
-        # self.txtCmd.setFocus(Qt.FocusReason.NoFocusReason)
-        #
-        # self.swtAutoscroll = QSwitch("Autoscroll")
-        # self.swtAutoscroll.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
-        # self.swtAutoscroll.setChecked(True)
-        #
-        # self.cmdExecuteCmd = QPushButton("Execute")
-        # self.cmdExecuteCmd.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
-        # self.cmdExecuteCmd.clicked.connect(self.execCommand_clicked)
-        #
-        # self.cmdClear = QPushButton()
-        # self.cmdClear.setIcon(ConfigClass.iconTrash)
-        # self.cmdClear.setToolTip("Clear the Commands log")
-        # self.cmdClear.setIconSize(QSize(16, 16))
-        # self.cmdClear.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
-        # self.cmdClear.clicked.connect(self.clear_clicked)
-        #
-        # self.layCmd.addWidget(self.lblCmd)
-        # self.layCmd.addWidget(self.txtCmd)
-        # self.layCmd.addWidget(self.cmdExecuteCmd)
-        # self.layCmd.addWidget(self.swtAutoscroll)
-        # self.layCmd.addWidget(self.cmdClear)
-        # self.wdgCmd.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
-
         self.txtConsole = QConsoleTextEdit()
-        # self.txtConsole.setReadOnly(True)
         self.txtConsole.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
         self.txtConsole.setFont(ConfigClass.font)
-        # self.txtConsole.setText("Here you can run LLDB commands. Type 'help' for a list of available commands.\n")
         self.txtConsole.setText("dave@Mia testtarget %")
         self.layCmdParent.addWidget(self.txtConsole)
-
-    # self.layCmdParent.addWidget(self.wdgCmd)
+        # self.txtConsole.keyPressEvent()
 
     def handle_availCompletitions(self, compl):
-
         self.txtCommands.append("Available Completions:")
-        #		self.win.scroll(1)
         for m in islice(compl, 1, None):
             self.txtCommands.append(m)
         pass
 
     def clear_clicked(self):
+        logDbgC(f"inside clear_clicked of ConsoleWidget ...")
         self.txtCommands.setText("")
-
-    #		command_interpreter = self.debugger.GetCommandInterpreter()
-
-    #		self.data = self.txtCmd.text()
-    #		matches = lldb.SBStringList()
-    #		commandinterpreter = self.workerManager.driver.debugger.GetCommandInterpreter()
-    #		commandinterpreter.HandleCompletion(
-    #			self.data, len(self.data), 0, -1, matches)
-    #		if len(matches) > 0:
-    #			self.txtCmd.insert(matches.GetStringAtIndex(0))
-    #		for match in matches:
-    #			print(match)
 
     def execCommand_clicked(self):
         logDbgC(f"execCommand_clicked() in consoleWidget ...")

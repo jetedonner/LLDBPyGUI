@@ -202,7 +202,11 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 				if process.GetState() == lldb.eStateRunning : #or process.GetState() == lldb.eStateStepping:
 					self.window().setWinTitleWithState("Running")
 					self.window().txtMultiline.clearPC()
+					self.window().setResumeActionIcon(False)
 					pass
+				elif process.GetState() == lldb.eStateStopped:
+					self.window().setWinTitleWithState(f"Interrupted")
+					self.window().setResumeActionIcon(True)
 				pass
 				
 				
