@@ -181,11 +181,17 @@ class HoverLineItem(QGraphicsLineItem, ArrowHelperClass):
 
     def handle_gotoOrigin(self):
         logDbg(f"handle_gotoOrigin...")
+        # self.connection.asmTable.scrollToRow(self.connection.origRow)
+        self.connection.asmTable.setFocus(Qt.FocusReason.NoFocusReason)
+        self.connection.asmTable.selectRow(self.connection.origRow)
         self.connection.asmTable.scrollToRow(self.connection.origRow)
         pass
 
     def handle_gotoDestination(self):
         logDbg(f"handle_gotoDestination....")
+        # self.connection.asmTable.scrollToRow(self.connection.destRow)
+        self.connection.asmTable.setFocus(Qt.FocusReason.NoFocusReason)
+        self.connection.asmTable.selectRow(self.connection.destRow)
         self.connection.asmTable.scrollToRow(self.connection.destRow)
         pass
 
@@ -218,11 +224,16 @@ class HoverPathItem(QGraphicsPathItem, ArrowHelperClass):
 
     def handle_gotoOrigin(self):
         logDbg(f"handle_gotoOrigin...")
+        self.connection.asmTable.setFocus(Qt.FocusReason.NoFocusReason)
+        self.connection.asmTable.selectRow(self.connection.origRow)
         self.connection.asmTable.scrollToRow(self.connection.origRow)
         pass
     
     def handle_gotoDestination(self):
         logDbg(f"handle_gotoDestination....")
+        # self.connection.asmTable.scrollToRow(self.connection.destRow)
+        self.connection.asmTable.setFocus(Qt.FocusReason.NoFocusReason)
+        self.connection.asmTable.selectRow(self.connection.destRow)
         self.connection.asmTable.scrollToRow(self.connection.destRow)
         pass
 

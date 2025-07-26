@@ -162,6 +162,7 @@ class QHexTableWidget(BaseTableWidget):
 
 	def __init__(self, parent=None):
 		super().__init__()
+		self.context_menu = QMenu(self)
 
 		#		self.context_menu = QMenu(self)
 		#		self.actionEditMemory = self.context_menu.addAction("Edit memory")
@@ -228,6 +229,7 @@ class QHexTableWidget(BaseTableWidget):
 		self.sigChanged.emit(start_pos, end_pos, edited_text)
 
 	def contextMenuEvent(self, event):
+
 		self.context_menu.exec(event.globalPos())
 
 	#	def handle_editMemory(self):

@@ -734,7 +734,7 @@ class Worker(QObject):
 				if	self.mainWin.setHelper.getValue(SettingsValues.AutoBreakpointForScanf):
 					bp = self.driver.getTarget().BreakpointCreateByName("scanf")
 					for bl in bp:
-						logDbgC(f"bl.location: {bl}")
+						self.logDbgC(f"bl.location: {bl}", DebugLevel.Verbose)
 						
 					self.driver.scanfID = bp.GetID()
 					self.driver.debugger.HandleCommand(f'br name add -N scanf {bp.GetID()}')
@@ -747,4 +747,4 @@ class Worker(QObject):
 
 			self.loadTarget()
 		else:
-			self.logDbgC.emit(f"Error creating target!!!")
+			self.logDbgC.emit(f"Error creating target!!!", DebugLevel.Verbose)
