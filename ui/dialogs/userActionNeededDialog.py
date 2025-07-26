@@ -27,7 +27,7 @@ class UserActionNeededDialog(QDialog):
 		# # self.gif_label.setFixedSize(QSize(96, 96))
 		# layout.addWidget(self.gif_label, alignment=Qt.AlignmentFlag.AlignCenter)
 		self.lblMsg = QLabel(f"")
-		self.setRemainingTime(self.timerSteps)
+		self.setRemainingTimer(self.timerSteps)
 		self.lblTitle = QLabel("User action needed!")
 		self.fntTitle = QFont()
 		self.fntTitle.setFamily(f"Courier New")
@@ -76,7 +76,7 @@ class UserActionNeededDialog(QDialog):
 
 		self.startCloseTimer()
 
-	def setRemainingTime(self, remainingSecs):
+	def setRemainingTimer(self, remainingSecs):
 		# self.lblMsg = QLabel(f"!!! scanf hit!!!\nGoing to lldb console in {remainingSecs} sec ...")
 		self.lblMsg.setText(f"!!! scanf hit!!!\nGoing to lldb console in {remainingSecs} sec ...")
 		pass
@@ -88,14 +88,13 @@ class UserActionNeededDialog(QDialog):
 		self.tmrDlgShowing.setInterval(1000)  # 0.5 seconds
 		self.tmrDlgShowing.timeout.connect(self.handle_timerEvent)
 		self.tmrDlgShowing.start()
+		self.handle_timerEvent()
 
 	def handle_timerEvent(self):
 		if self.timerStepsCur <= self.timerSteps:
-			self.setRemainingTime(self.timerSteps - self.timerStepsCur)
+			self.setRemainingTimer(self.timerSteps - self.timerStepsCur)
 			self.timerStepsCur += 1
-			# logDbgC(f"handle_timerEvent => self.timerStepsCur:{self.timerStepsCur} / self.timerSteps: {self.timerSteps}")
 		else:
-			# self.setRemainingTime(self.timerSteps - self.timerStepsCur)
 			self.handle_closeAndGotoConsole()
 
 	def handle_closeAndGotoConsole(self):

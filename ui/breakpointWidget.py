@@ -200,7 +200,8 @@ class BreakpointTreeWidget(BaseTreeWidget):
 							logDbgC(f"| Please enter your input string in the LLDB       |")
 							logDbgC(f"| console tab to continue with 'feedinput <input>' |")
 							logDbgC(f"#==================================================#")
-							self.show_notification(f"SCANF HIT! Please feed an input in the lldb console!")
+							self.show_notification("")
+							# self.show_notification(f"SCANF HIT! Please feed an input in the lldb console!")
 					self.scrollToItem(subitem, 
 						QAbstractItemView.ScrollHint.PositionAtCenter)
 					if not setPC:

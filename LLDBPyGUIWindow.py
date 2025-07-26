@@ -1084,35 +1084,8 @@ class LLDBPyGUIWindow(QMainWindow):
 		print(f'Credits clicked ...')
 		if not self.isAttached:
 #			print(f"Attaching to process ...")
-			pd = CreditsDialog("Credits for LLDBPyGUI", "This are the Credits with the resourses used for the realisation of LLDBPyGUI")
+			pd = CreditsDialog("LLDBPyGUI - Credits", "This are the Credits with the resources used for the realisation of LLDBPyGUI")
 			pd.exec()
-			# pd.txtPID.setText(str(self.setHelper.getValue(SettingsValues.TestAttachPID)))
-			# if pd.exec():
-			# 	self.resetGUI()
-			# 	try:
-			# 		proc = pd.getSelectedProcess()
-			# 		print(proc)
-			# 		print(f"Process Idx: '{pd.cmbPID.currentIndex()}' / PID: '{proc.pid}' / Name: '{proc.name()}' selected")
-			# 		self.setWinTitleWithState(f"PID: {proc.pid} ({proc.name()})")
-			# 		self.driver.attachProcess(proc.pid)
-			# 		self.loadTarget()
-			# 		self.attach_action.setIcon(ConfigClass.iconGearsGrey)
-			# 		self.attach_action.setToolTip("Detach from process: {proc.pid} ({proc.name()})")
-			# 		self.setHelper.setValue(SettingsValues.TestAttachPID, int(proc.pid))
-			# 		self.isAttached = True
-			# 	except Exception as e:
-			# 		sError = f"Error while attaching to process: {e}"
-			# 		self.updateStatusBar(sError)
-			# 		print(sError)
-		# else:
-		# 	error = self.driver.getTarget().GetProcess().Detach()
-		# 	if error.Success():
-		# 		self.resetGUI()
-		# 		print(f"Detached from process returned with result: {error}")
-		# 		self.attach_action.setIcon(ConfigClass.iconGears)
-		# 		self.attach_action.setToolTip("Attach to process")
-		# 		self.isAttached = False
-		pass
 
 	def test2_clicked(self):
 		os.system('clear')  # Unix/Linux/macOS

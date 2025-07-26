@@ -164,6 +164,8 @@ class ConfigClass():
 	testTargetArch = "x86_64-apple-macosx15.1.1"
 	testTargetArgs = ""
 	settingsFilename = "./LLDBPyGUI_Settings.ini"
+
+	githubPagesURL = "https://jetedonner.github.io/"
 	
 	toolbarIconSize = 24
 	currentDebuggerSubTab = 1
