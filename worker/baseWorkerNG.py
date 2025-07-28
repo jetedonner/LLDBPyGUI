@@ -740,7 +740,19 @@ class Worker(QObject):
 		if self.target.IsValid():
 			self.mainWin.target = self.target
 			self.logDbgC.emit(f"target: {self.target}", DebugLevel.Verbose)
-			
+
+			# for module in self.target.module_iter():
+			# 	for compile_unit in module.compile_unit_iter():
+			# 		for func in compile_unit:
+			# 			if func.IsValid():
+			# 				self.logDbgC.emit(f"Objective-C Function: {func.GetName()}")
+			# for module in self.target.module_iter():
+			# 	for symbol in module:
+			# 		if symbol.IsValid():
+			# 			name = symbol.GetName()
+			# 			start_addr = symbol.GetStartAddress().GetLoadAddress(self.target)
+			# 			self.logDbgC.emit(f"Symbol: {name}, Address: {hex(start_addr)}", DebugLevel.Verbose)
+
 			if self.mainWin.setHelper.getValue(SettingsValues.BreakpointAtMainFunc):
 				self.driver.debugger.HandleCommand('process launch --stop-at-entry')
 
@@ -749,6 +761,14 @@ class Worker(QObject):
 				# 	for idxMod in range(len(self.driver.getTarget().modules)):
 				# 		self.logDbg.emit(
 				# 			f"- self.driver.getTarget().GetModuleAtIndex({idxMod}): {self.driver.getTarget().GetModuleAtIndex(idxMod)}")
+
+				for module in self.target.module_iter():
+					for symbol in module:
+						if symbol.IsValid():
+							# self.logDbgC.emit(f"Symbol: {symbol.GetName()}, Address: {hex(symbol.GetStartAddress().GetLoadAddress(self.target))}",DebugLevel.Verbose)
+							name = symbol.GetName()
+							start_addr = symbol.GetStartAddress().GetLoadAddress(self.target)
+							self.logDbgC.emit(f"Symbol: {name}, Address: {hex(start_addr)}", DebugLevel.Verbose)
 
 				main_oep = find_main(self.driver.debugger)
 				self.driver.debugger.HandleCommand(f'breakpoint set -a {hex(main_oep)} -N kimon')

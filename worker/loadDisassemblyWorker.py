@@ -33,7 +33,12 @@ class LoadDisassemblyWorker(BaseWorker):
 		Args:
 			target: The SBTarget object representing the debugged process.
 		"""
-		
+		for module in self.target.module_iter():
+			for compile_unit in module.compile_unit_iter():
+				for func in compile_unit:
+					if func.IsValid():
+						print(f"Objective-C Function: {func.GetName()}")
+
 		thread = self.target.GetProcess().GetSelectedThread()
 		idxOuter = 0
 		for module in self.target.module_iter():

@@ -859,6 +859,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		ctd = CreateTargetDialog()
 		res = ctd.exec()
 		if res and ctd.txtTarget.text() is not None and ctd.txtTarget.text() != "":
+			self.instCnt = 0
 			self.worker.fileToLoad = ctd.txtTarget.text()
 			self.worker.arch = ctd.cmbArch.currentText()
 			self.worker.args = ctd.txtArgs.text()
@@ -883,32 +884,6 @@ class LLDBPyGUIWindow(QMainWindow):
 			self.txtMultiline.table.bpHelper.driver = self.driver
 			self.driver.start()
 			self.threadLoad.start()
-		return
-		# filename = showOpenFileDialog()
-		# if filename != None and filename != "":
-		# 	self.worker.fileToLoad = filename
-		# 	self.txtMultiline.resetContent()
-		# 	self.bpHelper.deleteAllBPs()
-		# 	self.wdtBPsWPs.treBPs.clear()
-		# 	self.tabWatchpoints.tblWatchpoints.resetContent()
-		# 	self.wdtControlFlow.resetContent()
-		# 	self.setResumeActionIcon(True)
-		# 	self.tabWidgetReg.clear()
-		# 	self.rflagsLoaded = 0
-		# 	# self.wdtBPsWPs.treBPs.clear()
-		# 	global event_queue
-		# 	event_queue = queue.Queue()
-		# 	self.should_quit = False
-		# 	global driver
-		# 	driver = dbg.debuggerdriver.createDriver(self.driver.debugger, event_queue)
-		# 	self.driver = driver
-		# 	self.driver.setDone(False)
-		# 	self.txtMultiline.table.bpHelper.driver = self.driver
-		# 	self.driver.start()
-		# 	# print(f"Loading new target: '{filename}")
-		# 	# self.loadNewExecutableFile(filename)
-		# 	# self.worker.loadNewExecutableFile(filename)
-		# 	self.threadLoad.start()
 
 	def handle_tabWidgetMainCurrentChanged(self, idx):
 		if idx == 2:
