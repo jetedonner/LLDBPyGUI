@@ -145,17 +145,18 @@ class ConfigClass():
 	initialCommand = "w s v idx" # "breakpoint set -a 0x100003f6a" # re read
 	fontStr = "Courier New"
 	font = QFont(fontStr) # ("Monaco") #("Courier New")
+#	font.setFixedPitch(True)
 	fontSize = "12"
 	fontSizePx = fontSize + "px"
+	fontStrComplete = f"font: {fontSizePx} '{fontStr}';"
 
-	autofindSourcecodeFileExts = ['.c', '.cpp', '.m']
-
-#	font.setFixedPitch(True)
+	autofindSourcecodeFileExts = ['.c', '.cpp', '.m', '.x', '.xm']
 	
 	supportURL = "https://pylldbgui.kimhauser.ch/support"
 	githubURL = "https://github.com/jetedonner/pyLLDBGUI"
-	testBPsFilename = "/Volumes/Data/dev/python/LLDBPyGUI/resources/bps/testbps_withSubFunc5.json" # "/Volumes/Data/dev/_reversing/disassembler/LLDBPyGUI/pyLLDBGUI/LLDBPyGUI/testtarget/testbps_withSubFunc5.json"
+	githubPagesURL = "https://jetedonner.github.io/"
 
+	testBPsFilename = "/Volumes/Data/dev/python/LLDBPyGUI/resources/bps/testbps_withSubFunc5.json" # "/Volumes/Data/dev/_reversing/disassembler/LLDBPyGUI/pyLLDBGUI/LLDBPyGUI/testtarget/testbps_withSubFunc5.json"
 #	testTarget = "/Volumes/Data/dev/_reversing/disassembler/LLDBPyGUI/pyLLDBGUI/LLDBPyGUI/testtarget/hello_world_test"
 #	testTargetSource = "/Volumes/Data/dev/_reversing/disassembler/LLDBPyGUI/pyLLDBGUI/LLDBPyGUI/testtarget/hello_world_test.c"
 
@@ -171,8 +172,6 @@ class ConfigClass():
 	testTargetArch = "x86_64-apple-macosx15.1.1"
 	testTargetArgs = ""
 	settingsFilename = "./LLDBPyGUI_Settings.ini"
-
-	githubPagesURL = "https://jetedonner.github.io/"
 	
 	toolbarIconSize = 24
 	currentDebuggerSubTab = 1
@@ -237,12 +236,15 @@ class ConfigClass():
 	
 	colorGreen = QColor(0, 255, 0, 128)
 	colorTransparent = QColor(0, 0, 0, 0)
+
+	resRootDir = "./"
 	
 	@staticmethod
 	def initIcons():
 		project_root = dirname(realpath(__file__))
 		resources_root = os.path.join(project_root, 'resources', 'img')
-		
+		ConfigClass.resRootDir =resources_root
+
 		ConfigClass.iconStd = QIcon()
 		
 		ConfigClass.pixGears = QPixmap(os.path.join(resources_root, 'gears.png')).scaled(QSize(48, 48))
@@ -251,14 +253,7 @@ class ConfigClass():
 		ConfigClass.pixBugLg = QPixmap(os.path.join(resources_root, 'bug.png')).scaled(QSize(48, 48))
 		ConfigClass.pixBugGreen = QPixmap(os.path.join(resources_root, 'bug_green.png')).scaled(QSize(18, 18))
 		ConfigClass.pixDelete = QPixmap(os.path.join(resources_root, 'delete.png')).scaled(QSize(48, 48))
-#		ConfigClass.pixAdd = QPixmap(os.path.join(resources_root, 'add.png')).scaled(QSize(18, 18))
 		ConfigClass.pixSave = QPixmap(os.path.join(resources_root, 'save.png')).scaled(QSize(48, 48))
-#		ConfigClass.pixLoad = QPixmap(os.path.join(resources_root, 'folder.png')).scaled(QSize(18, 18))
-#		ConfigClass.pixReload = QPixmap(os.path.join(resources_root, 'reload.png')).scaled(QSize(18, 18))
-#		ConfigClass.pixInfo = QPixmap(os.path.join(resources_root, 'info.png')).scaled(QSize(18, 18))
-#		ConfigClass.pixTrash = QPixmap(os.path.join(resources_root, 'delete.png')).scaled(QSize(18, 18))
-#		ui->label->setStyleSheet("border-image:url(:/2.png);");
-#		ui->label->setPixmap(pix);
 
 		ConfigClass.iconClear = QIcon(os.path.join(resources_root, 'clear.png'))
 		ConfigClass.iconShrink = QIcon(os.path.join(resources_root, 'shrink.png'))
@@ -273,10 +268,7 @@ class ConfigClass():
 #		
 		ConfigClass.iconGears = QIcon(os.path.join(resources_root, 'gears.png'))
 		ConfigClass.iconGearsGrey = QIcon(os.path.join(resources_root, 'gears_grey.png'))
-#		
-#		ConfigClass.iconAdd = QIcon(os.path.join(resources_root, 'add.png'))
-#		ConfigClass.iconSave = QIcon(os.path.join(resources_root, 'save.png'))
-#		ConfigClass.iconLoad = QIcon(os.path.join(resources_root, 'folder.png'))
+
 		ConfigClass.iconInfo = QIcon(os.path.join(resources_root, 'info.png'))
 #		
 		ConfigClass.iconEyeRed = QIcon(os.path.join(resources_root, 'eye_red.png'))
@@ -287,25 +279,17 @@ class ConfigClass():
 		ConfigClass.iconBugGreen = QIcon(os.path.join(resources_root, 'bug_green.png'))
 		ConfigClass.iconBPEnabled = ConfigClass.iconBug #QIcon(os.path.join(resources_root, 'bug.png'))
 		ConfigClass.iconBPDisabled = QIcon(os.path.join(resources_root, 'bug_bw_greyscale.png'))
-#		ConfigClass.iconBin = QIcon(os.path.join(resources_root, 'recyclebin.png'))
 		ConfigClass.iconPause = QIcon(os.path.join(resources_root, 'Pause_first.png'))
-#		ConfigClass.iconPlay = QIcon(os.path.join(resources_root, 'play-circular-button.png'))
 		ConfigClass.iconSettings = QIcon(os.path.join(resources_root, 'settings.png'))
 		ConfigClass.iconTrash = QIcon(os.path.join(resources_root, 'delete.png'))
-#		
-#		ConfigClass.iconStepOver = QIcon(os.path.join(resources_root, 'step_over_ng2.png'))
-#		ConfigClass.iconStepInto = QIcon(os.path.join(resources_root, 'step_into.png'))
-#		ConfigClass.iconStepOut = QIcon(os.path.join(resources_root, 'step_out_ng.png'))
 #		
 		ConfigClass.iconResume = QIcon(os.path.join(resources_root, 'resume.png'))
 		ConfigClass.iconStepOver = QIcon(os.path.join(resources_root, 'stepOver.png'))
 		ConfigClass.iconStepInto = QIcon(os.path.join(resources_root, 'stepInto.png'))
 		ConfigClass.iconStepOut = QIcon(os.path.join(resources_root, 'stepOut.png'))
-#		ConfigClass.iconRestart = QIcon(os.path.join(resources_root, 'Restart.png'))
 		ConfigClass.iconStop = QIcon(os.path.join(resources_root, 'stop.png'))
-#		
-#		ConfigClass.iconGithub = QIcon(os.path.join(resources_root, 'github.png'))
-		
+
+
 class ByteGrouping(enum.Enum):
 	NoGrouping = ("No Grouping", 1) #"No grouping"
 	TwoChars = ("Two", 2) #"Two characters"

@@ -748,7 +748,7 @@ class BPsWPsWidget(QWidget):
 
 	def cmdSaveBPs_clicked(self):
 		print(f"Save BPs ...")
-		filename = showSaveFileDialog(self.window().app)
+		filename = showSaveFileDialog(self.window().app, "BP-JSON (*.bpson)")
 		if filename != "":
 			print(f"Save BPs as '{filename}' ...")
 			self.bpHelper.saveBPs(filename)

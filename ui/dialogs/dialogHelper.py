@@ -217,11 +217,11 @@ class GotoAddressDialog(InputDialog):
 ##	else:
 ##		print("No!")
 #		
-def showSaveFileDialog(app=None):
-	dialog = QFileDialog(None, "Select file to save", "", "JSON (*.json)")
+def showSaveFileDialog(app=None, nameFilter="JSON (*.json)"):
+	dialog = QFileDialog(None, "Select file to save", "", nameFilter)
 	dialog.setFileMode(QFileDialog.FileMode.AnyFile)
 	dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
-	dialog.setNameFilter("JSON (*.json)")
+	dialog.setNameFilter(nameFilter)
 	dialog.setAttribute(Qt.WidgetAttribute.WA_NativeWindow, True)
 #	if app != None:
 #		app.setAttribute(Qt.ApplicationAttribute.AA_DontUseNativeDialogs, True)

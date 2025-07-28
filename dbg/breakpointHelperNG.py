@@ -111,7 +111,9 @@ class BreakpointHelperNG():
 		pass
 
 	def saveBPs(self, filepath):
-		self.driver.getTarget().BreakpointsWriteToFile(filepath)
+		error = self.driver.getTarget().BreakpointsWriteToFile(lldb.SBFileSpec(filepath))
+		if not error.Success():
+			logDbgC(f"saveBPs => Error: {error}")
 		
 	def setCommandLineCommands(self, bp, commands):
 		sl = lldb.SBStringList()
