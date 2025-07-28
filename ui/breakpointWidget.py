@@ -510,7 +510,7 @@ class BreakpointTreeWidget(BaseTreeWidget):
 					
 		return itemsRet
 	
-	def enableAllBPs():
+	def enableAllBPs(self):
 		for childPar in range(self.invisibleRootItem().childCount()):
 			for childChild in range(self.invisibleRootItem().child(childPar).childCount()):
 				if self.invisibleRootItem().child(childPar).child(childChild) != None:
@@ -534,7 +534,24 @@ class BreakpointTreeWidget(BaseTreeWidget):
 						self.invisibleRootItem().child(childPar).enableBP(not allDisabled)
 						break
 		pass
-		
+
+	def toggleBP(self, address,):
+		for childPar in range(self.invisibleRootItem().childCount()):
+			for childChild in range(self.invisibleRootItem().child(childPar).childCount()):
+				if self.invisibleRootItem().child(childPar).child(childChild) != None:
+					print(f'self.invisibleRootItem().child(childPar).child(childChild): {self.invisibleRootItem().child(childPar).child(childChild).text(2)} / {address}')
+					if self.invisibleRootItem().child(childPar).child(childChild).text(2).lower() == address.lower():
+						childItm = self.invisibleRootItem().child(childPar).child(childChild)
+						childItm.toggleBP()
+						allDisabled = True
+						for i in range(self.invisibleRootItem().child(childPar).childCount()):
+							if self.invisibleRootItem().child(childPar).child(i).isBPEnabled:
+								allDisabled = False
+								break
+						self.invisibleRootItem().child(childPar).enableBP(not allDisabled)
+						break
+		pass
+
 	def enableBP(self, address, enabled):
 		for childPar in range(self.invisibleRootItem().childCount()):
 			for childChild in range(self.invisibleRootItem().child(childPar).childCount()):
@@ -559,7 +576,9 @@ class BreakpointTreeWidget(BaseTreeWidget):
 		if daItem.childCount() > 0:
 			super().mouseDoubleClickEvent(event)
 		elif col == 1:
-			self.bpHelper.enableBP(daItem.text(2), not daItem.isBPEnabled)
+			self.bpHelper.enableBP(daItem.text(2), not daItem.isBPEnabled, False)
+			self.toggleBP(daItem.text(2))
+			self.window().txtMultiline.table.toggleBP(daItem.text(2))
 		elif col == 2:
 			self.window().txtMultiline.viewAddress(daItem.text(2))
 			pass

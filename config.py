@@ -148,6 +148,8 @@ class ConfigClass():
 	fontSize = "12"
 	fontSizePx = fontSize + "px"
 
+	autofindSourcecodeFileExts = ['.c', '.cpp', '.m']
+
 #	font.setFixedPitch(True)
 	
 	supportURL = "https://pylldbgui.kimhauser.ch/support"

@@ -147,7 +147,7 @@ class QConsoleTextEditWindow(QMainWindow):
 		self.setBaseSize(WINDOW_SIZE * 2, WINDOW_SIZE)
 		self.setMinimumSize(WINDOW_SIZE * 2, WINDOW_SIZE + 72)
 		
-		self.layout = QHBoxLayout()
+		self.wlayout = QHBoxLayout()
 		
 		self.centralWidget = QWidget(self)
 		self.centralWidget.setLayout(self.layout)

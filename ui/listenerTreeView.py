@@ -232,8 +232,15 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 				for bl in bp:
 					arrBPConditions[str(bp.GetID()) + "." + str(bl.GetID())] = bl.GetCondition()
 					arrBPHits[str(bp.GetID()) + "." + str(bl.GetID())] = 0
+					logDbgC(f"addNewEvent...")
 					self.bpHelper.enableBP(hex(bl.GetAddress().GetLoadAddress(self.driver.getTarget())) , True)
 					self.window().wdtBPsWPs.treBPs.addBP(bp)
+				pass
+			elif eventType == lldb.eBreakpointEventTypeEnabled or eventType == lldb.eBreakpointEventTypeDisabled:
+				if eventType == lldb.eBreakpointEventTypeEnabled:
+					pass
+				else:
+					pass
 				pass
 			return
 		else:

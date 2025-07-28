@@ -146,22 +146,25 @@ class Worker(QObject):
 		# self.window().wdtControlFlow.view.verticalScrollBar().setValue(self.window().txtMultiline.table.verticalScrollBar().value())
 		pass
 
-	def runLoadSourceCode(self):
+	def runLoadSourceCode(self, filename="", loadFlowControl=True):
 		if self.isLoadSourceCodeActive:
-			interruptLoadSourceCode = True
+			# self.interruptLoadSourceCode = True
 			return
-		else:
-			interruptLoadSourceCode = False
+		# else:
+		# 	self.interruptLoadSourceCode = False
 		self.isLoadSourceCodeActive = True
 
+		sourcefileToUse = filename if filename != "" else self.sourceFile
 		context = self.frame.GetSymbolContext(lldb.eSymbolContextEverything)
 		self.lineNum = context.GetLineEntry().GetLine()
 		# Create the filespec for 'main.c'.
-		filespec = lldb.SBFileSpec(self.sourceFile, False)
+		filespec = lldb.SBFileSpec(sourcefileToUse, False)
 		source_mgr = self.driver.debugger.GetSourceManager()
 		# Use a string stream as the destination.
-		linesOfCode = self.count_lines_of_code(self.sourceFile)
+		linesOfFileContent = self.linesOfFileContent(sourcefileToUse)
+		linesOfCode = len(linesOfFileContent)
 		self.logDbgC.emit(f"linesOfCode: {linesOfCode} / {linesOfCode - self.lineNum}", DebugLevel.Verbose)
+		stream = None
 		if linesOfCode > 0:
 			stream = lldb.SBStream()
 			source_mgr.DisplaySourceLinesWithLineNumbers(filespec, self.lineNum, self.lineNum, linesOfCode - self.lineNum, '=>', stream)
@@ -169,14 +172,18 @@ class Worker(QObject):
 		self.isLoadSourceCodeActive = False
 		self.finishedLoadControlFlow = False
 		if linesOfCode > 0:
-			self.finishedLoadingSourceCodeCallback.emit(stream.GetData())
-		# startLoadControlFlowSignal
-		self.runControlFlow_loadConnections.emit()
+			if stream != None:
+				fileContent = stream.GetData()
+				self.finishedLoadingSourceCodeCallback.emit(fileContent)
+
+		self.logDbgC.emit(f"BEFORE self.runLoadControlFlow() => runLoadSourceCode()", DebugLevel.Info)
+		if loadFlowControl:
+			self.runControlFlow_loadConnections.emit()
 		# QCoreApplication.processEvents()
 		# QApplication.processEvents()
-		self.logDbgC.emit(f"BEFORE self.runLoadControlFlow() => runLoadSourceCode()", DebugLevel.Info)
-		self.runLoadControlFlow()
+			self.runLoadControlFlow()
 
+	@PendingDeprecationWarning
 	def count_lines_of_code(self, file_path):
 		lines = []
 		if os.path.exists(file_path):
@@ -190,6 +197,20 @@ class Worker(QObject):
 		# 	if line.strip() # and not line.strip().startswith('//') and not line.strip().startswith('/*')
 		# ]
 		return len(lines)
+
+	def linesOfFileContent(self, file_path):
+		lines = []
+		if os.path.exists(file_path):
+			with open(file_path, 'r') as file:
+				lines = file.readlines()
+		else:
+			logDbgC(f"The file: {file_path} could not be found!")
+
+		# code_lines = [
+		# 	line for line in lines
+		# 	if line.strip() # and not line.strip().startswith('//') and not line.strip().startswith('/*')
+		# ]
+		return lines
 
 	def loadBPsWPs(self):
 		# super(LoadBreakpointsWorker, self).workerFunc()
@@ -309,7 +330,9 @@ class Worker(QObject):
 					# QCoreApplication.processEvents()
 		self.loadBPsWPs()
 		if self.loadSourceCode:
-			self.runLoadSourceCode()
+			sourceFilesFound = find_source_file(self.fileToLoad)
+			logDbgC(f"Tried to auto-find sourcefile => Found: {len(sourceFilesFound)}: {sourceFilesFound[0]}! Loading file ...")
+			self.runLoadSourceCode(sourceFilesFound[0])
 		else:
 			self.runControlFlow_loadConnections.emit()
 			# QCoreApplication.processEvents()

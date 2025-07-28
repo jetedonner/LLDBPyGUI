@@ -225,6 +225,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 			if self.item(i, COL_ADDRESS) != None and self.item(i, COL_ADDRESS).text() == address:
 				item = self.item(i, COL_BP)
 #				item.toggleBPEnabled()
+				logDbgC(f"assemblerTextEdit.enableBP...")
 				item.enableBP(enabled)
 				lib.utils.setStatusBar(f"Enabled breakpoint @: 0x{address:X} ({enabled})")
 				break
@@ -252,6 +253,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 	def handle_enableBP(self):
 		if self.item(self.selectedItems()[0].row(), COL_BP) != None:
 			item = self.item(self.selectedItems()[0].row(), COL_BP)
+			logDbgC(f"assemblerTextEdit.handle_enableBP...")
 			item.enableBP(not item.isBPEnabled)
 #			self.window().wdtBPsWPs.treBPs.enableBPByAddress(self.item(self.selectedItems()[0].row(), 2).text(),  item.isBPEnabled)
 		
@@ -508,16 +510,14 @@ class DisassemblyTableWidget(BaseTableWidget):
 		if col in range(3 if self.showLineNumber else 2):
 #			self.toggleBPOn(row)
 			# bp = self.driver.getTarget().BreakpointCreateByAddress(int(self.item(self.selectedItems()[0].row(), 2).text(), 16))
-			if self.item(self.selectedItems()[0].row(), COL_ADDRESS) is not None and self.item(self.selectedItems()[0].row(), COL_BP) is not None:
+			addr = self.item(self.selectedItems()[0].row(), COL_ADDRESS)
+			bp = self.item(self.selectedItems()[0].row(), COL_BP)
+			if  addr is not None and bp is not None:
 				logDbgC(f"BP double_clickediclick ... COL_ADDRESS: {COL_ADDRESS} / COL_BP: {COL_BP}")
-				self.bpHelper.enableBP(self.item(self.selectedItems()[0].row(), COL_ADDRESS).text(), not self.item(self.selectedItems()[0].row(), COL_BP).isBPEnabled, False)
-			pass
-		# elif col == 4:
-		# elif col == 4:
-		# 	y = self.rowViewportPosition(row)
-		# 	x = self.columnViewportPosition(4)
-		#
-		# 	print(f'y: {y} / {QPoint(x, y)} / {self.viewport().mapToGlobal(QPoint(x, y))} / {self.verticalHeader().sectionPosition(row)}')
+				# self.driver.debugger.HandleCommand(f"br set -a {self.item(self.selectedItems()[0].row(), COL_ADDRESS).text()}")
+				self.bpHelper.enableBP(addr.text(), not bp.isBPEnabled, False)
+				self.toggleBP(addr.text())
+				self.window().wdtBPsWPs.treBPs.toggleBP(addr.text())
 		elif col == COL_HEX:
 			lib.utils.setStatusBar(f"Editing data @: {str(self.item(self.selectedItems()[0].row(), 2).text())}")
 		elif col in range(4 if self.showLineNumber else 3, 6 if self.showLineNumber else 5):
@@ -645,12 +645,23 @@ class DisassemblyTableWidget(BaseTableWidget):
 				self.toggleBPOn(row, updateBPWidget)
 				break
 		pass
-	
+
+	def toggleBP(self, address):
+		for row in range(self.rowCount()):
+			#			print(f'CHECKING BREAKPOINT AT ADDRESS: {self.item(row, 3).text()}')
+			if self.item(row, COL_ADDRESS) != None and self.item(row,
+																 COL_ADDRESS).text().lower() == address.lower():
+				#				self.toggleBPOn(row, updateBPWidget)
+				logDbgC(f"assemblerTextEdit.toggleBP...")
+				self.item(row, COL_BP).enableBP(not self.item(row, COL_BP).isBPEnabled)
+				break
+
 	def enableBP(self, address, enabled = True):
 		for row in range(self.rowCount()):
 #			print(f'CHECKING BREAKPOINT AT ADDRESS: {self.item(row, 3).text()}')
 			if self.item(row, COL_ADDRESS) != None and self.item(row, COL_ADDRESS).text().lower() == address.lower():
 #				self.toggleBPOn(row, updateBPWidget)
+				logDbgC(f"assemblerTextEdit.enableBP...")
 				self.item(row, COL_BP).enableBP(enabled)
 				break
 		

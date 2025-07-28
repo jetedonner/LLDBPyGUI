@@ -1108,6 +1108,13 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.usrAct = UserActionNeededDialog()
 		self.usrAct.show()
 
+		# $.ajax({
+		# 	type: "POST",
+		# 	url: url,
+		# 	data: data,
+		# 	success: success,
+		# 	dataType: dataType
+		# });
 		pass
 
 	def stopTarget(self):
@@ -1312,6 +1319,7 @@ class LLDBPyGUIWindow(QMainWindow):
 	#################################### START NEW CALLBACKS ########################################
 
 	def enableBPCallback(self, address, enabled=True, updateUI=True):
+		logDbgC(f"enableBPCallback...")
 		main_bp2 = self.bpHelper.enableBP(address, enabled, updateUI)
 		return main_bp2
 
@@ -1819,12 +1827,12 @@ class LLDBPyGUIWindow(QMainWindow):
 	def handle_loadSourceFinished(self, sourceCode, autoScroll = True):
 		if sourceCode != "":
 			horizontal_value = self.txtSource.horizontalScrollBar().value()
-
+			vertical_value = 0
 			if not autoScroll:
 				vertical_value = self.txtSource.verticalScrollBar().value()
 
 			self.txtSource.setEscapedText(sourceCode)
-			logDbg(f"Sourcecode '{ConfigClass.testTargetSource}' for target '{ConfigClass.testTarget}' reloaded!")
+			logDbgC(f"Sourcecode '{self.worker.sourceFile}' for target '{self.worker.fileToLoad}' reloaded!")
 			currTabIdx = self.tabWidgetDbg.currentIndex()
 			self.tabWidgetDbg.setCurrentWidget(self.txtSource)
 			self.txtSource.horizontalScrollBar().setValue(horizontal_value)
@@ -1840,14 +1848,16 @@ class LLDBPyGUIWindow(QMainWindow):
 #				self.tabWidgetDbg.setCurrentIndex(currTabIdx)
 
 				frame = self.driver.getTarget().GetProcess().GetThreadAtIndex(0).GetFrameAtIndex(0)
-				line_entry = frame.GetLineEntry()
-				line_number = line_entry.GetLine()
-				# print(f"line_entry: {line_entry} / line_number: {line_number}")
+				# line_entry = frame.GetLineEntry()
+				# line_number = line_entry.GetLine()
+				line_number = frame.GetLineEntry().GetLine()
+				#  print(f"line_entry: {line_entry} / line_number: {line_number}")
+				logDbgC(f"line_number: {line_number}")
 				if line_number != 0xFFFFFFFF and line_number >= 0:
 					self.txtSource.scroll_to_lineNG(line_number)
 				self.tabWidgetDbg.setCurrentIndex(currTabIdx)
 		else:
-			self.txtSource.setText("<Source code NOT available>")
+			self.txtSource.setText("")
 
 		# logDbgC(f"Calling 'self.wdtControlFlow.loadConnections()' from 'handle_loadSourceFinished'")
 		# self.wdtControlFlow.loadConnections()

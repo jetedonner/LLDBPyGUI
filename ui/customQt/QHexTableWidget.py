@@ -164,7 +164,7 @@ class QHexTableWidget(BaseTableWidget):
 		super().__init__()
 		self.context_menu = QMenu(self)
 
-		#		self.context_menu = QMenu(self)
+		#		self.context_menu = QMenu(self)éé
 		#		self.actionEditMemory = self.context_menu.addAction("Edit memory")
 		#		self.actionEditMemory.triggered.connect(self.handle_editMemory)
 		#		self.actionWriteMemory = self.context_menu.addAction("Write memory")

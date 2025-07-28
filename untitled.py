@@ -138,6 +138,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 			if self.item(i, 2) != None and self.item(i, 2).text() == address:
 				item = self.item(i, 1)
 #				item.toggleBPEnabled()
+				logDbgC(f"addNewEvent...")
 				item.enableBP(enabled)
 				lib.utils.setStatusBar(f"Enabled breakpoint @: 0x{address:X} ({enabled})")
 				break
