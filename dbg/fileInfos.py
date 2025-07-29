@@ -403,7 +403,7 @@ def find_main(debugger):
 
 	logDbgC(f"Main entry point address: {loadAddr} / {hex(loadAddr)}", DebugLevel.Verbose)
 
-	return loadAddr #address.GetLoadAddress(target)
+	return loadAddr, main_symbol #address.GetLoadAddress(target)
 
 def get_oep(debugger):
 	target = debugger.GetSelectedTarget()

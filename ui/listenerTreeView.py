@@ -242,6 +242,17 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 				else:
 					pass
 				pass
+			# elif eventType == lldb.eBreakpointEventType
+			# for module in self.target.module_iter():
+			# 	for section in module.section_iter():
+			# 		if hasattr(section, 'symbol_in_section_iter'):
+			# 			for symbol in module.symbol_in_section_iter(section):
+			# 				if symbol.IsValid():
+			# 					name = symbol.GetName()
+			# 					start_addr = symbol.GetStartAddress().GetLoadAddress(self.target)
+			# 					self.logDbgC.emit(
+			# 						f"------------------>>>>>>>>>>>>>Symbol: {name}, Address: {hex(start_addr)}",
+			# 						DebugLevel.Verbose)
 			return
 		else:
 			print(f"EventIsOTHEREvent")
@@ -285,12 +296,24 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 				else:
 					breakpoint = extObj.GetTarget().FindBreakpointByID(int(bp_id))
 
-				if breakpoint is not None and breakpoint.GetID() == self.driver.scanfID:
+				if breakpoint is not None and breakpoint.GetID() == self.driver.mainID:
+					if breakpoint.MatchesName("main"):
+						logDbgC(f"if breakpoint.MatchesName('main')")
+						for module in self.driver.getTarget().module_iter():
+							for section in module.section_iter():
+								if hasattr(section, 'symbol_in_section_iter'):
+									for symbol in module.symbol_in_section_iter(section):
+										if symbol.IsValid():
+											name = symbol.GetName()
+											start_addr = symbol.GetStartAddress().GetLoadAddress(self.target)
+											self.logDbgC.emit(f"------------------>>>>>>>>>>>>>Symbol: {name}, Address: {hex(start_addr)}", DebugLevel.Verbose)
+					pass
+				elif breakpoint is not None and breakpoint.GetID() == self.driver.scanfID:
 
 					if breakpoint.MatchesName("scanf"):
 						logDbgC(f"if breakpoint.MatchesName('scanf')")
 						self.window().txtMultiline.table.handle_gotoAddr()
-
+					logDbgC(f"breakpoint.GetTarget(): {breakpoint.GetTarget()}")
 					slNames = lldb.SBStringList()
 					breakpoint.GetNames(slNames)
 

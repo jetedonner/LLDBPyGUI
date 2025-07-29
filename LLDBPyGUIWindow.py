@@ -240,7 +240,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.threadLoad.started.connect(self.worker.run)
 		self.worker.show_dialog.connect(self.start_operation)
 		self.worker.finished.connect(self.stopWorkerAndQuitThread)
-
+		self.worker.progressUpdateCallback.connect(self.handle_progressUpdate)
 
 		# self.threadLoad.start()
 
@@ -626,6 +626,8 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.worker.loadModulesCallback.connect(self.loadModulesCallback)
 		self.worker.enableBPCallback.connect(self.enableBPCallback)
 		self.worker.loadInstructionCallback.connect(self.handle_loadInstruction)
+		self.worker.loadSymbolCallback.connect(self.handle_loadSymbol)
+
 		self.worker.finishedLoadInstructionsCallback.connect(self.handle_workerFinished)
 		self.worker.handle_breakpointEvent = self.handle_breakpointEvent
 		self.worker.handle_processEvent = self.handle_processEvent
@@ -789,6 +791,8 @@ class LLDBPyGUIWindow(QMainWindow):
 	def handle_progressUpdate(self, value, statusTxt):
 		self.setProgressValue(value)
 		self.updateStatusBar(statusTxt)
+		QApplication.processEvents()
+		# QCoreApplication.processEvents()
 
 	def setProgressValue(self, newValue):
 		self.progressbar.setValue(newValue)
@@ -1605,6 +1609,9 @@ class LLDBPyGUIWindow(QMainWindow):
 	def start_loadRegisterWorker(self, initTabs = True):
 		self.workerManager.start_loadRegisterWorker(self.handle_loadRegister, self.handle_loadRegisterValue, self.handle_updateRegisterValue, self.handle_loadVariableValue, self.handle_updateVariableValue, self.handle_loadRegisterFinished, initTabs)
 
+	def handle_loadSymbol(self, symbol):
+		self.txtMultiline.appendAsmSymbol(0x0, str(symbol))
+
 	instCnt = 0
 	stubsLoading = False
 	def handle_loadInstruction(self, instruction):
@@ -1841,8 +1848,8 @@ class LLDBPyGUIWindow(QMainWindow):
 	def runControlFlow_loadConnections(self):
 		# self.wdtControlFlow.loadConnections()
 		self.worker.endLoadControlFlowCallback.emit(True)
-		oepMain = find_main(self.driver.debugger)
-		logDbgC(f"OEP: {getAddrStr(oepMain)}", DebugLevel.Verbose)
+		oepMain, symbol = find_main(self.driver.debugger)
+		logDbgC(f"OEP: {getAddrStr(oepMain)} / Symbol: {symbol}", DebugLevel.Verbose)
 		self.txtMultiline.viewAddress(hex(oepMain))
 		self.wdtControlFlow.view.verticalScrollBar().setValue(self.txtMultiline.table.verticalScrollBar().value())
 		QApplication.processEvents()

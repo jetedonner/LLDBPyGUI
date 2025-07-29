@@ -39,6 +39,7 @@ class LoadDisassemblyWorker(BaseWorker):
 					if func.IsValid():
 						print(f"Objective-C Function: {func.GetName()}")
 
+
 		thread = self.target.GetProcess().GetSelectedThread()
 		idxOuter = 0
 		for module in self.target.module_iter():

@@ -34,6 +34,7 @@ class Worker(QObject):
 	loadModulesCallback = pyqtSignal(object, object)
 	enableBPCallback = pyqtSignal(str, bool, bool)
 	loadInstructionCallback = pyqtSignal(object)
+	loadSymbolCallback = pyqtSignal(str)
 	finishedLoadInstructionsCallback = pyqtSignal(object)
 	loadRegisterCallback = pyqtSignal(str)
 	loadRegisterValueCallback = pyqtSignal(int, str, str, str)
@@ -44,7 +45,7 @@ class Worker(QObject):
 	loadWatchpointsValueCallback = pyqtSignal(object)
 	updateWatchpointsValueCallback = pyqtSignal(object)
 	finishedLoadingSourceCodeCallback = pyqtSignal(str)
-
+	progressUpdateCallback = pyqtSignal(int, str)
 
 	startLoadControlFlowSignal = pyqtSignal()
 	runControlFlow_loadConnections = pyqtSignal()
@@ -214,7 +215,7 @@ class Worker(QObject):
 
 	def loadBPsWPs(self):
 		# super(LoadBreakpointsWorker, self).workerFunc()
-
+		self.progressUpdateCallback.emit(50, "Test progress Update ...")
 		# self.sendStatusBarUpdate("Reloading breakpoints ...")
 		# target = self.driver.getTarget()
 		idx = 0
@@ -366,6 +367,13 @@ class Worker(QObject):
 				# print(f"Starting to disassemble => idxOuter != 0 continuing ...")
 				continue
 			idx = 0
+
+			# for module in self.target.module_iter():
+			# for compile_unit in module.compile_unit_iter():
+			# 	for func in compile_unit:
+			# 		if func.IsValid():
+			# 			self.logDbgC.emit(f"Objective-C Function: {func.GetName()}")
+
 			for section in module.section_iter():
 				# Check if the section is readable
 				#				if not section.IsReadable():
@@ -382,6 +390,22 @@ class Worker(QObject):
 
 							idxSym = 0
 							lstSym = module.symbol_in_section_iter(subsec)
+							for smbl in lstSym:
+								self.logDbgC.emit(f"===========>>>>>>>>>>> symbl: {smbl}", DebugLevel.Verbose)
+								self.loadSymbolCallback.emit(smbl.GetStartAddress().GetFunction().GetName())
+								# if symFuncName == instruction.GetAddress().GetFunction().GetName():
+								#										print(f"Address: {instruction.GetAddress()}")
+								#										print(f"Instruction: {instruction}")
+								#										print(f'sym.GetName() => {sym.GetName()} / instruction.GetAddress().GetFunction().GetName() => {instruction.GetAddress().GetFunction().GetName()}')
+								#										print(f'COMMENT => {instruction.GetComment(self.target)}')
+								instructions = smbl.GetStartAddress().GetFunction().GetInstructions(self.target)
+								for instruction in instructions:
+									self.loadInstructionCallback.emit(instruction)
+								# if  instruction.GetMnemonic(self.target) is None:
+								# 	continue
+								idxInstructions += 1
+								self.checkLoadConnection(instruction, idxInstructions + (idxSym + 1))
+								break
 							# idxInstructions = 0
 							# {len(lstSym)}
 							self.logDbgC.emit(f"lstSym: {lstSym} / subsec.GetName(): {subsec.GetName()}", DebugLevel.Verbose)
@@ -411,6 +435,28 @@ class Worker(QObject):
 							secLen = module.num_symbols  # len(lstSym)
 							for sym in lstSym:
 								self.logDbgC.emit(f"sym: {sym}", DebugLevel.Verbose)
+								# if sym.addr <=
+								# if subsec.GetName() == "__text":
+									# if sym.GetName() == "main":
+									# 	self.logDbgC.emit(f"========>>>>>>>> main function hit ...", DebugLevel.Verbose)
+									# 	for module in self.target.module_iter():
+									# 		# 	for section in module.section_iter():
+									# 		if hasattr(subsec, 'symbol_in_section_iter'):
+									# 			for symbol in module.symbol_in_section_iter(section):
+									# 				if symbol.IsValid():
+									# 					name = symbol.GetName()
+									# 					# start_addr = symbol.GetStartAddress().GetLoadAddress(self.target)
+									# 					self.logDbgC(f"------->>>>>>>>> Symbol name: {name}")
+									# 					self.loadInstructionCallback.emit(
+									# 						sym.GetStartAddress().GetFunction().GetInstructions()[0])
+									# 					return
+									# if hasattr(subsec, 'symbol_in_section_iter'):
+									# 	for symbol in module.symbol_in_section_iter(section):
+									# 		if symbol.IsValid():
+									# 			name = symbol.GetName()
+									# 			# start_addr = symbol.GetStartAddress().GetLoadAddress(self.target)
+									# 			self.logDbgC(f"------->>>>>>>>> Symbol name: {name}")
+									# 			self.loadInstructionCallback.emit(sym.GetStartAddress().GetFunction().GetInstructions()[0])
 								#								print(f'get_instructions_from_current_target => {sym.get_instructions_from_current_target()}')
 								#								if idxSym != 0:
 								#									idxSym += 1
@@ -424,6 +470,23 @@ class Worker(QObject):
 								#								print(sym)
 								symFuncName = sym.GetStartAddress().GetFunction().GetName()
 								self.logDbgC.emit(f"symFuncName: {symFuncName}", DebugLevel.Verbose)
+								# if symFuncName == "main":
+								# 	# for module in self.target.module_iter():
+								# 	# 	for section in module.section_iter():
+								# 	# if module.
+								# 	if hasattr(subsec, 'symbol_in_section_iter'):
+								# 		for symbol in module.symbol_in_section_iter(subsec):
+								# 			if symbol.IsValid():
+								# 				name = symbol.GetName()
+								# 				start_addr = symbol.GetStartAddress().GetLoadAddress(self.target)
+								# 				self.logDbgC(f"------->>>>>>>>> Symbol name: {name}")
+								# 				self.loadInstructionCallback.emit(sym.GetStartAddress().GetFunction().GetInstructions()[0])
+								# 	# # for module in self.target.module_iter():
+								# 	# for compile_unit in module.compile_unit_iter():
+								# 	# 	for func in compile_unit:
+								# 	# 		if func.IsValid():
+								# 	# 			self.logDbgC.emit(f"Objective-C Function: {func.GetName()}")
+								# 	pass
 								#								print(f'sym.GetName() => {sym.GetName()} / sym.GetStartAddress().GetFunction().GetName() => {sym.GetStartAddress().GetFunction().GetName()}')
 								###								start_address = subsec.GetLoadAddress(self.target)
 								###								print(f'start_address => {start_address} / {hex(start_address)}')
@@ -506,7 +569,8 @@ class Worker(QObject):
 		for con in self.connections:
 			logDbgC(f"===>>> Connection: {hex(con.origAddr)} / {hex(con.destAddr)} => {con.origRow} / {con.destRow}")
 			# pass
-		
+		self.progressUpdateCallback.emit(35, f"Read disassembly and created control flow connections ...")
+		QApplication.processEvents()
 		self.connections.sort(key=lambda x: abs(x.jumpDist), reverse=True)
 		self.finishedLoadInstructionsCallback.emit(self.connections)
 		self.loadRegisters()
@@ -673,6 +737,7 @@ class Worker(QObject):
 		if self.target:
 			self.process = self.target.GetProcess()
 			self.logDbgC.emit(f"loadTarget() => Process: {self.process} ...", DebugLevel.Verbose)
+
 			if self.process:
 				self.listener = LLDBListener(self.process, self.driver.debugger)
 				self.listener.setHelper = self.mainWin.setHelper
@@ -699,6 +764,7 @@ class Worker(QObject):
 							continue
 						else:
 							self.logDbgC.emit(f"Module for FileStruct IS equal executable => scanning ...", DebugLevel.Verbose)
+
 						if frame:
 							self.logDbgC.emit(f"BEFORE DISASSEMBLE!!!!", DebugLevel.Verbose)
 							# self.start_loadDisassemblyWorker(self.loadInstructionCallback, self.finishedLoadInstructionsCallback, True)
@@ -747,11 +813,13 @@ class Worker(QObject):
 			# 			if func.IsValid():
 			# 				self.logDbgC.emit(f"Objective-C Function: {func.GetName()}")
 			# for module in self.target.module_iter():
-			# 	for symbol in module:
-			# 		if symbol.IsValid():
-			# 			name = symbol.GetName()
-			# 			start_addr = symbol.GetStartAddress().GetLoadAddress(self.target)
-			# 			self.logDbgC.emit(f"Symbol: {name}, Address: {hex(start_addr)}", DebugLevel.Verbose)
+			# 	for section in module.section_iter():
+			# 		if hasattr(section, 'symbol_in_section_iter'):
+			# 			for symbol in module.symbol_in_section_iter(section):
+			# 				if symbol.IsValid():
+			# 					name = symbol.GetName()
+			# 					start_addr = symbol.GetStartAddress().GetLoadAddress(self.target)
+			# 					self.logDbgC.emit(f"------------------>>>>>>>>>>>>>Symbol: {name}, Address: {hex(start_addr)}", DebugLevel.Verbose)
 
 			if self.mainWin.setHelper.getValue(SettingsValues.BreakpointAtMainFunc):
 				self.driver.debugger.HandleCommand('process launch --stop-at-entry')
@@ -762,16 +830,37 @@ class Worker(QObject):
 				# 		self.logDbg.emit(
 				# 			f"- self.driver.getTarget().GetModuleAtIndex({idxMod}): {self.driver.getTarget().GetModuleAtIndex(idxMod)}")
 
-				for module in self.target.module_iter():
-					for symbol in module:
-						if symbol.IsValid():
-							# self.logDbgC.emit(f"Symbol: {symbol.GetName()}, Address: {hex(symbol.GetStartAddress().GetLoadAddress(self.target))}",DebugLevel.Verbose)
-							name = symbol.GetName()
-							start_addr = symbol.GetStartAddress().GetLoadAddress(self.target)
-							self.logDbgC.emit(f"Symbol: {name}, Address: {hex(start_addr)}", DebugLevel.Verbose)
+				# for module in self.target.module_iter():
+				# 	for section in module.section_iter():
+				# 		for symbol in section.symbol_in_section_iter(section):
+				#
+				# 			if symbol.IsValid():
+				# 				# self.logDbgC.emit(f"Symbol: {symbol.GetName()}, Address: {hex(symbol.GetStartAddress().GetLoadAddress(self.target))}",DebugLevel.Verbose)
+				# 				name = symbol.GetName()
+				# 				# start_addr = symbol.GetStartAddress().GetLoadAddress(self.target)
+				# 				self.logDbgC.emit(f"===================>>>>>>>>>>>>> Symbol: {name}, Address: hex(start_addr)", DebugLevel.Verbose)
+				# for module in self.target.module_iter():
+				# 	for section in module.section_iter():
+				# 		if hasattr(section, 'symbol_in_section_iter'):
+				# 			for symbol in module.symbol_in_section_iter(section):
+				# 				if symbol.IsValid():
+				# 					name = symbol.GetName()
+				# 					start_addr = symbol.GetStartAddress().GetLoadAddress(self.target)
+				# 					self.logDbgC.emit(
+				# 						f"------------------>>>>>>>>>>>>>Symbol: {name}, Address: {hex(start_addr)}",
+				# 						DebugLevel.Verbose)
 
-				main_oep = find_main(self.driver.debugger)
-				self.driver.debugger.HandleCommand(f'breakpoint set -a {hex(main_oep)} -N kimon')
+				main_oep, symbol = find_main(self.driver.debugger)
+				if self.mainWin.setHelper.getValue(SettingsValues.BreakpointAtMainFunc):
+					# self.driver.debugger.HandleCommand(f'breakpoint set -a {hex(main_oep)} -N kimon')
+					bp = self.driver.getTarget().BreakpointCreateByAddress(main_oep) # .BreakpointCreateByName("main")
+					for bl in bp:
+						self.logDbgC.emit(f"bl.location: {bl}", DebugLevel.Verbose)
+					self.driver.mainID = bp.GetID()
+					self.driver.debugger.HandleCommand(f'br name add -N main {bp.GetID()}')
+					bp.SetScriptCallbackFunction("main_hit")
+					self.logDbgC.emit(f'breakpoint set "main": {bp}', DebugLevel.Verbose)
+					# self.driver.debugger.HandleCommand('breakpoint set --name main')
 
 				# Set breakpoint on scanf
 				if	self.mainWin.setHelper.getValue(SettingsValues.AutoBreakpointForScanf):

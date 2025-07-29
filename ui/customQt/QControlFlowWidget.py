@@ -102,6 +102,9 @@ class ControlFlowConnectionNG():
 
 class NoScrollGraphicsView(QGraphicsView):
 
+    disableScroll = False
+    scrolling = False
+
     def __init__(self, scene):
         super().__init__(scene)
 
@@ -114,6 +117,8 @@ class NoScrollGraphicsView(QGraphicsView):
         self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
         self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
         self.verticalScrollBar().valueChanged.connect(self.on_scroll)
+        self.disableScroll = False
+        self.scrolling = False
 
     # def wheelEvent(self, event: QWheelEvent):
     #     pass  # Ignore mouse wheel
@@ -121,13 +126,18 @@ class NoScrollGraphicsView(QGraphicsView):
     def keyPressEvent(self, event: QKeyEvent):
         super().keyPressEvent(event)  # Optional: allow other keys
 
-    disableScroll = False
+
     def on_scroll(self, value):
         if not self.disableScroll:
-            # logDbgC(f"on_scroll({value}")
-            self.window().txtMultiline.table.verticalScrollBar().setValue(value)
-            if self.window().wdtControlFlow is not None:
-                self.window().wdtControlFlow.checkHideOverflowConnections()
+            if  self.scrolling:
+                return
+            else:
+                self.scrolling = True
+                # logDbgC(f"on_scroll({value}")
+                self.window().txtMultiline.table.verticalScrollBar().setValue(value)
+                if self.window().wdtControlFlow is not None:
+                    self.window().wdtControlFlow.checkHideOverflowConnections()
+                self.scrolling = False
 
 class ArrowHelperClass:
 
@@ -280,7 +290,7 @@ class QControlFlowWidget(QWidget):
     def checkHideOverflowConnections(self):
         nVisibleCon = 0
         for con in self.connections:
-            print(f"con: {con}, con.mainLine: {con.mainLine}")
+            # print(f"con: {con}, con.mainLine: {con.mainLine}")
             # con.origRow
             if con.mainLine is None or con.startArrow is None or con.endArrow is None:
                 continue

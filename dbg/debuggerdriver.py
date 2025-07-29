@@ -34,6 +34,7 @@ class DebuggerDriver(Thread):
     aborted = False
     signals = None
     scanfID = 0x0
+    mainfID = 0x0
     target = None
     
     def breakpointHandlerDriver(self, dummy, frame, bpno, err):
@@ -49,6 +50,7 @@ class DebuggerDriver(Thread):
     
     def __init__(self, debugger, event_queue):
         Thread.__init__(self)
+        self.mainID = 0x0
         self.scanfID = 0x0
         self.signals = DebuggerDriverSignals()
         self.event_queue = event_queue

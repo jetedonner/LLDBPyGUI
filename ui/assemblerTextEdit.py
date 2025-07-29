@@ -741,7 +741,7 @@ class AssemblerTextEdit(QWidget):
 	
 	def appendAsmSymbol(self, addr, symbol):
 		# Define the text for the spanning cell
-		text = symbol
+		# text = symbol
 		
 		table_widget = self.table
 		# Get the row count
@@ -752,7 +752,7 @@ class AssemblerTextEdit(QWidget):
 
 		# titleLabel = text or "__stubs" # text if text is not None else "__stubs"
 		# Create a spanning cell item
-		item = QTableWidgetItem(f'{text or "__stubs"}')
+		item = QTableWidgetItem(f'{symbol or "__stubs"}')
 		item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
 		item.setBackground(QColor(64, 0, 255, 96))
 		item.setForeground(QColor("black"))
@@ -765,7 +765,6 @@ class AssemblerTextEdit(QWidget):
 		# row_index = item.row()  # Get the row of the item
 		# height = table_widget.verticalHeader().sectionSize(row_index)
 		# logDbg(f"Row height: {height}")
-		pass
 		
 	def appendAsmText(self, addr, instr, args, comment, data, dataNg, addLineNum = True, rip = "", lineNo = -1):
 		item = self.table.addRow(lineNo, addr, instr, args, comment, data, dataNg, rip)
