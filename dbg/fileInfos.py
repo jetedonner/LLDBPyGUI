@@ -784,6 +784,56 @@ def get_description(obj, option=None): # self,
 		return None
 	return stream.GetData()
 
+def is_objc_app(target):
+	for module in target.module_iter():
+		for symbol in module:
+			name = symbol.GetName()
+			if name and (
+					"objc_msgSend" in name or
+					name.startswith("-[") or
+					name.startswith("+[")
+			):
+				return True
+	return False
+
+def detect_language_by_symbols(target, module):
+	langs = set()
+	# for module in target.module_iter():
+	for symbol in module:
+		name = symbol.GetName()
+		if name:
+			if name.startswith("_Z"):  # C++ Itanium mangling
+				langs.add("C++")
+			elif name.startswith("-[") or name.startswith("+["):  # Objective-C
+				langs.add("Objective-C")
+			elif "swift_" in name or name.startswith("$s"):  # Swift
+				langs.add("Swift")
+	return langs
+
+def detect_objc(module):
+	langs = set()
+	# for module in target.module_iter():
+	for symbol in module:
+		name = symbol.GetName()
+		if name:
+			# if name.startswith("_Z"):  # C++ Itanium mangling
+			# 	langs.add("C++")
+			if name.startswith("-[") or name.startswith("+["):  # Objective-C
+				langs.add("Objective-C")
+				return True
+	# 		elif "swift_" in name or name.startswith("$s"):  # Swift
+	# 			langs.add("Swift")
+	# return langs
+	return False
+
+def is_hex_string(s):
+	try:
+		int(s, 16)
+		return True
+	except ValueError:
+		return False
+
+
 class FileInfos():
 	
 	targetBasename = "<not set>"

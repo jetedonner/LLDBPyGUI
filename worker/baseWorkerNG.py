@@ -47,6 +47,7 @@ class Worker(QObject):
 	loadWatchpointsValueCallback = pyqtSignal(object)
 	updateWatchpointsValueCallback = pyqtSignal(object)
 	finishedLoadingSourceCodeCallback = pyqtSignal(str)
+	loadStacktraceCallback = pyqtSignal()
 	progressUpdateCallback = pyqtSignal(int, str)
 
 	startLoadControlFlowSignal = pyqtSignal()
@@ -349,11 +350,51 @@ class Worker(QObject):
 		# self.logDbgC.emit(f"BEFORE self.runLoadControlFlow() => loadRegisters()", DebugLevel.Info)
 		# self.runLoadControlFlow()
 
+		self.loadStacktraceCallback.emit()
+
 	def char_array_to_string(self, char_array_value):
 		byte_array = char_array_value.GetPointeeData(0, char_array_value.GetByteSize())
 		error = lldb.SBError()
 		sRet = byte_array.GetString(error, 0)
 		return "" if sRet == 0 else sRet
+
+	def loadStacktrace(self):
+		self.process = self.driver.getTarget().GetProcess()
+		self.thread = self.process.GetThreadAtIndex(0)
+		#		from lldbutil import print_stacktrace
+		#		st = get_stacktrace(self.thread)
+		##			print(f'{st}')
+		#		self.txtOutput.setText(st)
+
+		idx = 0
+		if self.thread:
+			#			self.treThreads.doubleClicked.connect()
+			self.treThreads.clear()
+			self.processNode = QTreeWidgetItem(self.treThreads, ["#0 " + str(self.process.GetProcessID()),
+																 hex(self.process.GetProcessID()) + "",
+																 self.process.GetTarget().GetExecutable().GetFilename(),
+																 '', ''])
+
+			self.threadNode = QTreeWidgetItem(self.processNode,
+											  ["#" + str(idx) + " " + str(self.thread.GetThreadID()),
+											   hex(self.thread.GetThreadID()) + "", self.thread.GetQueueName(), '',
+											   ''])
+
+			numFrames = self.thread.GetNumFrames()
+
+			for idx2 in range(numFrames):
+				self.setProgressValue(idx2 / numFrames)
+				frame = self.thread.GetFrameAtIndex(idx2)
+				# logDbgC(f"frame.GetFunction(): {frame.GetFunction()}")
+				frameNode = QTreeWidgetItem(self.threadNode,
+											["#" + str(frame.GetFrameID()), "", str(frame.GetPCAddress()),
+											 str(hex(frame.GetPC())), self.GuessLanguage(frame)])
+				idx += 1
+
+			self.processNode.setExpanded(True)
+			self.threadNode.setExpanded(True)
+
+#			self.devHelper.setDevWatchpoints()
 
 	def disassemble_entire_target(self):
 		self.logDbgC.emit(f"============ NEW DISASSEMBLER ===============", DebugLevel.Verbose)
@@ -362,6 +403,15 @@ class Worker(QObject):
 			self.logDbgC.emit(f"\n📦 Module: {module.file}", DebugLevel.Verbose)
 			# /Volumes/Data/dev/python/LLDBPyGUI/_testtarget/
 			if module.file.GetFilename() == self.target.executable.GetFilename(): # "a_hello_world_test":
+				isObjectiveCFile = is_objc_app(self.target)
+				self.logDbgC.emit(f"App: {module.file.GetFilename()} is objective-c: {isObjectiveCFile}...", DebugLevel.Verbose)
+				lang = detect_language_by_symbols(self.target, module)
+				self.logDbgC.emit(f"App: {module.file.GetFilename()} is language: {lang}...",
+								  DebugLevel.Verbose)
+
+				isObjC = detect_objc(module)
+				self.logDbgC.emit(f"App: {module.file.GetFilename()} is objective-c: {isObjC}...",
+								  DebugLevel.Verbose)
 			# if idx == 0:
 			# 	for symbol in module:
 			# 		name = symbol.GetName()
@@ -385,10 +435,14 @@ class Worker(QObject):
 
 								idxSym = 0
 								lstSym = module.symbol_in_section_iter(subsec)
+								if isObjC and subsec.GetName() == "__stubs":
+									self.loadSymbolCallback.emit(subsec.GetName())
+
 								for smbl in lstSym:
 									self.logDbgC.emit(f"===========>>>>>>>>>>> symbl: {smbl}", DebugLevel.Verbose)
 									# .GetStartAddress().GetFunction()
-									# self.loadSymbolCallback.emit(smbl.GetName())
+									if isObjC and not subsec.GetName() == "__stubs":
+										self.loadSymbolCallback.emit(smbl.GetName())
 									instructions = smbl.GetStartAddress().GetFunction().GetInstructions(self.target)
 									self.allInstructions += instructions
 									for instruction in instructions:
@@ -725,6 +779,10 @@ class Worker(QObject):
 
 		if sMnemonic is not None and sMnemonic.startswith(JMP_MNEMONICS) and not sMnemonic.startswith(JMP_MNEMONICS_EXCLUDE):
 			sAddrJumpTo = instruction.GetOperands(self.target)
+
+			if not is_hex_string(sAddrJumpTo):
+				return
+
 			if self.isInsideTextSection(sAddrJumpTo):
 				sAddrJumpFrom = hex(int(str(instruction.GetAddress().GetLoadAddress(self.target)), 10))
 				rowStart = idxInstructions#int(self.get_line_number(int(sAddrJumpFrom, 16)))

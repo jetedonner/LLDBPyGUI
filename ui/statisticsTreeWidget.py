@@ -39,6 +39,7 @@ class StatisticsTreeWidget(BaseTreeWidget):
 	def loadJSONCallback(self, json_string):
 		json_data = json.loads(json_string)
 		self.populate_tree(json_data, self)
+		QApplication.processEvents()
 		
 	def populate_tree(self, json_data, parent):
 		try:

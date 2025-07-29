@@ -133,7 +133,7 @@ g_home = ""
 g_db = ""
 g_dbdata = {}
 
-JMP_MNEMONICS = ("call", "jmp", "jne", "jz", "je", "jnz", "jle", "jl", "jge", "jg")
+JMP_MNEMONICS = ("call", "jmp", "jne", "jz", "je", "jnz", "jle", "jl", "jge", "jg", "b", "bl", "bg", "be", "ble", "blz", "bz", "bne", "bnz")
 JMP_MNEMONICS_EXCLUDE = ("jmpq")
 
 

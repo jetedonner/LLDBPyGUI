@@ -641,7 +641,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.worker.loadWatchpointsValueCallback.connect(self.tabWatchpoints.tblWatchpoints.handle_loadWatchpointValue)
 		self.worker.updateWatchpointsValueCallback.connect(self.tabWatchpoints.tblWatchpoints.handle_updateWatchpointValue)
 		self.worker.finishedLoadingSourceCodeCallback.connect(self.handle_loadSourceFinished)
-
+		self.worker.loadStacktraceCallback.connect(self.handle_loadStacktrace)
 		self.worker.runControlFlow_loadConnections.connect(self.runControlFlow_loadConnections)
 
 		# loadBreakpointsValueCallback = pyqtSignal(object, bool)
@@ -658,6 +658,10 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.updateStatusBar("LLDBPyGUI loaded successfully!")
 
 		self._restore_size()
+
+	def handle_loadStacktrace(self):
+		self.loadStacktrace()
+		pass
 
 	def start_operation(self):
 		self.symFuncName = ""
@@ -1327,7 +1331,7 @@ class LLDBPyGUIWindow(QMainWindow):
 
 		self.tblFileInfos.addRow("----", str("-----"), '-----')
 		self.tblFileInfos.addRow("Triple", str(targetRet.GetTriple()), '-')
-
+		QApplication.processEvents()
 		# self.progress.setValue(2)
 
 	#################################### END NEW CALLBACKS ########################################
@@ -1666,6 +1670,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			daHex = ""
 			daDataNg = ""
 #		self.txtMultiline.appendAsmText(hex(int(str(instruction.GetAddress().GetLoadAddress(target)), 10)), instruction.GetMnemonic(target),  instruction.GetOperands(target), instruction.GetComment(target), str(instruction.GetData(target)).replace("                             ", "\t\t").replace("		            ", "\t\t\t").replace("		         ", "\t\t").replace("		      ", "\t\t").replace("			   ", "\t\t\t"), True)
+		# logDbgC(f"!!!!!!!!!!!!!!!!¨ALREADY HERE !!!!!!!!!!!!!!!!!!")
 		comment = stubsFunctName or instruction.GetComment(target)
 		self.txtMultiline.appendAsmText(hex(int(str(instruction.GetAddress().GetLoadAddress(target)), 10)), instruction.GetMnemonic(target),  instruction.GetOperands(target), comment, daHex, "".join(str(daDataNg).split()), True, "", self.instCnt)
 
@@ -1751,6 +1756,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			self.rflagsLoaded = not self.rflagsLoaded
 			self.handle_loadRFlags()
 		self.rflagsLoaded += 1
+		QApplication.processEvents()
 #		pass
 
 	def handle_loadRFlags(self):
@@ -1782,6 +1788,7 @@ class LLDBPyGUIWindow(QMainWindow):
 #		target = self.driver.getTarget()
 #		process = target.GetProcess()
 		self.currTblDet.addRow(type, register, value)
+		QApplication.processEvents()
 
 	def handle_updateRegisterValue(self, idx, type, register, value):
 		tblWdgt = self.tabWidgetReg.widget(idx).tblWdgt
@@ -1799,6 +1806,7 @@ class LLDBPyGUIWindow(QMainWindow):
 	def handle_loadVariableValue(self, name, value, data, valType, address):
 		self.inited = True
 		self.tblVariables.addRow(name, value, valType, address, data)
+		QApplication.processEvents()
 
 	def handle_updateVariableValue(self, name, value, data, valType, address):
 		if self.isAttached:
@@ -1849,6 +1857,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		# self.wdtControlFlow.loadConnections()
 		self.worker.endLoadControlFlowCallback.emit(True)
 		oepMain, symbol = find_main(self.driver.debugger)
+		# symbol
 		logDbgC(f"OEP: {getAddrStr(oepMain)} / Symbol: {symbol}", DebugLevel.Verbose)
 		self.txtMultiline.viewAddress(hex(oepMain))
 		self.wdtControlFlow.view.verticalScrollBar().setValue(self.txtMultiline.table.verticalScrollBar().value())
@@ -1882,6 +1891,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			self.processNode.setExpanded(True)
 			self.threadNode.setExpanded(True)
 #			self.devHelper.setDevWatchpoints()
+		QApplication.processEvents()
 
 	def GuessLanguage(self, frame):
 		return lldb.SBLanguageRuntime.GetNameForLanguageType(frame.GuessLanguage())
