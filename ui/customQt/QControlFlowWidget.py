@@ -61,6 +61,7 @@ class ControlFlowConnectionNG():
     destRow = 0
     destAddr = 0x0
     jumpDist = 0x0
+    mnemonic = ""
     color = random_qcolor() # QColor("red")
     lineWidth = 1
     switched = False
@@ -82,8 +83,6 @@ class ControlFlowConnectionNG():
         self.destAddr = destAddr
         self.jumpDist = self.destAddr - self.origAddr
         self.jumpDistInRows = self.destRow - self.origRow
-
-
 
     def setToolTip(self, tooltip):
         self.mainLine.setToolTip(tooltip)
@@ -461,7 +460,7 @@ class QControlFlowWidget(QWidget):
                                    y_position2 + (nRowHeight / 2))
                 con.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
 
-            con.setToolTip(f"Branch\n-from: {hex(con.origAddr)}\n-to: {hex(con.destAddr)}\n-distance: {hex(con.jumpDist)}")
+            con.setToolTip(f"Branch ({con.mnemonic.upper()})\n-from: {hex(con.origAddr)}\n-to: {hex(con.destAddr)}\n-distance: {hex(con.jumpDist)}")
             if radius <= 130:
                 radius += 15
             idx += 1
@@ -611,7 +610,7 @@ class QControlFlowWidget(QWidget):
                 con.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
 
             con.setToolTip(
-                f"Branch\n- from: {hex(con.origAddr)}\n- to: {hex(con.destAddr)}\n- distance: {hex(con.jumpDist)}")
+                f"Branch ({con.mnemonic.upper()})\n- from: {hex(con.origAddr)}\n- to: {hex(con.destAddr)}\n- distance: {hex(con.jumpDist)}")
             if radius <= 130:
                 radius += 15
             idx += 1

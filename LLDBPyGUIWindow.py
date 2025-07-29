@@ -842,7 +842,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		# print(f"OEP (load addr): 0x{hex(addrObj)}")
 		# logDbg(f"OEP (load addr): 0x{hex(addrObj)}")
 
-		addrObj2 = find_main(self.driver.debugger)
+		addrObj2, main_symbol = find_main(self.driver.debugger)
 		addrObj2Hex = f"{hex(addrObj2)}"
 		print(f"OEP2 (load addr): ")
 		logDbg(f"OEP2 (load addr): {addrObj2Hex}")
@@ -1186,7 +1186,7 @@ class LLDBPyGUIWindow(QMainWindow):
 
 			if self.setHelper.getValue(SettingsValues.BreakpointAtMainFunc):
 				self.driver.debugger.HandleCommand("process launch --stop-at-entry")
-				addrObj2 = find_main(self.driver.debugger)
+				addrObj2, main_symbol = find_main(self.driver.debugger)
 				main_bp2 = self.bpHelper.enableBP(hex(addrObj2), True, False)
 				# print(f"main_bp2 (@{addrObj2}): {main_bp2}")
 				logDbgC(f"main_bp2 (@{addrObj2}): {main_bp2}")
@@ -1703,7 +1703,7 @@ class LLDBPyGUIWindow(QMainWindow):
 #		self.txtMulriline.locationStack.pushLocation(hex(self.driver.getPC()).lower())
 #		print(f"self.txtMultiline.table.rowCount() => {self.txtMultiline.table.rowCount()}")
 
-		addrObj2 = find_main(self.driver.debugger)
+		addrObj2, main_symbol = find_main(self.driver.debugger)
 		# addrObj2Hex = f"{hex(addrObj2)}"
 
 		if self.setHelper.getChecked(SettingsValues.LoadTestBPs):
