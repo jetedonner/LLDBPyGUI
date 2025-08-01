@@ -710,7 +710,47 @@ class DisassemblyTableWidget(BaseTableWidget):
 		self.setRowHeight(currRowCount, 14)
 		# print(f"address: {address}")
 		return item
-		
+
+	def addRowString(self, lineNum, address, string=""):
+
+		table_widget = self
+		# Get the row count
+		row_count = table_widget.rowCount()
+
+		# Insert a new row
+		table_widget.insertRow(row_count)
+
+		# titleLabel = text or "__stubs" # text if text is not None else "__stubs"
+		# Create a spanning cell item
+
+		# item2 = QTableWidgetItem(f'{address}: [{lineNum}] {string}' or "__cstring")
+		item2 = QTableWidgetItem(f'{string}' or "__cstring")
+		item2.setFlags(item2.flags() & ~Qt.ItemFlag.ItemIsEditable)
+		# item.setBackground(QColor(64, 0, 255, 96))
+		# item.setForeground(QColor("black"))
+		# Set the item to span all columns
+
+
+		# currRowCount = self.rowCount()
+		# self.setRowCount(currRowCount + 1)
+
+		item = DisassemblyImageTableWidgetItem()
+		curCol = 0
+		if self.showLineNumber:
+			self.addItem(row_count, curCol, str(lineNum))
+			curCol += 1
+
+		self.addItem(row_count, curCol + 0, '')#('>' if rip == address else '') + ('I' if False else ''))
+		self.setItem(row_count, curCol + 1, item)
+		self.addItem(row_count, curCol + 2, address)
+		table_widget.setSpan(row_count, curCol + 3, 1, table_widget.columnCount() - 4)  # Adjust row and column indices as needed
+		self.setItem(row_count, curCol + 3, item2)
+		# self.addItem(currRowCount, curCol + 4, args)
+		# self.addItem(currRowCount, curCol + 5, data)
+		# self.addItem(currRowCount, curCol + 6, dataNg)
+		# self.addItem(currRowCount, curCol + 7, comment)
+
+		self.setRowHeight(row_count, 14)
 		
 	def addItem(self, row, col, txt):
 		
@@ -765,7 +805,39 @@ class AssemblerTextEdit(QWidget):
 		# row_index = item.row()  # Get the row of the item
 		# height = table_widget.verticalHeader().sectionSize(row_index)
 		# logDbg(f"Row height: {height}")
-		
+
+	def appendString(self, addr, idx, string):
+		# Define the text for the spanning cell
+		# text = symbol
+
+		# table_widget = self.table
+		# # Get the row count
+		# row_count = table_widget.rowCount()
+		#
+		# # Insert a new row
+		# table_widget.insertRow(row_count)
+		#
+		# # titleLabel = text or "__stubs" # text if text is not None else "__stubs"
+		# # Create a spanning cell item
+		#
+		# item = QTableWidgetItem(f'{addr}: [{idx}] {string}' or "__cstring")
+		# item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+		# # item.setBackground(QColor(64, 0, 255, 96))
+		# # item.setForeground(QColor("black"))
+		# # Set the item to span all columns
+		# table_widget.setSpan(row_count, 0, 1, table_widget.columnCount())  # Adjust row and column indices as needed
+		self.table.addRowString(idx, addr, string)
+		# # Set the item in the table
+		# table_widget.setItem(row_count, 0, item)
+		# # table_widget.addRowString(idx, addr, string, item)
+		# table_widget.setRowHeight(row_count, 14)
+		# # self.table.symbolCount += 1
+		pass
+
+	# row_index = item.row()  # Get the row of the item
+	# height = table_widget.verticalHeader().sectionSize(row_index)
+	# logDbg(f"Row height: {height}")
+
 	def appendAsmText(self, addr, instr, args, comment, data, dataNg, addLineNum = True, rip = "", lineNo = -1):
 		item = self.table.addRow(lineNo, addr, instr, args, comment, data, dataNg, rip)
 

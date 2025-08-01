@@ -626,6 +626,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.worker.loadModulesCallback.connect(self.loadModulesCallback)
 		self.worker.enableBPCallback.connect(self.enableBPCallback)
 		self.worker.loadInstructionCallback.connect(self.handle_loadInstruction)
+		self.worker.loadStringCallback.connect(self.handle_loadString)
 		self.worker.loadSymbolCallback.connect(self.handle_loadSymbol)
 
 		self.worker.finishedLoadInstructionsCallback.connect(self.handle_workerFinished)
@@ -1615,6 +1616,10 @@ class LLDBPyGUIWindow(QMainWindow):
 
 	def handle_loadSymbol(self, symbol):
 		self.txtMultiline.appendAsmSymbol(0x0, str(symbol))
+
+	def handle_loadString(self, addr, idx, string):
+		self.txtMultiline.appendString(addr, idx, string)
+		pass
 
 	instCnt = 0
 	stubsLoading = False

@@ -36,6 +36,7 @@ class Worker(QObject):
 	loadModulesCallback = pyqtSignal(object, object)
 	enableBPCallback = pyqtSignal(str, bool, bool)
 	loadInstructionCallback = pyqtSignal(object)
+	loadStringCallback = pyqtSignal(str, int, str)
 	loadSymbolCallback = pyqtSignal(str)
 	finishedLoadInstructionsCallback = pyqtSignal(object)
 	loadRegisterCallback = pyqtSignal(str)
@@ -396,22 +397,41 @@ class Worker(QObject):
 
 #			self.devHelper.setDevWatchpoints()
 
+	# import lldb
+
+	def dump_cstring_section(self, target):
+		for module in target.module_iter():
+			for section in module.section_iter():
+				if section.GetName() == "__TEXT" and section.GetSubSectionName() == "__cstring":
+					addr = section.GetStartAddress()
+					size = section.GetByteSize()
+					error = lldb.SBError()
+					data = target.GetProcess().ReadMemory(addr, size, error)
+
+					if error.Success():
+						strings = data.split(b'\x00')
+						for i, s in enumerate(strings):
+							try:
+								decoded = s.decode('utf-8')
+								print(f"[{i}] {decoded}")
+							except UnicodeDecodeError:
+								continue
+					else:
+						print("Failed to read memory:", error.GetCString())
+
 	def disassemble_entire_target(self):
 		self.logDbgC.emit(f"============ NEW DISASSEMBLER ===============", DebugLevel.Verbose)
 		idx = 0
 		for module in self.target.module_iter():
 			self.logDbgC.emit(f"\n📦 Module: {module.file}", DebugLevel.Verbose)
-			# /Volumes/Data/dev/python/LLDBPyGUI/_testtarget/
 			if module.file.GetFilename() == self.target.executable.GetFilename(): # "a_hello_world_test":
 				isObjectiveCFile = is_objc_app(self.target)
 				self.logDbgC.emit(f"App: {module.file.GetFilename()} is objective-c: {isObjectiveCFile}...", DebugLevel.Verbose)
 				lang = detect_language_by_symbols(self.target, module)
-				self.logDbgC.emit(f"App: {module.file.GetFilename()} is language: {lang}...",
-								  DebugLevel.Verbose)
+				self.logDbgC.emit(f"App: {module.file.GetFilename()} is language: {lang}...", DebugLevel.Verbose)
 
 				isObjC = detect_objc(module)
-				self.logDbgC.emit(f"App: {module.file.GetFilename()} is objective-c: {isObjC}...",
-								  DebugLevel.Verbose)
+				self.logDbgC.emit(f"App: {module.file.GetFilename()} is objective-c: {isObjC}...", DebugLevel.Verbose)
 			# if idx == 0:
 			# 	for symbol in module:
 			# 		name = symbol.GetName()
@@ -432,7 +452,6 @@ class Worker(QObject):
 						for subsec in section:
 							self.logDbgC.emit(f"subsec.GetName(): {subsec.GetName()}", DebugLevel.Verbose)
 							if subsec.GetName() == "__text" or subsec.GetName() == "__stubs":
-
 								idxSym = 0
 								lstSym = module.symbol_in_section_iter(subsec)
 								if isObjC and subsec.GetName() == "__stubs":
@@ -450,7 +469,6 @@ class Worker(QObject):
 										idxInstructions += 1
 										self.checkLoadConnection(instruction, idxInstructions + (idxSym + 1))
 									idxSym += 1
-
 
 								if subsec.GetName() == "__stubs":
 									start_addr = subsec.GetLoadAddress(self.target)
@@ -472,31 +490,26 @@ class Worker(QObject):
 										idxInstructions += 1
 										self.checkLoadConnection(instruction, idxInstructions + (idxSym + 1))
 									continue
-								# return
-				# num_symbols = module.GetNumSymbols()
-				#
-				# for i in range(num_symbols):
-				# 	symbol = module.GetSymbolAtIndex(i)
-				# 	if not symbol.IsValid():
-				# 		continue
-				#
-				# 	# Only disassemble code symbols
-				# 	if symbol.GetType() == lldb.eSymbolTypeCode:
-				# 		name = symbol.GetName()
-				# 		start_addr = symbol.GetStartAddress()
-				# 		end_addr = symbol.GetEndAddress()
-				#
-				# 		self.logDbgC.emit(f"\n🔧 Symbol: {name}", DebugLevel.Verbose)
-				# 		self.logDbgC.emit(f"   Range: {start_addr} - {end_addr}", DebugLevel.Verbose)
-				#
-				# 		addrStart = start_addr #lldb.SBAddress(start_addr, self.target)
-				# 		addrEnd = end_addr.GetLoadAddress(self.target) # lldb.SBAddress(end_addr, self.target)
-				#
-				# 		# instructions = self.target.ReadInstructions(addrStart, addrEnd)
-				# 		# # instructions = self.target.ReadInstructions(start_addr, end_addr.GetLoadAddress(self.target))
-				# 		# for inst in instructions:
-				# 		# 	self.logDbgC.emit(f"   {inst}")
-				# # break
+							elif subsec.GetName() == "__cstring":
+								addr = subsec.GetLoadAddress(self.target) #.GetStartAddress()
+								size = subsec.GetByteSize()
+								error = lldb.SBError()
+								data = self.target.GetProcess().ReadMemory(addr, size, error)
+
+								if error.Success():
+									strings = data.split(b'\x00')
+									curAddr = addr
+									for i, s in enumerate(strings):
+										try:
+											decoded = s.decode('utf-8')
+											self.logDbgC.emit(f"{hex(curAddr)}: [{i}] {decoded}", DebugLevel.Verbose)
+											self.loadStringCallback.emit(hex(curAddr), i, decoded)
+											curAddr += len(decoded) + 1
+										except UnicodeDecodeError:
+											continue
+								else:
+									self.logDbgC.emit(f"Failed to read memory: {error.GetCString()}", DebugLevel.Verbose)
+								pass
 						break
 				break
 			# else:
@@ -706,18 +719,18 @@ class Worker(QObject):
 		# 	idxOuter += 1
 		#
 		#
-		idxInst = 0
-		for inst in self.allInstructions:
-			for con in self.connections:
-				if con.destAddr == int(str(inst.GetAddress().GetLoadAddress(self.target)), 10):
-					if (idxInst < con.origRow):
-						con.destRow = con.origRow
-						con.origRow = idxInst
-						con.jumpDistInRows = abs(con.destRow - con.origRow) * -1
-					else:
-						con.destRow = idxInst
-						con.jumpDistInRows = abs(con.destRow - con.origRow)
-			idxInst += 1
+		# idxInst = 0
+		# for inst in self.allInstructions:
+		# 	for con in self.connections:
+		# 		if con.destAddr == int(str(inst.GetAddress().GetLoadAddress(self.target)), 10):
+		# 			if (idxInst < con.origRow):
+		# 				con.destRow = con.origRow
+		# 				con.origRow = idxInst
+		# 				con.jumpDistInRows = abs(con.destRow - con.origRow) * -1
+		# 			else:
+		# 				con.destRow = idxInst
+		# 				con.jumpDistInRows = abs(con.destRow - con.origRow)
+		# 	idxInst += 1
 
 		for con in self.connections:
 			logDbgC(f"===>>> Connection: {hex(con.origAddr)} / {hex(con.destAddr)} => {con.origRow} / {con.destRow}")
@@ -784,8 +797,9 @@ class Worker(QObject):
 				return
 
 			if self.isInsideTextSection(sAddrJumpTo):
-				sAddrJumpFrom = hex(int(str(instruction.GetAddress().GetLoadAddress(self.target)), 10))
-				rowStart = idxInstructions#int(self.get_line_number(int(sAddrJumpFrom, 16)))
+				sAddrStartInt = int(str(instruction.GetAddress().GetLoadAddress(self.target)), 10)
+				sAddrJumpFrom = hex(sAddrStartInt)
+				rowStart = int(self.get_line_number(sAddrStartInt))# idxInstructions#int(self.get_line_number(int(sAddrJumpFrom, 16)))
 				rowEnd = int(self.get_line_number(int(sAddrJumpTo, 16)))
 				logDbgC(f"Found connection from line: {rowStart} to: {rowEnd} ({sAddrJumpFrom} / {sAddrJumpTo})")
 		# pass
@@ -797,7 +811,7 @@ class Worker(QObject):
         #         rowEnd = int(tblDisassembly.getRowForAddress(sAddrJumpTo))
 		#		rad = self.radius
 				if (rowStart < rowEnd):
-					newConObj = QControlFlowWidget.draw_flowConnectionNG(rowStart, rowEnd, int(sAddrJumpFrom, 16), int(sAddrJumpTo, 16), None, QColor("lightblue"), self.radius) # self.window().txtMultiline.table
+					newConObj = QControlFlowWidget.draw_flowConnectionNG(rowStart, rowEnd, int(sAddrJumpFrom, 16), int(sAddrJumpTo, 16), None, QColor("lightblue"), self.radius, 1, False) # self.window().txtMultiline.table
 				else:
 					newConObj = QControlFlowWidget.draw_flowConnectionNG(rowStart, rowEnd, int(sAddrJumpFrom, 16), int(sAddrJumpTo, 16), None, QColor("lightgreen"), self.radius, 1, True)
 				# newConObj.parentControlFlow = self

@@ -544,8 +544,8 @@ class QControlFlowWidget(QWidget):
             if(con.origRow > con.destRow):
                 y_position = tblDisassembly.rowViewportPosition(con.destRow)# + idxNGDef)#(1 if con.origRow == 0 else 0))
                 y_position2 = tblDisassembly.rowViewportPosition(con.origRow)# + idxNGDef)#(1 if con.destRow == 0 else 0) + 0)
-
-            logDbgC(f"Connection ({idx}) => fromY: {y_position} / toY: {y_position2} / con.origRow: {con.origRow} / con.destRow: {con.destRow}")
+            logDbgC(f"Connection ({idx}) => fromY: {y_position} / toY: {y_position2} / con.origRow: {con.origRow} / con.destRow: {con.destRow} ---->>>> CON-SWITCHED: {con.switched}")
+            logDbgC(f"- Addr from: {hex(con.origAddr)} to: {hex(con.destAddr)}")
             nRowHeight = 21
             nOffsetAdd = 23
             xOffset = (controlFlowWidth / 2) + (((controlFlowWidth - radius) / 2))  # + (radius / 2)
@@ -583,7 +583,7 @@ class QControlFlowWidget(QWidget):
             arc_item2.setPen(QPen(con.color, con.lineWidth))
             self.scene.addItem(arc_item2)
             con.bottomArc = arc_item2
-
+            # logDbgC(f"---->>>> CON-SWITCHED: {con.switched}")
             if con.switched:
                 arrowStart = QPointF(xOffset + (radius / 2) - 6 + 2, y_position + (
                         nRowHeight / 2))
@@ -595,6 +595,11 @@ class QControlFlowWidget(QWidget):
                 arrowStart = QPointF(xOffset + (radius / 2) + 2,
                                      y_position + (nRowHeight / 2))
                 con.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+                # arrowStart = QPointF(xOffset + (radius / 2) - 6 + 2, y_position2 + (
+                #         nRowHeight / 2))
+                # arrowEnd = QPointF(xOffset + (radius / 2) + 2,
+                #                    y_position2 + (nRowHeight / 2))
+                # con.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
 
             if con.switched:
                 arrowEnd = QPointF(xOffset + (radius / 2) - 6 + 2, y_position2 + (
@@ -608,9 +613,14 @@ class QControlFlowWidget(QWidget):
                 arrowEnd = QPointF(xOffset + (radius / 2) + 2,
                                    y_position2 + (nRowHeight / 2))
                 con.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+                # arrowEnd = QPointF(xOffset + (radius / 2) - 6 + 2, y_position + (
+                #         nRowHeight / 2))
+                # arrowStart = QPointF(xOffset + (radius / 2) + 2,
+                #                      y_position + (nRowHeight / 2))
+                # con.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
 
             con.setToolTip(
-                f"Branch ({con.mnemonic.upper()})\n- from: {hex(con.origAddr)}\n- to: {hex(con.destAddr)}\n- distance: {hex(con.jumpDist)}")
+                f"Branch ({con.mnemonic.upper()})\n- from: {hex(con.origAddr)}\n- to: {hex(con.destAddr)}\n- distance: {hex(con.jumpDist)}\n- row from: {con.origRow} to: {con.destRow}")
             if radius <= 130:
                 radius += 15
             idx += 1
@@ -671,10 +681,10 @@ class QControlFlowWidget(QWidget):
             self.connections[0].endArrow.moveBy(-2, 0)
 
     @staticmethod
-    def draw_flowConnectionNG(startRow, endRow, startAddr, endAddr, table, color=QColor("lightblue"), radius=50, lineWidth=1, switched=False):
+    def draw_flowConnectionNG(startRow, endRow, startAddr, endAddr, table, color=None, radius=50, lineWidth=1, switched=False):
         newConnectionNG = ControlFlowConnectionNG(startRow, endRow, startAddr, endAddr, table)
         newConnectionNG.switched = switched
-        newConnectionNG.color = random_qcolor()
+        newConnectionNG.color = color or random_qcolor()
         newConnectionNG.origRow = startRow
         newConnectionNG.origAddr = startAddr
         newConnectionNG.destRow = endRow
