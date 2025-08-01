@@ -547,7 +547,7 @@ class QControlFlowWidget(QWidget):
                 con.switched = True
             else:
                 con.switched = False
-                
+
             logDbgC(f"Connection ({idx}) => fromY: {y_position} / toY: {y_position2} / con.origRow: {con.origRow} / con.destRow: {con.destRow} ---->>>> CON-SWITCHED: {con.switched}")
             logDbgC(f"- Addr from: {hex(con.origAddr)} to: {hex(con.destAddr)}")
             nRowHeight = 21

@@ -20,6 +20,17 @@ from dbg.debuggerdriver import *
 from LLDBPyGUIWindow import *
 from config import *
 
+import subprocess
+
+def bring_app_to_front(frame, bp_loc, dict):
+	# Replace 'MyAppName' with the actual name of your app
+	script = '''
+	tell application "System Events"
+		set frontmost of process "cocoa_windowed_objc2" to true
+	end tell
+	'''
+	subprocess.run(['osascript', '-e', script])
+
 def on_scanf_hit(frame, bp_loc, dict):
 	print("✅ Breakpoint hit at scanf!")
 	return True  # Returning True tells LLDB to stop here	# return

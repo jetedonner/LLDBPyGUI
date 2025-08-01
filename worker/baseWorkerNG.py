@@ -336,12 +336,15 @@ class Worker(QObject):
 					# QCoreApplication.processEvents()
 		self.loadBPsWPs()
 		if self.loadSourceCode:
-			sourceFilesFound = find_source_file(self.fileToLoad)
-			if len(sourceFilesFound) > 0:
-				logDbgC(f"Tried to auto-find sourcefile => Found: {len(sourceFilesFound)}: {sourceFilesFound[0]}! Loading file ...")
-				self.runLoadSourceCode(sourceFilesFound[0])
+			if self.sourceFile != "":
+				self.runLoadSourceCode(self.sourceFile)
 			else:
-				logDbgC(f"Tried to auto-find sourcefile => NOTHING Found!!!")
+				sourceFilesFound = find_source_file(self.fileToLoad) # self.sourceFile if self.sourceFile != "" else
+				if len(sourceFilesFound) > 0:
+					logDbgC(f"Tried to auto-find sourcefile => Found: {len(sourceFilesFound)}: {sourceFilesFound[0]}! Loading file ...")
+					self.runLoadSourceCode(sourceFilesFound[0])
+				else:
+					logDbgC(f"Tried to auto-find sourcefile => NOTHING Found!!!")
 		else:
 			self.runControlFlow_loadConnections.emit()
 			# QCoreApplication.processEvents()
@@ -419,7 +422,23 @@ class Worker(QObject):
 					else:
 						print("Failed to read memory:", error.GetCString())
 
+	# import lldb
+
+	def list_external_symbols(self, target):
+		main_exe = target.GetExecutable().GetFilename()
+
+		for module in target.module_iter():
+			module_name = module.file.GetFilename()
+			if module_name != main_exe:  # Skip main executable
+				print(f"\n📦 External Module: {module_name}")
+				for i in range(module.GetNumSymbols()):
+					symbol = module.GetSymbolAtIndex(i)
+					if symbol.IsValid():
+						print(f"🔧 Symbol: {symbol.GetName()}")
+
+
 	def disassemble_entire_target(self):
+		# self.list_external_symbols(self.target)
 		self.logDbgC.emit(f"============ NEW DISASSEMBLER ===============", DebugLevel.Verbose)
 		idx = 0
 		for module in self.target.module_iter():
@@ -454,14 +473,14 @@ class Worker(QObject):
 							if subsec.GetName() == "__text" or subsec.GetName() == "__stubs":
 								idxSym = 0
 								lstSym = module.symbol_in_section_iter(subsec)
-								if isObjC and subsec.GetName() == "__stubs":
-									self.loadSymbolCallback.emit(subsec.GetName())
+								# if isObjC and subsec.GetName() == "__stubs":
+								# 	self.loadSymbolCallback.emit(subsec.GetName())
 
 								for smbl in lstSym:
 									self.logDbgC.emit(f"===========>>>>>>>>>>> symbl: {smbl}", DebugLevel.Verbose)
 									# .GetStartAddress().GetFunction()
-									if isObjC and not subsec.GetName() == "__stubs":
-										self.loadSymbolCallback.emit(smbl.GetName())
+									# if isObjC and not subsec.GetName() == "__stubs":
+									# 	self.loadSymbolCallback.emit(smbl.GetName())
 									instructions = smbl.GetStartAddress().GetFunction().GetInstructions(self.target)
 									self.allInstructions += instructions
 									for instruction in instructions:
@@ -491,6 +510,8 @@ class Worker(QObject):
 										self.checkLoadConnection(instruction, idxInstructions + (idxSym + 1))
 									continue
 							elif subsec.GetName() == "__cstring":
+								if isObjC:
+									self.loadSymbolCallback.emit(subsec.GetName())
 								addr = subsec.GetLoadAddress(self.target) #.GetStartAddress()
 								size = subsec.GetByteSize()
 								error = lldb.SBError()
@@ -927,6 +948,9 @@ class Worker(QObject):
 					self.logDbgC.emit(f"loadTarget() => Thread.GetNumFrames(): {self.thread.GetNumFrames()} ...", DebugLevel.Verbose)
 					for z in range(self.thread.GetNumFrames()):
 						frame = self.thread.GetFrameAtIndex(z)
+
+						# self.logDbgC.emit(f"frame.register: {frame.GetRegisters()}", DebugLevel.Verbose)
+
 						self.loadModulesCallback.emit(frame, self.target.modules)
 						# self.tabWidgetStruct.cmbModules.addItem(
 						# 	frame.GetModule().GetFileSpec().GetFilename() + " (" + str(

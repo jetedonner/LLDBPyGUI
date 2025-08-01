@@ -862,17 +862,68 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.txtMultiline.viewCurrentAddress()
 		pass
 
+	def restart_debug_session(self, debugger, old_target, new_app_path):
+		process = old_target.GetProcess()
+		if process.IsValid():
+			process.Kill()
+		debugger.DeleteTarget(old_target)
 
+		new_target = debugger.CreateTarget(new_app_path)
+		if new_target.IsValid():
+			launch_info = lldb.SBLaunchInfo(None)
+			process = new_target.Launch(launch_info, lldb.SBError())
+			return new_target, process
+		return None, None
 
 	def load_clicked(self):
 		ctd = CreateTargetDialog()
 		res = ctd.exec()
 		if res and ctd.txtTarget.text() is not None and ctd.txtTarget.text() != "":
 			self.instCnt = 0
+			# self.target, self.process = self.restart_debug_session(self.driver.debugger, self.target, ctd.txtTarget.text())
+
+			# self.driver.debugger = lldb.SBDebugger.Create()
+			self.threadLoad = QThread()
+
+			self.worker = Worker(self, ctd.txtTarget.text(), True)#, ConfigClass.testTargetSource)
 			self.worker.fileToLoad = ctd.txtTarget.text()
 			self.worker.arch = ctd.cmbArch.currentText()
 			self.worker.args = ctd.txtArgs.text()
 			self.worker.loadSourceCode = ctd.loadSourceCode
+
+			self.worker.moveToThread(self.threadLoad)
+
+			self.threadLoad.started.connect(self.worker.run)
+			self.worker.show_dialog.connect(self.start_operation)
+			self.worker.finished.connect(self.stopWorkerAndQuitThread)
+			self.worker.progressUpdateCallback.connect(self.handle_progressUpdate)
+
+			# Setup CALLBACKS
+			self.worker.loadFileInfosCallback.connect(self.loadFileInfosCallback)
+			self.worker.loadJSONCallback.connect(self.treStats.loadJSONCallback)
+			self.worker.loadModulesCallback.connect(self.loadModulesCallback)
+			self.worker.enableBPCallback.connect(self.enableBPCallback)
+			self.worker.loadInstructionCallback.connect(self.handle_loadInstruction)
+			self.worker.loadStringCallback.connect(self.handle_loadString)
+			self.worker.loadSymbolCallback.connect(self.handle_loadSymbol)
+
+			self.worker.finishedLoadInstructionsCallback.connect(self.handle_workerFinished)
+			self.worker.handle_breakpointEvent = self.handle_breakpointEvent
+			self.worker.handle_processEvent = self.handle_processEvent
+			self.worker.handle_gotNewEvent = self.treListener.handle_gotNewEvent
+			self.worker.loadRegisterCallback.connect(self.handle_loadRegister)
+			self.worker.loadRegisterValueCallback.connect(self.handle_loadRegisterValue)
+			self.worker.loadVariableValueCallback.connect(self.handle_loadVariableValue)
+
+			self.worker.loadBreakpointsValueCallback.connect(self.wdtBPsWPs.handle_loadBreakpointValue)
+			self.worker.updateBreakpointsValueCallback.connect(self.wdtBPsWPs.handle_updateBreakpointValue)
+			self.worker.loadWatchpointsValueCallback.connect(
+				self.tabWatchpoints.tblWatchpoints.handle_loadWatchpointValue)
+			self.worker.updateWatchpointsValueCallback.connect(
+				self.tabWatchpoints.tblWatchpoints.handle_updateWatchpointValue)
+			self.worker.finishedLoadingSourceCodeCallback.connect(self.handle_loadSourceFinished)
+			self.worker.loadStacktraceCallback.connect(self.handle_loadStacktrace)
+			self.worker.runControlFlow_loadConnections.connect(self.runControlFlow_loadConnections)
 
 			self.txtMultiline.resetContent()
 			self.bpHelper.deleteAllBPs()
@@ -885,6 +936,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			# self.wdtBPsWPs.treBPs.clear()
 			global event_queue
 			event_queue = queue.Queue()
+			# self.listener.should_quit = False
 			self.should_quit = False
 			global driver
 			driver = dbg.debuggerdriver.createDriver(self.driver.debugger, event_queue)
@@ -978,8 +1030,9 @@ class LLDBPyGUIWindow(QMainWindow):
 				else:
 					# lldb.debugger.Terminate()
 					logDbgC(f"Debugged app killed, cleaning up ...")
-					self.driver.debugger.DeleteTarget(target)
+					# self.driver.debugger.DeleteTarget(target)
 					self.driver.debugger.Terminate()
+					lldb.SBDebugger.Destroy(self.driver.debugger)
 					logDbgC(f"Debugger terminated, cleaning up ...")
 					self.resetGUI()
 			else:
@@ -1582,6 +1635,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			self.isProcessRunning = False
 
 	rip = ""
+
 
 	def handle_debugStepCompleted(self, kind, success, rip, frm):
 		if success:
