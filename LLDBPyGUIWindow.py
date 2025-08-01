@@ -1646,6 +1646,7 @@ class LLDBPyGUIWindow(QMainWindow):
 				if not self.stubsLoading:
 					self.txtMultiline.appendAsmSymbol(str(instruction.GetAddress().GetLoadAddress(target)),
 												  self.symFuncName)
+					self.instCnt += 1
 				# else:
 				# 	address = instruction.GetAddress()
 				# 	stubsFunctName = address.GetSymbol().name
@@ -1677,7 +1678,7 @@ class LLDBPyGUIWindow(QMainWindow):
 #		self.txtMultiline.appendAsmText(hex(int(str(instruction.GetAddress().GetLoadAddress(target)), 10)), instruction.GetMnemonic(target),  instruction.GetOperands(target), instruction.GetComment(target), str(instruction.GetData(target)).replace("                             ", "\t\t").replace("		            ", "\t\t\t").replace("		         ", "\t\t").replace("		      ", "\t\t").replace("			   ", "\t\t\t"), True)
 		# logDbgC(f"!!!!!!!!!!!!!!!!¨ALREADY HERE !!!!!!!!!!!!!!!!!!")
 		comment = stubsFunctName or instruction.GetComment(target)
-		self.txtMultiline.appendAsmText(hex(int(str(instruction.GetAddress().GetLoadAddress(target)), 10)), instruction.GetMnemonic(target),  instruction.GetOperands(target), comment, daHex, "".join(str(daDataNg).split()), True, "", self.instCnt)
+		self.txtMultiline.appendAsmText(hex(int(str(instruction.GetAddress().GetLoadAddress(target)), 10)), instruction.GetMnemonic(target),  instruction.GetOperands(target), comment, daHex, "".join(str(daDataNg).split()), True, "", self.instCnt - 1)
 
 		pass
 

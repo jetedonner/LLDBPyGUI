@@ -544,6 +544,10 @@ class QControlFlowWidget(QWidget):
             if(con.origRow > con.destRow):
                 y_position = tblDisassembly.rowViewportPosition(con.destRow)# + idxNGDef)#(1 if con.origRow == 0 else 0))
                 y_position2 = tblDisassembly.rowViewportPosition(con.origRow)# + idxNGDef)#(1 if con.destRow == 0 else 0) + 0)
+                con.switched = True
+            else:
+                con.switched = False
+                
             logDbgC(f"Connection ({idx}) => fromY: {y_position} / toY: {y_position2} / con.origRow: {con.origRow} / con.destRow: {con.destRow} ---->>>> CON-SWITCHED: {con.switched}")
             logDbgC(f"- Addr from: {hex(con.origAddr)} to: {hex(con.destAddr)}")
             nRowHeight = 21
