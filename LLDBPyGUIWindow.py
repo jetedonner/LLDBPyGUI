@@ -1064,7 +1064,7 @@ class LLDBPyGUIWindow(QMainWindow):
 					# lldb.debugger.Terminate()
 					logDbgC(f"Debugged app killed, cleaning up ...")
 					# self.driver.debugger.DeleteTarget(target)
-					self.driver.debugger.Terminate()
+					# self.driver.debugger.Terminate()
 					# lldb.SBDebugger.Destroy(self.driver.debugger)
 					logDbgC(f"Debugger terminated, cleaning up ...")
 					self.resetGUI()
