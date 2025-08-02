@@ -136,14 +136,16 @@ class CommandsWidget(QWidget):
 		
 	def execCommand_clicked(self):
 		logDbgC(f"execCommand_clicked() in commandsWidget ...")
+		newCommand = ""
 		if self.setHelper.getValue(SettingsValues.CmdHistory):
-			self.txtCmd.addCommandToHistory()
+			newCommand = self.txtCmd.addCommandToHistory()
+			self.txtCmd.setText("")
 			
-		self.txtCommands.append(f"({PROMPT_TEXT}) {self.txtCmd.text().strip()}")
-		if self.txtCmd.text().strip().lower() in ["clear", "clr"]:
+		self.txtCommands.append(f"({PROMPT_TEXT}) {newCommand.strip()}")
+		if newCommand.strip().lower() in ["clear", "clr"]:
 			self.clear_clicked()
 		else:
-			self.workerManager.start_execCommandWorker(self.txtCmd.text(), self.handle_commandFinished)
+			self.workerManager.start_execCommandWorker(newCommand, self.handle_commandFinished)
 		
 	def handle_commandFinished(self, res):
 		sOutput = ""

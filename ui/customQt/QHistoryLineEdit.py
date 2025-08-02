@@ -125,6 +125,7 @@ class QHistoryLineEdit(QLineEdit):
 			super(QHistoryLineEdit, self).keyPressEvent(event)
 		
 	def addCommandToHistory(self):
+		newCommand = ""
 		if self.doAddCmdToHist:
 			newCommand = self.text()
 			if len(self.lstCommands) > 0:
@@ -136,6 +137,7 @@ class QHistoryLineEdit(QLineEdit):
 				self.currCmd = len(self.lstCommands) - 1
 			if self.persistentHistory:
 				self.save_history(self.lstCommands)
+		return newCommand
 
 	def clearCommandText(self, clearCommandHistory=False, clearPersistentHistory=False):
 		self.setText("")

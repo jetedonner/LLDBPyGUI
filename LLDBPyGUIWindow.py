@@ -1652,6 +1652,7 @@ class LLDBPyGUIWindow(QMainWindow):
 
 	isProcessRunning = False
 	def start_debugWorker(self, driver, kind):
+		logDbgC(f"start_debugWorker .....")
 		self.wdtBPsWPs.treBPs.clearPC()
 		self.txtMultiline.clearPC()
 		if self.workerManager.start_debugWorker(driver, kind, self.handle_debugStepCompleted):

@@ -379,19 +379,27 @@ class BreakpointTreeWidget(BaseTreeWidget):
 		if col == 6 and item.childCount() == 0:
 			target = self.window().driver.getTarget()
 			logDbgC(f"handle_itemChanged(col == 6): target.GetNumBreakpoints() == {target.GetNumBreakpoints()}")
+			found = False
 			for i in range(target.GetNumBreakpoints()):
 				bp = target.GetBreakpointAtIndex(i)
 				logDbgC(f"target.GetBreakpointAtIndex(i) == {target.GetBreakpointAtIndex(i)} / bp: {bp}")
 				for bl in bp:
 					logDbgC(f"bl == {bl}")
 					if item.text(0) == str(bp.GetID()) + "." + str(bl.GetID()):
-						# time.sleep(0.1)
 						bp.SetScriptCallbackFunction(item.text(col))
-						# time.sleep(0.1)
-						bl.SetScriptCallbackFunction(item.text(col))
-						# time.sleep(0.1)
+						found = True
 						QApplication.processEvents()
 						break
+				if found:
+					break
+					# if item.text(0) == str(bp.GetID()) + "." + str(bl.GetID()):
+					# 	# time.sleep(0.1)
+					# 	bp.SetScriptCallbackFunction(item.text(col))
+					# 	# time.sleep(0.1)
+					# 	# bl.SetScriptCallbackFunction(item.text(col))
+					# 	# time.sleep(0.1)
+					# 	QApplication.processEvents()
+					# 	break
 						# if item.data(5, Qt.ItemDataRole.UserRole) != item.text(5):
 						# 	item.setData(5, Qt.ItemDataRole.UserRole, item.text(5))
 						# 	if str(bp.GetCondition()) != item.text(col) and not (

@@ -1,3 +1,6 @@
 breakpoint command add -F LLDBPyGUI.test_cb_hello 4.1
 
 breakpoint command add -F LLDBPyGUI.test_cb_hello 5.1
+
+
+cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS="clang;lld;lldb" -DCMAKE_BUILD_TYPE=Debug -DLLVM_USE_LINKER=lld

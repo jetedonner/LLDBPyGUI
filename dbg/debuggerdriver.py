@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 ##
 ##===----------------------------------------------------------------------===##
-
+import time
 
 import lldb
 from lldb import *
@@ -200,8 +200,10 @@ class DebuggerDriver(Thread):
 #       global process
         print(f"=======================>>>>>>>>>>>>>>>>>>> eventLoop STARTED!!!!!!!!!!!!!")
         while not self.isDone() and not self.aborted:# and not self.listener.should_quit:
-            event = lldb.SBEvent()
-            got_event = self.listener.WaitForEvent(lldb.UINT32_MAX, event)
+            time.sleep(1)
+            # event = lldb.SBEvent()
+            # logDbgC(f"################# ====>>>>> WaitForEvent (2)")
+            # got_event = self.listener.WaitForEvent(lldb.UINT32_MAX, event)
             # print(f'GOT-EVENT: {event} / {event.GetType()} ====>>> THATS DA ONE')
 #           desc = get_description(event)
 #           print('Event description:', desc)
