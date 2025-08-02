@@ -128,7 +128,8 @@ class Worker(QObject):
 				# self.mainWin.devHelper.setupDevHelper()
 				self.loadFileStats()
 
-		self.listener.gotEvent.disconnect(self.handle_gotNewEvent)
+		if self.listener is not None:
+			self.listener.gotEvent.disconnect(self.handle_gotNewEvent)
 		self.finished.emit()
 
 	def stop(self):
