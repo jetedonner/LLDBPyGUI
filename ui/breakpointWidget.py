@@ -116,18 +116,22 @@ class BreakpointTreeWidget(BaseTreeWidget):
 		self.context_menu.addSeparator()
 		self.actionGoToAddress = self.context_menu.addAction("GoTo address")
 		self.actionGoToAddress.triggered.connect(self.handle_gotoAddr)
-		
+		self.context_menu.addSeparator()
+		self.actionToggleSingleShot = self.context_menu.addAction("Toggle single shot")
+		self.actionToggleSingleShot.triggered.connect(self.handle_toggleSingleShot)
+
 		self.setFont(ConfigClass.font)
-		self.setHeaderLabels(['#', 'State', 'Address', 'Name', 'Hit', 'Condition', 'Commands'])
+		self.setHeaderLabels(['#', 'State', 'Address', 'Name', 'Hit', 'Condition', 'Commands', 'Shot'])
 		self.header().resizeSection(0, 96)
 		self.header().resizeSection(1, 56)
 		self.header().resizeSection(2, 128)
 		self.header().resizeSection(3, 128)
 		self.header().resizeSection(4, 128)
 		self.header().resizeSection(5, 128)
-		self.header().resizeSection(6, 32)
-		self.header().resizeSection(7, 48)
-		self.header().resizeSection(8, 256)
+		self.header().resizeSection(6, 250)
+		self.header().resizeSection(7, 40)
+		# self.header().resizeSection(8, 256)
+		# self.header().resizeSection(9, 40)
 		self.setMouseTracking(True)
 #		self.treBPs.itemDoubleClicked.connect(self.handle_itemDoubleClicked)
 		self.currentItemChanged.connect(self.handle_currentItemChanged)
@@ -140,6 +144,10 @@ class BreakpointTreeWidget(BaseTreeWidget):
 		#         color: white;
 		#     }
 		# """)
+
+	def handle_toggleSingleShot(self):
+		logDbgC(f"Toggle single shot ....")
+		pass
 
 	# FIXME: SET and READ row no so we don't have to loop all rows
 	def clearPC(self):
@@ -250,7 +258,7 @@ class BreakpointTreeWidget(BaseTreeWidget):
 		else:
 			cmd = ""
 			
-		bpNode = EditableTreeItem(self, [str(bp.GetID()), '', '', name, str(bp.GetHitCount()), bp.GetCondition(), cmd])
+		bpNode = EditableTreeItem(self, [str(bp.GetID()), '', '', name, str(bp.GetHitCount()), bp.GetCondition(), cmd, 'x' if bp.IsOneShot() else '-'])
 		bpNode.enableBP(bp.IsEnabled())
 		idx = 1
 		loadAddr = ""
@@ -260,12 +268,12 @@ class BreakpointTreeWidget(BaseTreeWidget):
 			
 #				print(f"SETTING UP BP CALLBACK")
 #				print(f"command script import --allow-reload ./lldbpyGUIWindow.py")
-			extra_args = lldb.SBStructuredData()
+			# extra_args = lldb.SBStructuredData()
 #				self.driver.handleCommand("command script import --allow-reload lldbpyGUIWindow.py")
 #				bp.SetScriptCallbackFunction("lldbpyGUIWindow.my_callback", extra_args)
 			
 			txtID = str(bp.GetID()) + "." + str(idx)
-			sectionNode = EditableTreeItem(bpNode, [txtID, '', hex(bl.GetLoadAddress()), name, str(bl.GetHitCount()), bl.GetCondition(), ''])
+			sectionNode = EditableTreeItem(bpNode, [txtID, '', hex(bl.GetLoadAddress()), name, str(bl.GetHitCount()), bl.GetCondition(), '', '-'])
 			loadAddr = hex(bl.GetLoadAddress())
 			sectionNode.enableBP(bl.IsEnabled())
 			sectionNode.setToolTip(1, f"Enabled: {bl.IsEnabled()}")
@@ -644,6 +652,10 @@ class BreakpointTreeWidget(BaseTreeWidget):
 			self.window().txtMultiline.table.toggleBP(daItem.text(2))
 		elif col == 2:
 			self.window().txtMultiline.viewAddress(daItem.text(2))
+			pass
+		elif col == 7:
+			# self.window().txtMultiline.viewAddress(daItem.text(2))
+			logDbgC(f"Toggle one shot ....")
 			pass
 		else:
 			if col == 3 or col == 5 or col == 6:

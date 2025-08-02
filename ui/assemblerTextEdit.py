@@ -349,9 +349,6 @@ class DisassemblyTableWidget(BaseTableWidget):
 		self.context_menu.addSeparator()
 		self.actionEditCondition = self.context_menu.addAction("Edit condition")
 		self.actionEditCondition.triggered.connect(self.handle_editCondition)
-		self.context_menu.addSeparator()
-		self.actionToggleSingleShot = self.context_menu.addAction("Toggle single shot")
-		self.actionToggleSingleShot.triggered.connect(self.handle_toggleSingleShot)
 		
 		self.context_menu.addSeparator()
 		actionCopyAddress = self.context_menu.addAction("Copy address")
@@ -378,18 +375,18 @@ class DisassemblyTableWidget(BaseTableWidget):
 		self.actionRememberLocBlack = self.context_menu.addAction("Remember Location BLACK")
 		self.actionRememberLocBlack.triggered.connect(self.handle_RememberLocBlack)
 
-		colCount = 10 if self.showLineNumber else 9
+		colCount = 9 if self.showLineNumber else 8
 		self.setColumnCount(colCount)
 		curCol = 0
 		# labels = []
 		if self.showLineNumber:
 			self.setColumnWidth(curCol, 42)
-			labels = ['No.', 'PC', 'BP', 'Address', 'Mnemonic', 'Operands', 'Hex', 'Data', 'Comment', 'SingleShot']
+			labels = ['No.', 'PC', 'BP', 'Address', 'Mnemonic', 'Operands', 'Hex', 'Data', 'Comment']
 			global COL_LINE
 			COL_LINE = curCol
 			curCol += 1
 		else:
-			labels = ['PC', 'BP', 'Address', 'Mnemonic', 'Operands', 'Hex', 'Data', 'Comment', 'SingleShot']
+			labels = ['PC', 'BP', 'Address', 'Mnemonic', 'Operands', 'Hex', 'Data', 'Comment']
 
 		global COL_PC
 		COL_PC = curCol + 0
@@ -407,8 +404,6 @@ class DisassemblyTableWidget(BaseTableWidget):
 		COL_DATA = curCol + 6
 		global COL_COMMENT
 		COL_COMMENT = curCol + 7
-		global COL_SINGLESHOT
-		COL_SINGLESHOT = curCol + 8
 
 		# self.setColumnWidth(0, 32)
 		self.setColumnWidth(curCol, 42)
@@ -419,7 +414,6 @@ class DisassemblyTableWidget(BaseTableWidget):
 		self.setColumnWidth(curCol + 5, 240)
 		self.setColumnWidth(curCol + 6, 180)
 		self.setColumnWidth(curCol + 7, 300)
-		self.setColumnWidth(curCol + 8, 30)
 		self.verticalHeader().hide()
 		self.horizontalHeader().show()
 		self.horizontalHeader().setHighlightSections(False)
@@ -432,7 +426,6 @@ class DisassemblyTableWidget(BaseTableWidget):
 		self.horizontalHeaderItem(5).setFont(ConfigClass.font)
 		self.horizontalHeaderItem(6).setFont(ConfigClass.font)
 		self.horizontalHeaderItem(7).setFont(ConfigClass.font)
-		self.horizontalHeaderItem(8).setFont(ConfigClass.font)
 		
 		self.horizontalHeaderItem(0).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
 		self.horizontalHeaderItem(1).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
@@ -442,7 +435,6 @@ class DisassemblyTableWidget(BaseTableWidget):
 		self.horizontalHeaderItem(5).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
 		self.horizontalHeaderItem(6).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
 		self.horizontalHeaderItem(7).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
-		self.horizontalHeaderItem(8).setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
 
 		if self.showLineNumber:
 			self.horizontalHeaderItem(8).setFont(ConfigClass.font)
@@ -561,10 +553,6 @@ class DisassemblyTableWidget(BaseTableWidget):
 					self.actionShowMemoryFor.setData(operandsText)
 			
 		self.context_menu.exec(event.globalPos())
-
-	def handle_toggleSingleShot(self):
-		logDbgC(f"Toggle SingleShot")
-		pass
 
 	def handle_editHexValue(self):
 		print(f"handle_editHexValue => ")
@@ -700,7 +688,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 	def resetContent(self):
 		self.setRowCount(0)
 			
-	def addRow(self, lineNum, address, instr, args, comment, data, dataNg, rip = "", singleShot=False):
+	def addRow(self, lineNum, address, instr, args, comment, data, dataNg, rip = ""):
 		currRowCount = self.rowCount()
 		self.setRowCount(currRowCount + 1)
 		
@@ -718,7 +706,6 @@ class DisassemblyTableWidget(BaseTableWidget):
 		self.addItem(currRowCount, curCol + 5, data)
 		self.addItem(currRowCount, curCol + 6, dataNg)
 		self.addItem(currRowCount, curCol + 7, comment)
-		self.addItem(currRowCount, curCol + 8, "x" if singleShot else "-")
 		
 		self.setRowHeight(currRowCount, 14)
 		# print(f"address: {address}")
@@ -851,8 +838,8 @@ class AssemblerTextEdit(QWidget):
 	# height = table_widget.verticalHeader().sectionSize(row_index)
 	# logDbg(f"Row height: {height}")
 
-	def appendAsmText(self, addr, instr, args, comment, data, dataNg, addLineNum = True, rip = "", lineNo = -1, singleShot=False):
-		item = self.table.addRow(lineNo, addr, instr, args, comment, data, dataNg, rip, singleShot)
+	def appendAsmText(self, addr, instr, args, comment, data, dataNg, addLineNum = True, rip = "", lineNo = -1):
+		item = self.table.addRow(lineNo, addr, instr, args, comment, data, dataNg, rip)
 
 	def setTextColor(self, color = "black", lineNum = False):
 		pass
