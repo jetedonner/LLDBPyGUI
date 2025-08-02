@@ -12,6 +12,8 @@ from PyQt6.QtGui import QPainter
 from PyQt6.QtCore import QPointF, QRectF
 
 from PyQt6.QtGui import QWheelEvent, QKeyEvent
+
+from dbg.breakpointHelper import arrRememberedLocs
 from ui.helper.dbgOutputHelper import *
 from lib.utils import *
 from config import *
@@ -86,6 +88,7 @@ class ControlFlowConnectionNG():
 
     def setToolTip(self, tooltip):
         self.mainLine.setToolTip(tooltip)
+        # self.mainLine.
         self.topArc.setToolTip(tooltip)
         self.bottomArc.setToolTip(tooltip)
 
@@ -155,7 +158,7 @@ class ArrowHelperClass:
                 pFrom = arrow.fromPos + QPointF(10, 0)
                 pTo = arrow.toPos + QPointF(10, 0)
 
-        arrow = parentControlFlow.draw_arrowNG(pFrom, pTo, size)
+        arrow = parentControlFlow.draw_arrowNG(pFrom, pTo, size, arrow.connection, arrow.startArrow)
         return arrow
 
 class HoverLineItem(QGraphicsLineItem, ArrowHelperClass):
@@ -185,6 +188,13 @@ class HoverLineItem(QGraphicsLineItem, ArrowHelperClass):
         self.connection.startArrow = self.resizeArrow(self.connection.parentControlFlow, self.connection.startArrow, 8)
         self.connection.endArrow = self.resizeArrow(self.connection.parentControlFlow, self.connection.endArrow, 8, True)
 
+    def mouseDoubleClickEvent(self, event, graphicsceneevent = None):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.context_menu.exec(event.screenPos())
+
+            # Show the menu at the cursor position
+            # menu.exec(event.globalPosition().toPoint())
+
     def contextMenuEvent(self, event):
         self.context_menu.exec(event.screenPos())
 
@@ -204,9 +214,47 @@ class HoverLineItem(QGraphicsLineItem, ArrowHelperClass):
         self.connection.asmTable.scrollToRow(self.connection.destRow)
         pass
 
+class HoverPolygonItem(QGraphicsPolygonItem):
+
+    connection = None
+    startArrow = True
+
+    def __init__(self, polygon, connection, startArrow=True):
+        super().__init__(polygon, None)
+        self.connection = connection
+        self.startArrow = startArrow
+        pass
+
+    def mouseDoubleClickEvent(self, event, graphicsceneevent=None):
+        if event.button() == Qt.MouseButton.LeftButton:
+            logDbgC(f"Arrow => mouseDoubleClickEvent()")
+            # pass
+            # self.context_menu.exec(event.screenPos())
+            if self.startArrow:
+                self.handle_gotoOrigin()
+            else:
+                self.handle_gotoDestination()
+
+    def handle_gotoOrigin(self):
+        logDbg(f"handle_gotoOrigin...")
+        self.connection.asmTable.setFocus(Qt.FocusReason.NoFocusReason)
+        self.connection.asmTable.selectRow(self.connection.origRow)
+        self.connection.asmTable.scrollToRow(self.connection.origRow)
+        pass
+
+    def handle_gotoDestination(self):
+        logDbg(f"handle_gotoDestination....")
+        # self.connection.asmTable.scrollToRow(self.connection.destRow)
+        self.connection.asmTable.setFocus(Qt.FocusReason.NoFocusReason)
+        self.connection.asmTable.selectRow(self.connection.destRow)
+        self.connection.asmTable.scrollToRow(self.connection.destRow)
+        pass
+
+
 class HoverPathItem(QGraphicsPathItem, ArrowHelperClass):
 
     connection = None
+    startArc = True
 
     def __init__(self, path, connection):
         super().__init__(path)
@@ -227,6 +275,16 @@ class HoverPathItem(QGraphicsPathItem, ArrowHelperClass):
         self.connection.setPen(QPen(self.pen().color(), 1))
         self.connection.startArrow = self.resizeArrow(self.connection.parentControlFlow, self.connection.startArrow, 8)
         self.connection.endArrow = self.resizeArrow(self.connection.parentControlFlow, self.connection.endArrow, 8, True)
+
+    def mouseDoubleClickEvent(self, event, graphicsceneevent=None):
+        if event.button() == Qt.MouseButton.LeftButton:
+            # self.context_menu.exec(event.screenPos())
+            if self.startArc:
+                self.handle_gotoOrigin()
+            else:
+                self.handle_gotoDestination()
+            # Show the menu at the cursor position
+            # menu.exec(event.globalPosition().toPoint())
 
     def contextMenuEvent(self, event):
         self.context_menu.exec(event.screenPos())
@@ -439,26 +497,26 @@ class QControlFlowWidget(QWidget):
                 arrowStart = QPointF(xOffset + (radius / 2) - 6 + 2, y_position + (
                         nRowHeight / 2))
                 arrowEnd = QPointF(xOffset + (radius / 2) + 2, y_position + (nRowHeight / 2))
-                con.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+                con.startArrow = self.draw_arrowNG(arrowStart, arrowEnd, 8, con, True)
             else:
                 arrowEnd = QPointF(xOffset + (radius / 2) - 6 + 2, y_position + (
                         nRowHeight / 2))
                 arrowStart = QPointF(xOffset + (radius / 2) + 2,
                                      y_position + (nRowHeight / 2))
-                con.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+                con.endArrow = self.draw_arrowNG(arrowStart, arrowEnd, 8, con, False)
 
             if con.switched:
                 arrowEnd = QPointF(xOffset + (radius / 2) - 6 + 2, y_position2 + (
                         nRowHeight / 2))
                 arrowStart = QPointF(xOffset + (radius / 2) + 2,
                                      y_position2 + (nRowHeight / 2))
-                con.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+                con.endArrow = self.draw_arrowNG(arrowStart, arrowEnd, 8, con, False)
             else:
                 arrowStart = QPointF(xOffset + (radius / 2) - 6 + 2, y_position2 + (
                         nRowHeight / 2))
                 arrowEnd = QPointF(xOffset + (radius / 2) + 2,
                                    y_position2 + (nRowHeight / 2))
-                con.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+                con.startArrow = self.draw_arrowNG(arrowStart, arrowEnd, 8, con, True)
 
             con.setToolTip(f"Branch ({con.mnemonic.upper()})\n-from: {hex(con.origAddr)}\n-to: {hex(con.destAddr)}\n-distance: {hex(con.jumpDist)}")
             if radius <= 130:
@@ -571,6 +629,7 @@ class QControlFlowWidget(QWidget):
 
             # Add the path to the scene
             arc_item = HoverPathItem(path, con)
+            arc_item.startArc = con.switched
             arc_item.setPen(QPen(con.color, con.lineWidth))
             self.scene.addItem(arc_item)
             con.topArc = arc_item
@@ -584,6 +643,7 @@ class QControlFlowWidget(QWidget):
 
             # Add the path to the scene
             arc_item2 = HoverPathItem(path2, con)
+            arc_item2.startArc = not con.switched
             arc_item2.setPen(QPen(con.color, con.lineWidth))
             self.scene.addItem(arc_item2)
             con.bottomArc = arc_item2
@@ -592,13 +652,13 @@ class QControlFlowWidget(QWidget):
                 arrowStart = QPointF(xOffset + (radius / 2) - 6 + 2, y_position + (
                         nRowHeight / 2))
                 arrowEnd = QPointF(xOffset + (radius / 2) + 2, y_position + (nRowHeight / 2))
-                con.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+                con.startArrow = self.draw_arrowNG(arrowStart, arrowEnd, 8, con, True)
             else:
                 arrowEnd = QPointF(xOffset + (radius / 2) - 6 + 2, y_position + (
                         nRowHeight / 2))
                 arrowStart = QPointF(xOffset + (radius / 2) + 2,
                                      y_position + (nRowHeight / 2))
-                con.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+                con.endArrow = self.draw_arrowNG(arrowStart, arrowEnd, 8, con, False)
                 # arrowStart = QPointF(xOffset + (radius / 2) - 6 + 2, y_position2 + (
                 #         nRowHeight / 2))
                 # arrowEnd = QPointF(xOffset + (radius / 2) + 2,
@@ -610,13 +670,13 @@ class QControlFlowWidget(QWidget):
                         nRowHeight / 2))
                 arrowStart = QPointF(xOffset + (radius / 2) + 2,
                                      y_position2 + (nRowHeight / 2))
-                con.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+                con.endArrow = self.draw_arrowNG(arrowStart, arrowEnd, 8, con, False)
             else:
                 arrowStart = QPointF(xOffset + (radius / 2) - 6 + 2, y_position2 + (
                         nRowHeight / 2))
                 arrowEnd = QPointF(xOffset + (radius / 2) + 2,
                                    y_position2 + (nRowHeight / 2))
-                con.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
+                con.startArrow = self.draw_arrowNG(arrowStart, arrowEnd, 8, con, True)
                 # arrowEnd = QPointF(xOffset + (radius / 2) - 6 + 2, y_position + (
                 #         nRowHeight / 2))
                 # arrowStart = QPointF(xOffset + (radius / 2) + 2,
@@ -710,7 +770,7 @@ class QControlFlowWidget(QWidget):
         line1.setPen(QPen(QColor("transparent"), 0))
         self.scene.addItem(line1)
     
-    def draw_arrowNG(self, fromPos, toPos, arrow_size = 8):
+    def draw_arrowNG(self, fromPos, toPos, arrow_size = 8, connection=None, startArrow=True):
         direction = (toPos - fromPos)
         direction /= (direction.manhattanLength() or 1)
         perp = QPointF(-direction.y(), direction.x())
@@ -721,16 +781,28 @@ class QControlFlowWidget(QWidget):
         # # Convert to QPolygonF
         polygon = QPolygonF(points)
 
-        arrow_head = self.scene.addPolygon(
-            # [end, p1, p2],
-            polygon,
-            QPen(QColor("lightgreen")),
-            QBrush(QColor("transparent")) if arrow_size == 8 else QBrush(QColor("lightgreen")) # lightgreen")) #
-        )
-        arrow_head.fromPos = fromPos
-        arrow_head.toPos = toPos
-        arrow_head.arrow_size = arrow_size
-        return arrow_head
+        # arrow_head = self.scene.addPolygon(
+        #     # [end, p1, p2],
+        #     polygon,
+        #     QPen(QColor("lightgreen")),
+        #     QBrush(QColor("transparent")) if arrow_size == 8 else QBrush(QColor("lightgreen")) # lightgreen")) #
+        # )
+
+        # arrow_head.fromPos = fromPos
+        # arrow_head.toPos = toPos
+        # arrow_head.arrow_size = arrow_size
+
+        arrow_headNG = HoverPolygonItem(polygon, connection, startArrow)
+        arrow_headNG.setPen(QPen(QColor("lightgreen")))
+        arrow_headNG.setBrush(QBrush(QColor("transparent")) if arrow_size == 8 else QBrush(QColor("lightgreen")))
+        arrow_headNG.fromPos = fromPos
+        arrow_headNG.toPos = toPos
+        arrow_headNG.arrow_size = arrow_size
+
+        self.scene.addItem(arrow_headNG)
+
+        return arrow_headNG
+        # return arrow_head
 
     def resetContent(self):
         self.connections.clear()
