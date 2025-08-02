@@ -23,29 +23,34 @@ class QHistoryLineEdit(QLineEdit):
 	lstCommands = []
 	currCmd = 0
 	doAddCmdToHist = True
-	persistentHistory = False
+	persistentHistory = True
 
 	def save_history(self, history):
-		count = 0
-		with open(HISTORY_FILE, 'r', encoding='utf-8') as f:
-			for chunk in iter(lambda: f.read(8192), ''):  # Read in small blocks
-				count += len(chunk)
-
-		print(f"Total characters: {count}... Char count inside boundaries: {'yes' if count <= SettingsHelper().getValue(SettingsValues.MaxCommandHistoryCharCount) else 'no'}")
-		if count <= SettingsHelper().getValue(SettingsValues.MaxCommandHistoryCharCount):
-			with open(HISTORY_FILE, "w") as f:
-				json.dump(history, f)
+		if HISTORY_FILE.exists():
+			# count = 0
+			# # oldHist = ""
+			# # with open(HISTORY_FILE, 'r', encoding='utf-8') as f:
+			# # 	for chunk in iter(lambda: f.read(8192), ''):  # Read in small blocks
+			# # 		count += len(chunk)
+			# # 		oldHist += chunk
+			# oldHist = self.load_history()
+			# newHist = oldHist + history
+			print(f"Total characters: {len(history)}... Char count inside boundaries: {'yes' if len(history) <= SettingsHelper().getValue(SettingsValues.MaxCommandHistoryCharCount) else 'no'}")
+			if len(history) <= SettingsHelper().getValue(SettingsValues.MaxCommandHistoryCharCount):
+				with open(HISTORY_FILE, "w") as f:
+					json.dump(history, f)
 
 	def clear_history(self):
-		with open(HISTORY_FILE, "w") as f:
-			f.write("")
+		if HISTORY_FILE.exists():
+			with open(HISTORY_FILE, "w") as f:
+				f.write("")
 
 	def load_history(self):
 		if HISTORY_FILE.exists():
 			with open(HISTORY_FILE, "r") as f:
-				fileComtent = f.read()
-				if fileComtent is not None and fileComtent != "":
-					return json.loads(fileComtent)
+				fileContent = f.read()
+				if fileContent is not None and fileContent != "":
+					return json.loads(fileContent)
 		return []
 
 	def __init__(self, doAddCmdToHist=True, persistentHistory=False):
@@ -115,12 +120,12 @@ class QHistoryLineEdit(QLineEdit):
 			# Prevent event from being passed to QLineEdit for default behavior
 			event.accept()
 
-		# elif event.key() == Qt.Key.Key_Return:
-		# 	if self.doAddCmdToHist:
-		# 		logDbgC(f"keyPressEvent() in QHistoryLineEdit ...")
-		# 		self.addCommandToHistory()
-		# 	super(QHistoryLineEdit, self).keyPressEvent(event)
-		# 	pass
+		elif event.key() == Qt.Key.Key_Return:
+			if self.doAddCmdToHist:
+				logDbgC(f"keyPressEvent() in QHistoryLineEdit ...")
+				self.addCommandToHistory()
+			super(QHistoryLineEdit, self).keyPressEvent(event)
+			pass
 		else:
 			super(QHistoryLineEdit, self).keyPressEvent(event)
 		
@@ -128,6 +133,9 @@ class QHistoryLineEdit(QLineEdit):
 		newCommand = ""
 		if self.doAddCmdToHist:
 			newCommand = self.text()
+			if newCommand is None or newCommand == "":
+				return newCommand
+
 			if len(self.lstCommands) > 0:
 				if self.lstCommands[len(self.lstCommands) - 1] != newCommand:
 					self.lstCommands.append(newCommand)

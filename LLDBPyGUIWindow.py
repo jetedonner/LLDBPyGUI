@@ -909,7 +909,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		if res and ctd.txtTarget.text() is not None and ctd.txtTarget.text() != "":
 			self.instCnt = 0
 			# self.target, self.process = self.restart_debug_session(self.driver.debugger, self.target, ctd.txtTarget.text())
-
+			logDbgC(f"*************>>>> load_clicked => 1.....")
 			# self.driver.debugger = lldb.SBDebugger.Create()
 			self.threadLoad = QThread()
 
@@ -918,14 +918,14 @@ class LLDBPyGUIWindow(QMainWindow):
 			self.worker.arch = ctd.cmbArch.currentText()
 			self.worker.args = ctd.txtArgs.text()
 			self.worker.loadSourceCode = ctd.loadSourceCode
-
+			logDbgC(f"*************>>>> load_clicked => 2.....")
 			self.worker.moveToThread(self.threadLoad)
 
 			self.threadLoad.started.connect(self.worker.run)
 			self.worker.show_dialog.connect(self.start_operation)
 			self.worker.finished.connect(self.stopWorkerAndQuitThread)
 			self.worker.progressUpdateCallback.connect(self.handle_progressUpdate)
-
+			logDbgC(f"*************>>>> load_clicked => 3.....")
 			# Setup CALLBACKS
 			self.worker.loadFileInfosCallback.connect(self.loadFileInfosCallback)
 			self.worker.loadJSONCallback.connect(self.treStats.loadJSONCallback)
@@ -942,7 +942,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			self.worker.loadRegisterCallback.connect(self.handle_loadRegister)
 			self.worker.loadRegisterValueCallback.connect(self.handle_loadRegisterValue)
 			self.worker.loadVariableValueCallback.connect(self.handle_loadVariableValue)
-
+			logDbgC(f"*************>>>> load_clicked => 4.....")
 			self.worker.loadBreakpointsValueCallback.connect(self.wdtBPsWPs.handle_loadBreakpointValue)
 			self.worker.updateBreakpointsValueCallback.connect(self.wdtBPsWPs.handle_updateBreakpointValue)
 			self.worker.loadWatchpointsValueCallback.connect(
@@ -952,7 +952,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			self.worker.finishedLoadingSourceCodeCallback.connect(self.handle_loadSourceFinished)
 			self.worker.loadStacktraceCallback.connect(self.handle_loadStacktrace)
 			self.worker.runControlFlow_loadConnections.connect(self.runControlFlow_loadConnections)
-
+			logDbgC(f"*************>>>> load_clicked => 5.....")
 			self.txtMultiline.resetContent()
 			self.bpHelper.deleteAllBPs()
 			self.wdtBPsWPs.treBPs.clear()
@@ -961,18 +961,23 @@ class LLDBPyGUIWindow(QMainWindow):
 			self.setResumeActionIcon(True)
 			self.tabWidgetReg.clear()
 			self.rflagsLoaded = 0
-			# self.wdtBPsWPs.treBPs.clear()
-			global event_queue
-			event_queue = queue.Queue()
-			# self.listener.should_quit = False
+			logDbgC(f"*************>>>> load_clicked => 6.....")
+			# # self.wdtBPsWPs.treBPs.clear()
+			# global event_queue
+			# event_queue = queue.Queue()
+			# # self.listener.should_quit = False
 			self.should_quit = False
-			global driver
-			driver = dbg.debuggerdriver.createDriver(self.driver.debugger, event_queue)
-			self.driver = driver
-			self.driver.setDone(False)
-			self.txtMultiline.table.bpHelper.driver = self.driver
-			self.driver.start()
+			logDbgC(f"*************>>>> load_clicked => 7.....")
+			# global driver
+			# driver = dbg.debuggerdriver.createDriver(self.driver.debugger, event_queue)
+			# self.driver = driver
+			# self.driver.setDone(False)
+			# self.txtMultiline.table.bpHelper.driver = self.driver
+			# logDbgC(f"*************>>>> load_clicked => 8.....")
+			# self.driver.start()
+			logDbgC(f"*************>>>> load_clicked => 9.....")
 			self.threadLoad.start()
+			logDbgC(f"*************>>>> load_clicked => 10.....")
 
 	def handle_tabWidgetMainCurrentChanged(self, idx):
 		if idx == 2:
@@ -1060,7 +1065,7 @@ class LLDBPyGUIWindow(QMainWindow):
 					logDbgC(f"Debugged app killed, cleaning up ...")
 					# self.driver.debugger.DeleteTarget(target)
 					self.driver.debugger.Terminate()
-					lldb.SBDebugger.Destroy(self.driver.debugger)
+					# lldb.SBDebugger.Destroy(self.driver.debugger)
 					logDbgC(f"Debugger terminated, cleaning up ...")
 					self.resetGUI()
 			else:

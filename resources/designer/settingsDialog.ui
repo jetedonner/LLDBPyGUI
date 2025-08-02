@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
@@ -555,6 +555,9 @@
           <property name="text">
            <string>Load test target</string>
           </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
           <property name="flags">
            <set>ItemIsSelectable|ItemIsUserCheckable|ItemIsEnabled</set>
           </property>
@@ -573,6 +576,9 @@
          <item row="1" column="0">
           <property name="text">
            <string>Load test breakpoints</string>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
           </property>
           <property name="flags">
            <set>ItemIsSelectable|ItemIsUserCheckable|ItemIsEnabled</set>
@@ -593,6 +599,9 @@
           <property name="text">
            <string>Stop at entry</string>
           </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
          </item>
          <item row="2" column="1">
           <property name="text">
@@ -605,6 +614,9 @@
          <item row="3" column="0">
           <property name="text">
            <string>Break at main function</string>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
           </property>
          </item>
          <item row="3" column="1">
@@ -619,6 +631,9 @@
           <property name="text">
            <string>Set Breakpoint at main function</string>
           </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
          </item>
          <item row="4" column="1">
           <property name="text">
@@ -631,6 +646,9 @@
          <item row="5" column="0">
           <property name="text">
            <string>Clear console complete with one click</string>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
           </property>
          </item>
          <item row="5" column="1">
@@ -645,8 +663,14 @@
           <property name="text">
            <string>Persistent command history</string>
           </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
          </item>
          <item row="6" column="1">
+          <property name="text">
+           <string/>
+          </property>
           <property name="checkState">
            <enum>Checked</enum>
           </property>
