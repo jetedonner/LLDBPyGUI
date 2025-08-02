@@ -124,6 +124,7 @@ class Worker(QObject):
 				self.logDbgC.emit(f"mach_header = GetFileHeader(exe): {mach_header}", DebugLevel.Verbose)
 				self.loadFileInfosCallback.emit(mach_header, self.target)
 				self.logDbgC.emit(f"after self.loadFileInfosCallback.emit(...)", DebugLevel.Verbose)
+				QApplication.processEvents()
 				# self.mainWin.devHelper.setupDevHelper()
 				self.loadFileStats()
 
@@ -181,10 +182,12 @@ class Worker(QObject):
 			if stream != None:
 				fileContent = stream.GetData()
 				self.finishedLoadingSourceCodeCallback.emit(fileContent)
+				QApplication.processEvents()
 
 		self.logDbgC.emit(f"BEFORE self.runLoadControlFlow() => runLoadSourceCode()", DebugLevel.Info)
 		if loadFlowControl:
 			self.runControlFlow_loadConnections.emit()
+			QApplication.processEvents()
 		# QCoreApplication.processEvents()
 		# QApplication.processEvents()
 			self.runLoadControlFlow()
@@ -237,12 +240,14 @@ class Worker(QObject):
 				self.loadBreakpointsValueCallback.emit(bp_cur, self.initTable)
 			else:
 				self.updateBreakpointsValueCallback.emit(bp_cur)
+			QApplication.processEvents()
 
 		for wp_loc in self.target.watchpoint_iter():
 			if self.initTable:
 				self.loadWatchpointsValueCallback.emit(wp_loc)  # , self.initTable)
 			else:
 				self.updateWatchpointsValueCallback.emit(wp_loc)
+		QApplication.processEvents()
 
 	def loadRegisters(self):
 		# super(LoadRegisterWorker, self).workerFunc()
@@ -267,6 +272,7 @@ class Worker(QObject):
 						# 						f'Loading registers for {value.GetName()} ...')
 						if self.initTable:
 							self.loadRegisterCallback.emit(value.GetName())
+							QApplication.processEvents()
 
 						numChilds = len(value)
 						idx = 0
@@ -278,6 +284,7 @@ class Worker(QObject):
 								self.loadRegisterValueCallback.emit(currReg - 1, child.GetName(), child.GetValue(),
 																	getMemoryValueAtAddress(target, process,
 																							child.GetValue()))
+								QApplication.processEvents()
 								# self.loadRegisterValue.emit(currReg - 1, child.GetName(), child.GetValue(),
 								# 									getMemoryValueAtAddress(target, process,
 								# 															child.GetValue()))
@@ -328,6 +335,7 @@ class Worker(QObject):
 
 							self.loadVariableValueCallback.emit(str(var.GetName()), str(string_value), str(data),
 																str(var.GetTypeName()), hex(var.GetLoadAddress()))
+							QApplication.processEvents()
 						# else:
 						# 	self.signals.updateVariableValue.emit(str(var.GetName()), str(string_value), str(data),
 						# 										  str(var.GetTypeName()), hex(var.GetLoadAddress()))
@@ -355,6 +363,7 @@ class Worker(QObject):
 		# self.runLoadControlFlow()
 
 		self.loadStacktraceCallback.emit()
+		QApplication.processEvents()
 
 	def char_array_to_string(self, char_array_value):
 		byte_array = char_array_value.GetPointeeData(0, char_array_value.GetByteSize())
@@ -484,7 +493,9 @@ class Worker(QObject):
 									instructions = smbl.GetStartAddress().GetFunction().GetInstructions(self.target)
 									self.allInstructions += instructions
 									for instruction in instructions:
+										self.logDbgC.emit(f"----------->>>>>>>>>>> INSTRUCTION: {instruction.GetMnemonic(self.target)} ... ", DebugLevel.Verbose)
 										self.loadInstructionCallback.emit(instruction)
+										QApplication.processEvents()
 										idxInstructions += 1
 										self.checkLoadConnection(instruction, idxInstructions + (idxSym + 1))
 									idxSym += 1
@@ -506,12 +517,14 @@ class Worker(QObject):
 										# result.PutCString(str(inst))
 										self.logDbgC.emit(str(instruction), DebugLevel.Verbose)
 										self.loadInstructionCallback.emit(instruction)
+										QApplication.processEvents()
 										idxInstructions += 1
 										self.checkLoadConnection(instruction, idxInstructions + (idxSym + 1))
 									continue
 							elif subsec.GetName() == "__cstring":
 								if isObjC:
 									self.loadSymbolCallback.emit(subsec.GetName())
+									QApplication.processEvents()
 								addr = subsec.GetLoadAddress(self.target) #.GetStartAddress()
 								size = subsec.GetByteSize()
 								error = lldb.SBError()
@@ -525,6 +538,7 @@ class Worker(QObject):
 											decoded = s.decode('utf-8')
 											self.logDbgC.emit(f"{hex(curAddr)}: [{i}] {decoded}", DebugLevel.Verbose)
 											self.loadStringCallback.emit(hex(curAddr), i, decoded)
+											QApplication.processEvents()
 											curAddr += len(decoded) + 1
 										except UnicodeDecodeError:
 											continue
@@ -760,6 +774,7 @@ class Worker(QObject):
 		QApplication.processEvents()
 		self.connections.sort(key=lambda x: abs(x.jumpDist), reverse=True)
 		self.finishedLoadInstructionsCallback.emit(self.connections)
+		QApplication.processEvents()
 		self.loadRegisters()
 
 	radius = 15
@@ -952,6 +967,7 @@ class Worker(QObject):
 						# self.logDbgC.emit(f"frame.register: {frame.GetRegisters()}", DebugLevel.Verbose)
 
 						self.loadModulesCallback.emit(frame, self.target.modules)
+						QApplication.processEvents()
 						# self.tabWidgetStruct.cmbModules.addItem(
 						# 	frame.GetModule().GetFileSpec().GetFilename() + " (" + str(
 						# 		frame.GetFrameID()) + ")")
@@ -980,6 +996,7 @@ class Worker(QObject):
 		if success:
 			self.loadJSONCallback.emit(str(stream.GetData()))
 			self.logDbgC.emit(f"def loadFileStats(...) => after self.loadJSONCallback.emit(str(stream.GetData()))", DebugLevel.Verbose)
+			QApplication.processEvents()
 
 	def on_scanf_hit(frame, bp_loc, dict):
 		print("✅ Breakpoint hit at scanf!")
@@ -999,6 +1016,7 @@ class Worker(QObject):
 		self.driver.start()
 		self.logDbgC.emit(f"createTarget({filename})", DebugLevel.Info)
 		self.target = self.driver.createTarget(filename, self.arch, self.args)
+		self.logDbgC.emit(f"createTarget({filename}) finished ...", DebugLevel.Verbose)
 
 		if self.target.IsValid():
 			self.mainWin.target = self.target

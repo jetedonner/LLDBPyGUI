@@ -45,3 +45,12 @@ def find_source_file(executable_path):
     # exe_path = "/path/to/your/app/executable"
     # sources = find_source_file(exe_path)
     # print("Found source files:", sources)
+
+def hex_to_string(hex_values):
+    # Convert each hex value to an integer, then to its ASCII character
+    return ''.join(chr(int(h, 16)) for h in hex_values)
+
+# # Example usage
+# hex_input = ['73', '68', '6f', '77']
+# result = hex_to_string(hex_input)
+# print("The result is:", result)

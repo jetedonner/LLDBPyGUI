@@ -11,6 +11,7 @@ from ui.consoleWidget import ConsoleWidget
 from ui.customQt.QControlFlowWidget import QControlFlowWidget
 from ui.dialogs.createTargetDialog import CreateTargetDialog
 from ui.dialogs.userActionNeededDialog import UserActionNeededDialog
+from ui.hexToStringWidget import HexToStringWidget
 from ui.rememberLocationsTableWidget import RememberLocationsTableWidget
 from ui.rflagTableWidget import RFlagTableWidget, RFlagWidget
 
@@ -575,6 +576,31 @@ class LLDBPyGUIWindow(QMainWindow):
 
 		self.tabWidgetMain.addTab(self.tabMemory, "Memory")
 
+		# self.tabTools = QWidget()
+		# self.tabTools.setLayout(QVBoxLayout())
+		# # self.tabTools.layout().addWidget(self.tblHex)
+		#
+		# # self.tabWidgetMain.addTab(self.tabTools, "Tools")
+		#
+		# self.splitterTools = QSplitter()
+		# self.splitterTools.setContentsMargins(0, 0, 0, 0)
+		# self.splitterTools.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+		# self.splitterTools.setOrientation(Qt.Orientation.Vertical)
+		# self.txtHexToStringInput = QTextEdit("00 00 00")
+		# self.txtHexToStringInput.textChanged.connect(self.handle_txtHexToStringChnaged)
+		# self.splitterTools.addWidget(self.txtHexToStringInput)
+		# self.txtAsciiStringOutput = QTextEdit("xyz ...")
+		# # self.txtAsciiStringOutput.setPlaceholderText("Enter a hex value above t")
+		# self.splitterTools.addWidget(self.txtAsciiStringOutput)
+		# self.splitterTools.setStretchFactor(0, 60)
+		# self.splitterTools.setStretchFactor(1, 40)
+		# self.splitterDbgMain.addWidget(self.wdtDbg)
+		# self.tabTools.layout().addWidget(self.splitterTools)
+		self.wdtDbg = DbgOutputWidget()
+
+		self.wdtHexToString = HexToStringWidget()
+		self.tabWidgetMain.addTab(self.wdtHexToString, "Tools")
+
 		self.wdtSearch = SearchWidget(self.driver)
 		# self.tabWidgetMain.addTab(self.wdtSearch, "Search")
 
@@ -602,7 +628,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		# self.dbgWidgetMain.setLayout(QVBoxLayout())
 		# self.dbgWidgetMain.setContentsMargins(0, 0, 0, 0)
 		# # self.dbgWidgetMain.layout().addWidget(self.tabWidgetMain)
-		self.wdtDbg = DbgOutputWidget()
+		# self.wdtDbg = DbgOutputWidget()
 
 		self.splitterDbgMain = QSplitter()
 		self.splitterDbgMain.setContentsMargins(0, 0, 0, 0)
@@ -1733,8 +1759,8 @@ class LLDBPyGUIWindow(QMainWindow):
 		# logDbgC(f"!!!!!!!!!!!!!!!!¨ALREADY HERE !!!!!!!!!!!!!!!!!!")
 		comment = stubsFunctName or instruction.GetComment(target)
 		self.txtMultiline.appendAsmText(hex(int(str(instruction.GetAddress().GetLoadAddress(target)), 10)), instruction.GetMnemonic(target),  instruction.GetOperands(target), comment, daHex, "".join(str(daDataNg).split()), True, "", self.instCnt - 1)
-
-		pass
+		QApplication.processEvents()
+		# pass
 
 	def handle_workerFinished(self, connections = []):
 #		print(f"Current RIP: {self.rip} / {hex(self.rip)} / DRIVER: {self.driver.getPC()} / {self.driver.getPC(True)}")

@@ -32,7 +32,7 @@ class DbgOutputWidget(QWidget):
         self.cmdClear.setMaximumWidth(18)
         self.cmdClear.clicked.connect(self.cmdClear_clicked)
         self.cmdClear.setContentsMargins(0, 0, 0, 0)
-        self.cmdShrink.setStatusTip(f"Clear debug output console")
+        self.cmdClear.setStatusTip(f"Clear debug output console")
         # self.layCtrls.setContentsMargins(10, 0, 0, 0)
         self.layCtrls.addWidget(self.cmdClear)
 
@@ -69,7 +69,7 @@ class DbgOutputWidget(QWidget):
         self.txtDbg.setText("")
         pass
     def swtAutoscroll_changed(self, checked):
-        self.txtDbg.autoscroll = checked
+        self.txtDbg.setAutoscroll(checked)
         SettingsHelper().setValue(SettingsValues.AutoScrollDbgOutput, checked)# Qt.CheckState.Checked if checked else Qt.CheckState.Unchecked)
         pass
 
@@ -98,16 +98,25 @@ class DbgOutputTextEdit(QTextEdit):
 
     def setAutoscroll(self, doAutoscroll = True):
         self.autoscroll = doAutoscroll
+        if self.autoscroll:
+            self.scrollToEnd()
 
     def logDbg(self, logMsg):
 
         if self.autoscroll:
             self.append(logMsg)
-            cursor = self.textCursor()
-            cursor.movePosition(QTextCursor.MoveOperation.End)
-            self.setTextCursor(cursor)
-            self.ensureCursorVisible()
+            self.scrollToEnd()
+            # cursor = self.textCursor()
+            # cursor.movePosition(QTextCursor.MoveOperation.End)
+            # self.setTextCursor(cursor)
+            # self.ensureCursorVisible()
         else:
             oldScrollPos = self.verticalScrollBar().value()
             self.append(logMsg)
             self.verticalScrollBar().setValue(oldScrollPos)
+
+    def scrollToEnd(self):
+        cursor = self.textCursor()
+        cursor.movePosition(QTextCursor.MoveOperation.End)
+        self.setTextCursor(cursor)
+        self.ensureCursorVisible()

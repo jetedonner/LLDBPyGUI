@@ -73,6 +73,8 @@ def __lldb_init_module(debugger, internal_dict):
 		f"command script add -h '({PROMPT_TEXT}) Display (LLDBs) Python path and version.' --function LLDBPyGUI.cmd_pyvers pyvers",
 		res)
 
+	ci.HandleCommand('type summary add --summary-string "these are more words" MyProjectClass', res)
+
 	ci.HandleCommand('command script add -f LLDBPyGUI.feed_input feedinput', res)
 	ci.HandleCommand('command script add -f LLDBPyGUI.launchtest launchtest', res)
 	ci.HandleCommand("process launch --stop-at-entry", res)

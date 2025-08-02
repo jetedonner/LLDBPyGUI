@@ -136,7 +136,16 @@ g_dbdata = {}
 JMP_MNEMONICS = ("call", "jmp", "jne", "jz", "je", "jnz", "jle", "jl", "jge", "jg", "b", "bl", "bg", "be", "ble", "blz", "bz", "bne", "bnz")
 JMP_MNEMONICS_EXCLUDE = ("jmpq")
 
-
+textEditStylesheet = """
+		            QTextEdit {
+		                background-color: #282c34; /* Dark background */
+		                color: #abb2bf; /* Light grey text */
+		                border: 1px solid #3e4452;
+		                border-radius: 5px;
+		                padding: 5px;
+		                font: 12px 'Courier New';
+		            }
+		        """
 class ConfigClass():
 	
 	companyName = "DaVe_inc"
@@ -150,6 +159,9 @@ class ConfigClass():
 	fontSizePx = fontSize + "px"
 	fontStrComplete = f"font: {fontSizePx} '{fontStr}';"
 
+	fontTitle = QFont()
+	fontTitle.setPointSize(18)
+
 	autofindSourcecodeFileExts = ['.c', '.cpp', '.m', '.x', '.xm']
 	
 	supportURL = "https://pylldbgui.kimhauser.ch/support"
@@ -160,17 +172,21 @@ class ConfigClass():
 #	testTarget = "/Volumes/Data/dev/_reversing/disassembler/LLDBPyGUI/pyLLDBGUI/LLDBPyGUI/testtarget/hello_world_test"
 #	testTargetSource = "/Volumes/Data/dev/_reversing/disassembler/LLDBPyGUI/pyLLDBGUI/LLDBPyGUI/testtarget/hello_world_test.c"
 
-	# testTarget =  "./_testtarget/a_hello_world_test" #amicable_numbers" #a_hello_world_test" #amicable_numbers" #cocoa_windowed_objc2" #amicable_numbers" #a_hello_world_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
-	# testTargetSource = "./_testtarget/a_hello_world_test.c" #amicable_numbers.c" #a_hello_world_test.c" #amicable_numbers.c" #cocoa_windowed_objc2.m" #amicable_numbers.c" #a_hello_world_test.c"
+	# SIMPLE
+	testTarget =  "./_testtarget/a_hello_world_test" #amicable_numbers" #a_hello_world_test" #amicable_numbers" #cocoa_windowed_objc2" #amicable_numbers" #a_hello_world_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
+	testTargetSource = "./_testtarget/a_hello_world_test.c" #amicable_numbers.c" #a_hello_world_test.c" #amicable_numbers.c" #cocoa_windowed_objc2.m" #amicable_numbers.c" #a_hello_world_test.c"
 
+	# EXTENDED
 	# testTarget = "./_testtarget/a_hello_world_test_ext"  # amicable_numbers" #a_hello_world_test" #amicable_numbers" #cocoa_windowed_objc2" #amicable_numbers" #a_hello_world_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
 	# testTargetSource = "./_testtarget/a_hello_world_test_ext.c"  # amicable_numbers.c" #a_hello_world_test.c" #amicable_numbers.c" #cocoa_windowed_objc2.m" #amicable_numbers.c" #a_hello_world_test.c"
 
+	# SCANF / AMICABLE
 	# testTarget = "./_testtarget/amicable_numbers" #a_hello_world_test" #amicable_numbers" #cocoa_windowed_objc2" #amicable_numbers" #a_hello_world_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
 	# testTargetSource = "./_testtarget/amicable_numbers.c" #a_hello_world_test.c" #amicable_numbers.c" #cocoa_windowed_objc2.m" #amicable_numbers.c" #a_hello_world_test.c"
 
-	testTarget = "./_testtarget/cocoa_windowed_objc2"  # a_hello_world_test" #amicable_numbers" #cocoa_windowed_objc2" #amicable_numbers" #a_hello_world_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
-	testTargetSource = "./_testtarget/cocoa_windowed_objc2.m"  # a_hello_world_test.c" #amicable_numbers.c" #cocoa_windowed_objc2.m" #amicable_numbers.c" #a_hello_world_test.c"
+	# GUI
+	# testTarget = "./_testtarget/cocoa_windowed_objc2"  # a_hello_world_test" #amicable_numbers" #cocoa_windowed_objc2" #amicable_numbers" #a_hello_world_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
+	# testTargetSource = "./_testtarget/cocoa_windowed_objc2.m"  # a_hello_world_test.c" #amicable_numbers.c" #cocoa_windowed_objc2.m" #amicable_numbers.c" #a_hello_world_test.c"
 
 	testTargetArch = "x86_64-apple-macosx15.1.1"
 	testTargetArgs = ""
