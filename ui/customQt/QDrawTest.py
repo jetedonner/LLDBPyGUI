@@ -16,6 +16,7 @@ from PyQt6.QtCore import QPointF
 class ControlFlowVisualizer(QMainWindow):
     def __init__(self):
         super().__init__()
+        print(f"NNNNNNNNNNNNNNOOOOOOOOOOOOOO SSSSSSHHHHHHHOOOOOOOOOUUUUUULLLLLLDDDDD NOT GET HERE (3)")
         self.setWindowTitle("Control Flow Visualizer")
 
         # Main layout

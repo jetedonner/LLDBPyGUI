@@ -10,6 +10,7 @@ import ctypes
 class gui(QtWidgets.QMainWindow):
     def __init__(self):
         super(gui, self).__init__()
+        print(f"NNNNNNNNNNNNNNOOOOOOOOOOOOOO SSSSSSHHHHHHHOOOOOOOOOUUUUUULLLLLLDDDDD NOT GET HERE (2)")
         self.initUI()
 
     def dataReady(self):

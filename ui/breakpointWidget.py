@@ -376,7 +376,62 @@ class BreakpointTreeWidget(BaseTreeWidget):
 		
 	def handle_itemChanged(self, item, col):
 		# print(f'ITEM CHANGED => {item.text(col)} / {col}')
-		if col == 5 and item.childCount() == 0:
+		if col == 6 and item.childCount() == 0:
+			target = self.window().driver.getTarget()
+			logDbgC(f"handle_itemChanged(col == 6): target.GetNumBreakpoints() == {target.GetNumBreakpoints()}")
+			for i in range(target.GetNumBreakpoints()):
+				bp = target.GetBreakpointAtIndex(i)
+				logDbgC(f"target.GetBreakpointAtIndex(i) == {target.GetBreakpointAtIndex(i)} / bp: {bp}")
+				for bl in bp:
+					logDbgC(f"bl == {bl}")
+					if item.text(0) == str(bp.GetID()) + "." + str(bl.GetID()):
+						# time.sleep(0.1)
+						bp.SetScriptCallbackFunction(item.text(col))
+						# time.sleep(0.1)
+						bl.SetScriptCallbackFunction(item.text(col))
+						# time.sleep(0.1)
+						QApplication.processEvents()
+						break
+						# if item.data(5, Qt.ItemDataRole.UserRole) != item.text(5):
+						# 	item.setData(5, Qt.ItemDataRole.UserRole, item.text(5))
+						# 	if str(bp.GetCondition()) != item.text(col) and not (
+						# 			bp.GetCondition() == None and item.text(5) == ""):
+						# 		print(
+						# 			f"==========>>>>>>>>> SETTING CONDITION BP!!! => bp: {str(bp.GetCondition())} / item: {item.text(col)}")
+						# 		# bp.SetCondition(item.text(col))
+						# 		bp.SetCondition("")
+						# 		# bp.myData = item.text(col)
+						# 		dbg.breakpointHelper.arrBPConditions[str(bp.GetID())] = item.text(col)
+						# 		# dbg.breakpointHelper.arrBPHits[str(bp.GetID())] = 0
+						# 		print(f"str(bp.GetID()): {str(bp.GetID())}")
+						# 		print(
+						# 			f"==========>>>>>>>>> SETTING CONDITION BP DONE!!! => bp: {dbg.breakpointHelper.arrBPConditions[str(bp.GetID())]} / item: {item.text(col)}")
+						# 	if str(bl.GetCondition()) != item.text(col) and not (
+						# 			bl.GetCondition() == None and item.text(5) == ""):
+						# 		print(
+						# 			f"==========>>>>>>>>> SETTING CONDITION BL!!! => bl: {str(bl.GetCondition())} / item: {item.text(col)}")
+						# 		# bl.SetCondition(item.text(col))
+						# 		bl.SetCondition("")
+						# 		dbg.breakpointHelper.arrBPConditions[
+						# 			str(bp.GetID()) + "." + str(bl.GetID())] = item.text(col)
+						# 		# dbg.breakpointHelper.arrBPHits[str(bp.GetID()) + "." + str(bl.GetID())] = 0
+						# 		print(f"str(bl.GetID()): {str(bp.GetID())}.{str(bl.GetID())}")
+						# 		print(
+						# 			f"==========>>>>>>>>> SETTING CONDITION BL DONE!!! => bl: {str(dbg.breakpointHelper.arrBPConditions[str(bp.GetID()) + '.' + str(bl.GetID())])} / item: {item.text(col)}")
+							# rootItem = self.invisibleRootItem()
+							# for childPar in range(rootItem.childCount()):
+							# 	parentItem = rootItem.child(childPar)
+							# 	if parentItem.text(0) == str(bp.GetID()):
+							# 		#								parentItem.setText(4, str(bp.GetHitCount()))
+							# 		if item.text(col) != None and item.text(col) != "":
+							# 			parentItem.setText(5, str(item.text(col)))
+							# 		else:
+							# 			parentItem.setText(5, "")
+							# 		break
+							# #						print(f"GOT BP {item.text(0)}")
+							# break
+			# pass
+		elif col == 5 and item.childCount() == 0:
 #			print(f"UPDATEING BP Condition of BP {item.text(0)} to '{item.text(col)}'")
 			target = self.window().driver.getTarget()
 			

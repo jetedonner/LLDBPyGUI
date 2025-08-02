@@ -11,7 +11,7 @@ def global_function():
     print("This function is available everywhere!")
 
 def setStatusBar(msg):
-    logDbgC(f"setStausBAr was removed ... message is: {msg}", DebugLevel.Info)
+    logDbgC(f"setStausBar was removed ... message is: {msg}", DebugLevel.Info)
     #     main_window.updateStatusBar(msg)
     pass
 

@@ -27,9 +27,12 @@ class HexToStringWidget(QWidget):
 		self.wdtParent = QWidget()
 		self.wdtParent.setContentsMargins(0, 0, 0, 0)
 		self.wdtParent.setLayout(QVBoxLayout())
-		self.lblTitle = QLabel("Convert HEX to ASCII and vice versa:")
-		self.lblTitle.setFont(ConfigClass.fontTitle)
-		self.wdtParent.layout().addWidget(self.lblTitle)
+		self.lblHexStats = QLabel("Hex-Statistics:")
+		self.lblHexStats.setFont(ConfigClass.font)
+		self.wdtParent.layout().addWidget(self.lblHexStats)
+		# self.lblTitle = QLabel("HEX <-> ASCII Converter")
+		# self.lblTitle.setFont(ConfigClass.fontTitle)
+		# self.wdtParent.layout().addWidget(self.lblTitle)
 
 		self.wdtHexValue = QWidget()
 		self.wdtHexValue.setContentsMargins(0, 0, 0, 0)
@@ -50,11 +53,11 @@ class HexToStringWidget(QWidget):
 		self.txtHexToStringInput = QHexTextEdit()  # ReadOnlySelectableTextEdit(None, True) #
 		self.txtHexToStringInput.ommitFormatting = False
 		self.txtHexToStringInput.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-		logDbgC(f"=======>>>>>>>>>>> self.txtHexToStringInput (before-0): {self.txtHexToStringInput.toPlainText()}",
-				DebugLevel.Verbose)
+		# logDbgC(f"=======>>>>>>>>>>> self.txtHexToStringInput (before-0): {self.txtHexToStringInput.toPlainText()}",
+		# 		DebugLevel.Verbose)
 		# self.txtHexToStringInput.setText("")
-		logDbgC(f"=======>>>>>>>>>>> self.txtHexToStringInput (before-1): {self.txtHexToStringInput.toPlainText()}",
-				DebugLevel.Verbose)
+		# logDbgC(f"=======>>>>>>>>>>> self.txtHexToStringInput (before-1): {self.txtHexToStringInput.toPlainText()}",
+		# 		DebugLevel.Verbose)
 		self.txtHexToStringInput.setFont(ConfigClass.font)
 		self.txtHexToStringInput.setStyleSheet("""
 						QTextEdit {
@@ -70,7 +73,9 @@ class HexToStringWidget(QWidget):
 		# self.txtHexToStringInput.textChanged.connect(self.handle_txtHexToStringChanged)
 		# self.txtHexToStringInput.selectionChanged.connect(self.txtHex_selectionchanged)
 
-		self.wdtHexValue.layout().addWidget(QLabel("Hex-Value:"))
+		self.lblHexTitlePrefix = "Hex-Statistics:"
+		self.lblHexTitle = QLabel(self.lblHexTitlePrefix)
+		self.wdtHexValue.layout().addWidget(self.lblHexTitle)
 		self.wdtHexValue.layout().addWidget(self.txtHexToStringInput)
 		self.splitterTools.addWidget(self.wdtHexValue)
 
@@ -153,6 +158,16 @@ class HexToStringWidget(QWidget):
 		# self.oldCursorPos = cursor.position()
 		#
 		rawTxt = self.txtHexToStringInput.toPlainText()
+		if len(rawTxt) > 2:
+			blocks = (len(rawTxt) - 2)
+			if blocks % 3 == 0:
+				strBytes = str(int(blocks / 3))
+			else:
+				strBytes = "~" + str(int(blocks / 3))
+		else:
+			strBytes = "-"
+
+		self.lblHexTitle.setText(self.lblHexTitlePrefix + f" Bytes: {strBytes}")
 		# lenTxt = len(rawTxt)
 		# if (self.oldCursorPos - 2) % 3 == 0:
 		# 	if lenTxt > self.oldCursorPos:

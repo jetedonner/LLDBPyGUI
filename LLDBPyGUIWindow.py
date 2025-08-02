@@ -523,9 +523,9 @@ class LLDBPyGUIWindow(QMainWindow):
 		"""
 		        Sets up the graphical user interface for the console.
 		        """
-		self.main_layout = QVBoxLayout(self)
-		self.main_layout.setContentsMargins(10, 10, 10, 10)
-		self.main_layout.setSpacing(5)
+		# self.main_layout = QVBoxLayout(self)
+		# self.main_layout.setContentsMargins(10, 10, 10, 10)
+		# self.main_layout.setSpacing(5)
 
 		# self.output_text_edit = QTextEdit()
 		# ConsoleWidget()
@@ -599,7 +599,9 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.wdtDbg = DbgOutputWidget()
 
 		self.wdtHexToString = HexToStringWidget()
-		self.tabWidgetMain.addTab(self.wdtHexToString, "Tools")
+		self.tabWidgetTools = QTabWidget(self.tabWidgetMain)
+		self.tabWidgetTools.addTab(self.wdtHexToString, "HEX <-> ASCII")
+		self.tabWidgetMain.addTab(self.tabWidgetTools, "Tools")
 
 		self.wdtSearch = SearchWidget(self.driver)
 		# self.tabWidgetMain.addTab(self.wdtSearch, "Search")

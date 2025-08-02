@@ -219,6 +219,7 @@ class QSwitchDemoWindow(QMainWindow):
 	
 	def __init__(self):
 		super().__init__()
+		print(f"NNNNNNNNNNNNNNOOOOOOOOOOOOOO SSSSSSHHHHHHHOOOOOOOOOUUUUUULLLLLLDDDDD NOT GET HERE (4)")
 		self.setWindowTitle("QSwitch - Demo app v0.0.1")
 		
 		self.layMain = QVBoxLayout()

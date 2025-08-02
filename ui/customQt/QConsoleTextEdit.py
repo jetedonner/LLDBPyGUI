@@ -143,6 +143,7 @@ class QConsoleTextEditWindow(QMainWindow):
 	
 	def __init__(self):
 		super().__init__()
+		print(f"NNNNNNNNNNNNNNOOOOOOOOOOOOOO SSSSSSHHHHHHHOOOOOOOOOUUUUUULLLLLLDDDDD NOT GET HERE")
 		self.setWindowTitle(APP_NAME + " " + APP_VERSION)
 		self.setBaseSize(WINDOW_SIZE * 2, WINDOW_SIZE)
 		self.setMinimumSize(WINDOW_SIZE * 2, WINDOW_SIZE + 72)

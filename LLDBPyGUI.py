@@ -22,6 +22,17 @@ from config import *
 
 import subprocess
 
+def test_cb_hello(frame, bp_loc, dict):
+	# Replace 'MyAppName' with the actual name of your app
+	# script = '''
+	# tell application "System Events"
+	# 	set frontmost of process "cocoa_windowed_objc2" to true
+	# end tell
+	# '''
+	# subprocess.run(['osascript', '-e', script])
+	print(f"HELLO WORLD FROM TEST CALLBACK!!!!! BP: {bp_loc}")
+	logDbgC(f"HELLO WORLD FROM TEST CALLBACK!!!!! BP: {bp_loc}")
+
 def bring_app_to_front(frame, bp_loc, dict):
 	# Replace 'MyAppName' with the actual name of your app
 	script = '''
