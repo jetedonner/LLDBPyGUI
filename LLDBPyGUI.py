@@ -22,6 +22,10 @@ from config import *
 
 import subprocess
 
+def test_cb_hello2(frame, bp_loc, dict):
+	print(f"HELLO WORLD FROM TEST CALLBACK TWOOOOOOOOOOO!!!!! BP: {bp_loc}")
+	logDbgC(f"HELLO WORLD FROM TEST CALLBACK TWOOOOOOOOOOO!!!!! BP: {bp_loc}")
+
 def test_cb_hello(frame, bp_loc, dict):
 	# Replace 'MyAppName' with the actual name of your app
 	# script = '''
