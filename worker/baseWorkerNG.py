@@ -484,14 +484,14 @@ class Worker(QObject):
 							if subsec.GetName() == "__text" or subsec.GetName() == "__stubs":
 								idxSym = 0
 								lstSym = module.symbol_in_section_iter(subsec)
-								# if isObjC and subsec.GetName() == "__stubs":
-								# 	self.loadSymbolCallback.emit(subsec.GetName())
+								if isObjC and subsec.GetName() == "__stubs":
+									self.loadSymbolCallback.emit(subsec.GetName())
 
 								for smbl in lstSym:
 									self.logDbgC.emit(f"===========>>>>>>>>>>> symbl: {smbl}", DebugLevel.Verbose)
 									# .GetStartAddress().GetFunction()
-									# if isObjC and not subsec.GetName() == "__stubs":
-									# 	self.loadSymbolCallback.emit(smbl.GetName())
+									if isObjC and not subsec.GetName() == "__stubs":
+										self.loadSymbolCallback.emit(smbl.GetName())
 									instructions = smbl.GetStartAddress().GetFunction().GetInstructions(self.target)
 									self.allInstructions += instructions
 									for instruction in instructions:
@@ -524,9 +524,9 @@ class Worker(QObject):
 										self.checkLoadConnection(instruction, idxInstructions + (idxSym + 1))
 									continue
 							elif subsec.GetName() == "__cstring":
-								if isObjC:
-									self.loadSymbolCallback.emit(subsec.GetName())
-									QApplication.processEvents()
+								# if isObjC:
+								self.loadSymbolCallback.emit(subsec.GetName())
+								QApplication.processEvents()
 								addr = subsec.GetLoadAddress(self.target) #.GetStartAddress()
 								size = subsec.GetByteSize()
 								error = lldb.SBError()
