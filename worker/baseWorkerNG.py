@@ -847,7 +847,9 @@ class Worker(QObject):
 
 			bOver = self.startAddr < int(sAddrJumpTo, 16) < self.endAddr
 			if bOver:
-				pass
+				logDbgC(
+					f"checkLoadConnection()..... sAddrJumpTo IS INSIDE ALTERNATIVE: {sAddrJumpTo} / end: {hex(self.endAddr)} / start: {hex(self.startAddr)}")
+				# pass
 
 			if self.isInsideTextSection(sAddrJumpTo) or bOver:
 				if self.isInsideTextSection(sAddrJumpTo):
@@ -857,16 +859,18 @@ class Worker(QObject):
 					lineEnd = self.get_line_number(int(sAddrJumpTo, 16))
 					if lineEnd is None:
 						return
+						# pass
 					rowEnd = int(lineEnd)
 					logDbgC(f"Found connection from line: {rowStart} to: {rowEnd} ({sAddrJumpFrom} / {sAddrJumpTo})")
 				if bOver:
-					sAddrStartInt = int(str(instruction.GetAddress().GetLoadAddress(self.target)), 10)
+					sAddrStartInt = int(str(instruction.GetAddress().GetLoadAddress(self.target)), 10)# int(str(instruction.GetAddress().GetLoadAddress(self.target)), 10)
 					sAddrJumpFrom = hex(sAddrStartInt)
 					rowStart = int(self.get_line_number(
 						sAddrStartInt))  # idxInstructions#int(self.get_line_number(int(sAddrJumpFrom, 16)))
 					lineEnd = self.get_line_number(int(sAddrJumpTo, 16))
 					if lineEnd is None:
 						return
+						# pass
 					rowEnd = int(lineEnd)
 					logDbgC(f"Found connection from line: {rowStart} to: {rowEnd} ({sAddrJumpFrom} / {sAddrJumpTo})")
 
