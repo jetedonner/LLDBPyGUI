@@ -189,7 +189,7 @@ class DebuggerDriver(Thread):
         self.debugger.SetTerminalWidth(width)
 
     def getTarget(self):
-        return self.target if self.target is not None else self.debugger.GetTargetAtIndex(0)
+        return self.target if self.target is not None else self.debugger.GetTargetAtIndex(self.debugger.GetNumTargets() - 1)
 
     def handleCommand(self, cmd):
         ret = lldb.SBCommandReturnObject()
@@ -201,60 +201,61 @@ class DebuggerDriver(Thread):
         print(f"=======================>>>>>>>>>>>>>>>>>>> eventLoop STARTED!!!!!!!!!!!!!")
         while not self.isDone() and not self.aborted:# and not self.listener.should_quit:
             time.sleep(1)
-            # event = lldb.SBEvent()
-            # logDbgC(f"################# ====>>>>> WaitForEvent (2)")
-            # got_event = self.listener.WaitForEvent(lldb.UINT32_MAX, event)
-            # print(f'GOT-EVENT: {event} / {event.GetType()} ====>>> THATS DA ONE')
-#           desc = get_description(event)
-#           print('Event description:', desc)
-#           print('Event data flavor:', event.GetDataFlavor())
-#           if str(event.GetDataFlavor()) == "ProgressEventData":
-#             self.event_queue.put(event)
-#             pass
-###           if event.GetDataFlavor() == "Breakpoint::BreakpointEventData":
-###             print("GOT BREAKPOINT CHANGE!!!")
-###           global process
-###           print('Process state:', lldbutil.state_type_to_str(process.GetState()))
-##           print()
-#
-#           # eBroadcastBitSTDOUT
-#           if SBProcess.EventIsProcessEvent(event):
-#           #             self._broadcast_process_state(SBProcess.GetProcessFromEvent(event), event)
-#           #             self.processEvent.emit(event)
-#           #             QCoreApplication.processEvents()
-#             print("PROCESS EVENT!!!")
-##           elif event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
-##             print(">>>>> WE GOT STDOUT")
-##             stdout = self.getTarget().GetProcess().GetSTDOUT(256)
-##             if stdout is not None and len(stdout) > 0:
-##               message = {"status":"event", "type":"stdout", "output": "".join(["%02x" % ord(i) for i in stdout])}
-##               print(message)
-##               self.signals.event_output.emit("".join(["%02x" % ord(i) for i in stdout]))
-##               QCoreApplication.processEvents()
-###                 continue
-##             else:
-##               continue
-##             while stdout:
-##               stdout = self.getTarget().GetProcess().GetSTDOUT(256)
-##               if stdout is not None and len(stdout) > 0:
-##                 message = {"status":"event", "type":"stdout", "output": "".join(["%02x" % ord(i) for i in stdout])}
-##                 print(message)
-##                 self.signals.event_output.emit("".join(["%02x" % ord(i) for i in stdout]))
-##                 QCoreApplication.processEvents()
-###                 continue
-##               else:
-##                 break
-##             continue
-# #           if got_event and not event.IsValid():
-# ##               self.winAddStr("Warning: Invalid or no event...")
-# #               continue
-# ##             elif not event.GetBroadcaster().IsValid():
-# ##                 continue
-#
-#           self.event_queue.put(event)
-#           self.signals.event_queued.emit(event)
-#           QCoreApplication.processEvents()
-        # print(f"TERMINATING DRIVER EVENT-LOOP ===>>> TERMINATE")
+            continue
+#             event = lldb.SBEvent()
+#             logDbgC(f"################# ====>>>>> WaitForEvent (2)")
+#             got_event = self.listener.WaitForEvent(lldb.UINT32_MAX, event)
+#             print(f'GOT-EVENT: {event} / {event.GetType()} ====>>> THATS DA ONE')
+#             desc = get_description(event)
+#             print('Event description:', desc)
+#             print('Event data flavor:', event.GetDataFlavor())
+#             if str(event.GetDataFlavor()) == "ProgressEventData":
+#                 self.event_queue.put(event)
+#                 continue
+# # ##           if event.GetDataFlavor() == "Breakpoint::BreakpointEventData":
+# # ##             print("GOT BREAKPOINT CHANGE!!!")
+# # ##           global process
+# # ##           print('Process state:', lldbutil.state_type_to_str(process.GetState()))
+# # #           print()
+# #
+# #           # eBroadcastBitSTDOUT
+# #           if SBProcess.EventIsProcessEvent(event):
+# #           #             self._broadcast_process_state(SBProcess.GetProcessFromEvent(event), event)
+# #           #             self.processEvent.emit(event)
+# #           #             QCoreApplication.processEvents()
+# #             print("PROCESS EVENT!!!")
+# # #           elif event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
+# # #             print(">>>>> WE GOT STDOUT")
+# # #             stdout = self.getTarget().GetProcess().GetSTDOUT(256)
+# # #             if stdout is not None and len(stdout) > 0:
+# # #               message = {"status":"event", "type":"stdout", "output": "".join(["%02x" % ord(i) for i in stdout])}
+# # #               print(message)
+# # #               self.signals.event_output.emit("".join(["%02x" % ord(i) for i in stdout]))
+# # #               QCoreApplication.processEvents()
+# # ##                 continue
+# # #             else:
+# # #               continue
+# # #             while stdout:
+# # #               stdout = self.getTarget().GetProcess().GetSTDOUT(256)
+# # #               if stdout is not None and len(stdout) > 0:
+# # #                 message = {"status":"event", "type":"stdout", "output": "".join(["%02x" % ord(i) for i in stdout])}
+# # #                 print(message)
+# # #                 self.signals.event_output.emit("".join(["%02x" % ord(i) for i in stdout]))
+# # #                 QCoreApplication.processEvents()
+# # ##                 continue
+# # #               else:
+# # #                 break
+# # #             continue
+# # #           if got_event and not event.IsValid():
+# # ##               self.winAddStr("Warning: Invalid or no event...")
+# # #               continue
+# # ##             elif not event.GetBroadcaster().IsValid():
+# # ##                 continue
+# #
+# #           self.event_queue.put(event)
+# #           self.signals.event_queued.emit(event)
+# #           QCoreApplication.processEvents()
+#         # print(f"TERMINATING DRIVER EVENT-LOOP ===>>> TERMINATE")
         self.terminate()
         # print(f"TERMINATING DRIVER EVENT-LOOP ===>>> EXITED")
         

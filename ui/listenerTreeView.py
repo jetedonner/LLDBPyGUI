@@ -188,9 +188,9 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 				QCoreApplication.processEvents()
 				QApplication.processEvents()
 
-				tmrAppStarted = QtCore.QTimer()
-				tmrAppStarted.singleShot(1000, self.readSTDOUT)
-				return
+				# tmrAppStarted = QtCore.QTimer()
+				# tmrAppStarted.singleShot(1000, self.readSTDOUT)
+				# return
 				process = self.driver.getTarget().GetProcess()
 				if process.GetState() == lldb.eStateStopped:
 					self.readSTDOUT(process)

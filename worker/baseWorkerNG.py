@@ -784,12 +784,12 @@ class Worker(QObject):
 
 	def get_line_number(self, address_int):
 		# target = debugger.GetSelectedTarget()
-		addr = lldb.SBAddress(address_int, self.target)
+		addr = lldb.SBAddress(address_int, self.driver.getTarget())
 		                            
 		# Resolve symbol context with line entry info
-		context = self.target.ResolveSymbolContextForAddress(
+		context = self.driver.getTarget().ResolveSymbolContextForAddress(
 	        addr,
-	        lldb.eSymbolContextLineEntry
+	        lldb.eSymbolContextEverything
 		)
 
 		line_entry = context.GetLineEntry()
@@ -805,12 +805,19 @@ class Worker(QObject):
 	def isInsideTextSectionGetRangeVarsReady(self):
 		self.thread = self.process.GetThreadAtIndex(0)
 		module = self.thread.GetFrameAtIndex(0).GetModule()
+		found = False
 		for sec in module.section_iter():
 			for idx3 in range(sec.GetNumSubSections()):
 				subSec = sec.GetSubSectionAtIndex(idx3)
 				if subSec.GetName() == "__text":
 					self.startAddr = subSec.GetFileAddress()
+				elif subSec.GetName() == "__stubs":
 					self.endAddr = subSec.GetFileAddress() + subSec.GetByteSize()
+					logDbgC(f"self.endAddr: {hex(self.endAddr)} / {self.endAddr}")
+					found = True
+					break
+			if found:
+				break
 				# elif subSec.GetName() == "__stubs":
 				# 	logDbgC(f"GOT __stubs: {subSec.GetName()} => subSec.GetFileAddress(): {subSec.GetFileAddress()}, subSec.GetByteSize(): {subSec.GetByteSize()}, self.endAddr: {self.endAddr}")
 				# 	self.endAddr = subSec.GetFileAddress() + subSec.GetByteSize()
@@ -825,21 +832,45 @@ class Worker(QObject):
 	
 	def checkLoadConnection(self, instruction, idxInstructions):
 		sMnemonic = instruction.GetMnemonic(self.target)
+		logDbgC(f"checkLoadConnection()..... {instruction}")
 		# if sMnemonic is None or sMnemonic == "":
 		# 	return
 
 		if sMnemonic is not None and sMnemonic.startswith(JMP_MNEMONICS) and not sMnemonic.startswith(JMP_MNEMONICS_EXCLUDE):
 			sAddrJumpTo = instruction.GetOperands(self.target)
 
-			if not is_hex_string(sAddrJumpTo):
+			if sAddrJumpTo is None or not is_hex_string(sAddrJumpTo):
+				logDbgC(f"checkLoadConnection() RETURN OF ERROR ..... sAddrJumpTo: {sAddrJumpTo}")
 				return
 
-			if self.isInsideTextSection(sAddrJumpTo):
-				sAddrStartInt = int(str(instruction.GetAddress().GetLoadAddress(self.target)), 10)
-				sAddrJumpFrom = hex(sAddrStartInt)
-				rowStart = int(self.get_line_number(sAddrStartInt))# idxInstructions#int(self.get_line_number(int(sAddrJumpFrom, 16)))
-				rowEnd = int(self.get_line_number(int(sAddrJumpTo, 16)))
-				logDbgC(f"Found connection from line: {rowStart} to: {rowEnd} ({sAddrJumpFrom} / {sAddrJumpTo})")
+			logDbgC(f"checkLoadConnection()..... sAddrJumpTo: {sAddrJumpTo} / end: {hex(self.endAddr)} / start: {hex(self.startAddr)}")
+
+			bOver = self.startAddr < int(sAddrJumpTo, 16) < self.endAddr
+			if bOver:
+				pass
+
+			if self.isInsideTextSection(sAddrJumpTo) or bOver:
+				if self.isInsideTextSection(sAddrJumpTo):
+					sAddrStartInt = int(str(instruction.GetAddress().GetLoadAddress(self.target)), 10)
+					sAddrJumpFrom = hex(sAddrStartInt)
+					rowStart = int(self.get_line_number(sAddrStartInt))# idxInstructions#int(self.get_line_number(int(sAddrJumpFrom, 16)))
+					lineEnd = self.get_line_number(int(sAddrJumpTo, 16))
+					if lineEnd is None:
+						return
+					rowEnd = int(lineEnd)
+					logDbgC(f"Found connection from line: {rowStart} to: {rowEnd} ({sAddrJumpFrom} / {sAddrJumpTo})")
+				if bOver:
+					sAddrStartInt = int(str(instruction.GetAddress().GetLoadAddress(self.target)), 10)
+					sAddrJumpFrom = hex(sAddrStartInt)
+					rowStart = int(self.get_line_number(
+						sAddrStartInt))  # idxInstructions#int(self.get_line_number(int(sAddrJumpFrom, 16)))
+					lineEnd = self.get_line_number(int(sAddrJumpTo, 16))
+					if lineEnd is None:
+						return
+					rowEnd = int(lineEnd)
+					logDbgC(f"Found connection from line: {rowStart} to: {rowEnd} ({sAddrJumpFrom} / {sAddrJumpTo})")
+
+
 		# pass
 		# 	sAddrJumpTo = tblDisassembly.item(row, 4).text()
         #     if self.isInsideTextSection(sAddrJumpTo):
@@ -861,6 +892,8 @@ class Worker(QObject):
 				self.connections.append(newConObj)
 				if self.radius <= 130:
 					self.radius += 15
+			else:
+				logDbgC(f"checkLoadConnection()..... sAddrJumpTo NOT IN TARGET")
 				# self.connections.sort(key=lambda x: abs(x.jumpDist), reverse=True)
 				#
 				# idx = 1
