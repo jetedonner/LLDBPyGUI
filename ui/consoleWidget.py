@@ -275,6 +275,10 @@ class ConsoleWidget(QWidget):
         self.layCmdParent.addWidget(self.txtConsole)
         # self.txtConsole.keyPressEvent()
 
+    def gotSTDOUT(self, stdout):
+        logDbgC(f"STDOUT (IN CONSOLE WIDGET) {stdout}")
+        self.txtCommands.append(stdout)
+
     def handle_availCompletitions(self, compl):
         self.txtCommands.append("Available Completions:")
         for m in islice(compl, 1, None):

@@ -23,22 +23,22 @@ class RFlagWidget(QWidget):
 		self.setContentsMargins(0, 0, 0, 0)
 		self.tblRFlag = RFlagTableWidget()
 		self.setLayout(QVBoxLayout())
-		self.wdtLabel = QLabel("rFlags / eFlags: ")
-		self.layout().addWidget(self.wdtLabel)
+		# self.wdtLabel = QLabel("rFlags / eFlags: ")
+		# self.layout().addWidget(self.wdtLabel)
 		self.layout().addWidget(self.tblRFlag)
 		self.layout().setContentsMargins(0, 0, 0, 0)
 		if driver is not None:
 			self.tblRFlag.loadRFlags(driver.debugger)
-		self.wdtLabel.setText(
-			"rFlags / eFlags: ")  # + hex(self.tblRFlag.rflags_value) + " / " + format(self.tblRFlag.rflags_value, 'b') + " / " + pfl_cmd(get_main_window().driver.debugger, "", res, []))
-			# res = 0
-			# self.wdtLabel.setText("rFlags / eFlags: ")# + hex(self.tblRFlag.rflags_value) + " / " + format(self.tblRFlag.rflags_value, 'b') + " / " + pfl_cmd(get_main_window().driver.debugger, "", res, []))
-			# self.tblRFlag.addRow("--- QUICK ---", "--- FLAG ---", "--- INFOS ---")
-			# self.tblRFlag.addRow("int", str(self.tblRFlag.rflags_value), "")
-			# self.tblRFlag.addRow("hex", hex(self.tblRFlag.rflags_value), "")
-			# self.tblRFlag.addRow("binary", format(self.tblRFlag.rflags_value, 'b'), "")
-			# self.tblRFlag.addRow("quick", pfl_cmd(get_main_window().driver.debugger, "", res, []), "")
-			# logDbgC(f"rFlags / eFlags:\n- Unsigned: {hex(self.tblRFlag.rflags_value)} / {self.tblRFlag.rflags_value}\n- Binary: " + format(self.tblRFlag.rflags_value, 'b') + "\n- Flags: " + pfl_cmd(get_main_window().driver.debugger, "", res, []))
+		# self.wdtLabel.setText(
+		# 	"rFlags / eFlags: ")  # + hex(self.tblRFlag.rflags_value) + " / " + format(self.tblRFlag.rflags_value, 'b') + " / " + pfl_cmd(get_main_window().driver.debugger, "", res, []))
+		# 	# res = 0
+		# 	# self.wdtLabel.setText("rFlags / eFlags: ")# + hex(self.tblRFlag.rflags_value) + " / " + format(self.tblRFlag.rflags_value, 'b') + " / " + pfl_cmd(get_main_window().driver.debugger, "", res, []))
+		# 	# self.tblRFlag.addRow("--- QUICK ---", "--- FLAG ---", "--- INFOS ---")
+		# 	# self.tblRFlag.addRow("int", str(self.tblRFlag.rflags_value), "")
+		# 	# self.tblRFlag.addRow("hex", hex(self.tblRFlag.rflags_value), "")
+		# 	# self.tblRFlag.addRow("binary", format(self.tblRFlag.rflags_value, 'b'), "")
+		# 	# self.tblRFlag.addRow("quick", pfl_cmd(get_main_window().driver.debugger, "", res, []), "")
+		# 	# logDbgC(f"rFlags / eFlags:\n- Unsigned: {hex(self.tblRFlag.rflags_value)} / {self.tblRFlag.rflags_value}\n- Binary: " + format(self.tblRFlag.rflags_value, 'b') + "\n- Flags: " + pfl_cmd(get_main_window().driver.debugger, "", res, []))
 
 class RFlagTableWidget(BaseTableWidget):
 
@@ -171,6 +171,7 @@ class RFlagTableWidget(BaseTableWidget):
 		res = 0
 		# self.wdtLabel.setText(
 		# 	"rFlags / eFlags: ")  # + hex(self.tblRFlag.rflags_value) + " / " + format(self.tblRFlag.rflags_value, 'b') + " / " + pfl_cmd(get_main_window().driver.debugger, "", res, []))
+		self.addRow("FLAG OVERVIEW:", "", "")
 		self.addRow("--- DATA TYPE ---", "--- VALUE ---", "--- INFOS ---")
 		self.addRow("int", str(self.rflags_value), "Complete Flag with all bits as INT")
 		self.addRow("hex", hex(self.rflags_value), "Complete Flag with all bits as HEX")
@@ -182,6 +183,8 @@ class RFlagTableWidget(BaseTableWidget):
 																		   []), DebugLevel.Verbose )
 		logDbgC(f"RFLAGS: 0x{self.rflags_value:016x}", DebugLevel.Verbose)
 
+		self.addRow("", "", "")
+		self.addRow("FLAG DETAILS:", "", "")
 		self.addRow("--- FLAG NAME ---", "--- OPTION ---", "--- DESCRIPTION ---")
 		# Define the flags and their bit positions
 		# (Bit 0 to 21 are the most common ones to check)

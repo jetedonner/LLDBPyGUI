@@ -107,6 +107,7 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 		self.collapseAll()
 		
 	def readSTDOUT(self, proc = None):
+		# return
 		# pass
 		# proc.SendAsyncInterrupt()
 		if proc is None:
@@ -121,6 +122,7 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 
 		# self.driver.getTarget().GetProcess()
 		stdout = proc.GetSTDOUT(1024)
+		print(f"proc.GetSTDOUT(1024): {stdout}")
 		if stdout is not None and len(stdout) > 0:
 
 			# print(stdout)
@@ -579,7 +581,7 @@ class ListenerWidget(QWidget):
 		self.splitter.setStretchFactor(0, 35)
 		self.splitter.setStretchFactor(1, 65)
 		self.splitter.setContentsMargins(0, 0, 0, 0)
-		# self.loadListener()
+		self.loadListener()
 	
 	def addBroadcastBitItem(self, parent, type, bit, checked=True):
 		subSectionNode = QTreeWidgetItem(parent, [BroadcastBitString(type, bit)])
@@ -633,7 +635,6 @@ class ListenerWidget(QWidget):
 #			parentItem.setCheckState(0, Qt.CheckState.PartiallyChecked)
 #		else:
 #			parentItem.setCheckState(0, Qt.CheckState.Checked if allState else Qt.CheckState.Unchecked)
-		
 		
 	def loadListener(self):
 		

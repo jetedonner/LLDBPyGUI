@@ -14,6 +14,7 @@ from ui.dialogs.userActionNeededDialog import UserActionNeededDialog
 from ui.hexToStringWidget import HexToStringWidget
 from ui.rememberLocationsTableWidget import RememberLocationsTableWidget
 from ui.rflagTableWidget import RFlagTableWidget, RFlagWidget
+from ui.stopHookWidget import StopHookWidget
 
 try:
 	import queue
@@ -488,6 +489,9 @@ class LLDBPyGUIWindow(QMainWindow):
 
 		self.tabWidgetDbg.addTab(self.tabWatchpoints, "Watchpoints")
 
+		self.wdtStopHook = StopHookWidget(self.workerManager)
+		self.tabWidgetDbg.addTab(self.wdtStopHook, "Stop-Hooks")
+
 		self.txtSource = SourceTextEdit()
 		self.tabWidgetDbg.addTab(self.txtSource, "Sourcecode")
 
@@ -616,8 +620,8 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.tabWidgetConsoles.addTab(self.tabWidgetConsole, "Python")
 		self.tabWidgetConsoles.addTab(self.output_text_edit, "System shell")
 
-
-		self.tabWidgetDbg.addTab(self.tabWidgetConsoles, "Consoles")
+		self.tabWidgetMain.addTab(self.tabWidgetConsoles, "Consoles")
+		# self.tabWidgetDbg.addTab(self.tabWidgetConsoles, "Consoles")
 		# self.tabWidgetMain.addTab(self.wdtCommands, "Commands")
 		#
 		# self.layoutMainWin = QVBoxLayout()
@@ -780,6 +784,8 @@ class LLDBPyGUIWindow(QMainWindow):
 	def testSTDOUT(self, strOut):
 		print(f'HEEEEEELLLLLLLOOOOOO FROM STDOUT => {strOut}')
 		self.output_text_edit.append(f'{strOut}\n')
+		logDbgC(f"{strOut}")
+		QApplication.processEvents()
 
 
 	def cmbModules_changed(self, index):
@@ -1086,30 +1092,34 @@ class LLDBPyGUIWindow(QMainWindow):
 
 	def resume_clicked(self):
 		if self.isProcessRunning:
-			# print(f"self.isProcessRunning => Trying to Suspend()")
-			thread = self.driver.getThread()
-			if thread:
-				self.isProcessRunning = False
-				self.driver.debugger.SetAsync(False)
-				thread.Suspend()
-			else:
-				print(f"self.isProcessRunning => Thread is NONE")
-				self.driver.getTarget().GetProcess().GetThreadAtIndex(0).Suspend()
-				print(f"self.driver.getTarget().GetProcess().GetThreadAtIndex(0) => {self.driver.getTarget().GetProcess().GetThreadAtIndex(0)}")
-				thread = self.driver.getTarget().GetProcess().GetThreadAtIndex(0)
-				if thread:
-					print(f"self.isProcessRunning => TRYING TO SUSPEND SECOND")
-					self.isProcessRunning = False
-					self.driver.debugger.SetAsync(False)
-					thread.Suspend()
-				else:
-					print(f"self.isProcessRunning => Thread is NONE SECOND")
-					pass
-#				self.driver.debugger.SetAsync(False)
+			self.isProcessRunning = False
+			print(f"self.isProcessRunning => Trying to Suspend()")
+			self.debugger.HandleCommand("process interrupt")
+			self.debugger.HandleCommand("dis")
+			# pass
+# 			# print(f"self.isProcessRunning => Trying to Suspend()")
+# 			thread = self.driver.getThread()
+# 			if thread:
+# 				self.isProcessRunning = False
+# 				self.driver.debugger.SetAsync(False)
+# 				thread.Suspend()
+# 			else:
+# 				print(f"self.isProcessRunning => Thread is NONE")
+# 				self.driver.getTarget().GetProcess().GetThreadAtIndex(0).Suspend()
+# 				print(f"self.driver.getTarget().GetProcess().GetThreadAtIndex(0) => {self.driver.getTarget().GetProcess().GetThreadAtIndex(0)}")
+# 				thread = self.driver.getTarget().GetProcess().GetThreadAtIndex(0)
+# 				if thread:
+# 					print(f"self.isProcessRunning => TRYING TO SUSPEND SECOND")
+# 					self.isProcessRunning = False
+# 					self.driver.debugger.SetAsync(False)
+# 					thread.Suspend()
+# 				else:
+# 					print(f"self.isProcessRunning => Thread is NONE SECOND")
+# 					pass
+# #				self.driver.debugger.SetAsync(False)
 		else:
 			self.driver.debugger.SetAsync(True)
 			self.start_debugWorker(self.driver, StepKind.Continue)
-		pass
 
 	def stepOver_clicked(self):
 		self.driver.debugger.SetAsync(False)
@@ -1378,9 +1388,10 @@ class LLDBPyGUIWindow(QMainWindow):
 	def handle_event_queued(self, event):
 		# print(f"EVENT-QUEUED: {event}")
 		# print(f'GUI-GOT-EVENT: {event} / {event.GetType()} ====>>> THATS DA ONE')
-		desc = get_description(event)
+		# desc = get_description(event)
 		# print('GUI-Event description:', desc)
 		# print('GUI-Event data flavor:', event.GetDataFlavor())
+		return
 		if str(event.GetDataFlavor()) == "ProgressEventData": # and not self.should_quit:
 			self.treListener.handle_gotNewEvent(event)
 			pass
@@ -1865,7 +1876,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		# tabDet2.setLayout(QVBoxLayout())
 		# tabDet2.layout().addWidget(tblReg2)
 		# tabDet2.layout().setContentsMargins(0, 0, 0, 0)
-		self.tabWidgetReg.addTab(tblReg2, "rFlags/eFlags")
+		self.tabWidgetReg.insertTab(0, tblReg2, "rFlags/eFlags")
 		# tblReg2.loadRFlags(self.driver.debugger)
 
 	# self.currTblDet = tblReg2

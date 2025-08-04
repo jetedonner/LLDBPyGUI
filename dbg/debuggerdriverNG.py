@@ -42,23 +42,30 @@ class EventListenerController(QObject):
         self.thread.started.connect(self.worker.run)
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.worker.deleteLater)
+        self.worker.gotEvent.connect(self.addNewEvent)
         self.thread.finished.connect(self.thread.deleteLater)
         self.worker.progress.connect(self.reportProgress)
-        # Step 6: Start the thread
-        # self.thread.start()
-        pass
 
     def startEventListener(self):
-        print(f"HERE WE ARE !!!!!! ===>>> startEventListener()")
+        # print(f"HERE WE ARE !!!!!! ===>>> startEventListener()")
         # Step 6: Start the thread
         self.thread.start()
-        pass
 
     def reportProgress(self, progressAsInt):
         print(f"Current progress is: {progressAsInt}")
-        pass
-    # def setupController(self):
-    #     pass
+
+    def addNewEvent(self, event):
+        logDbgC(f'GOT-EVENT: {event} / {event.GetType()} ====>>> THATS DA ONE')
+        desc = get_description(event)
+        logDbgC(f'Event description: {desc}')
+        logDbgC(f'Event data flavor: {event.GetDataFlavor()}')
+
+        if event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
+            print("STD OUT EVENT LISTENER!!!")
+            stdout = SBProcess.GetProcessFromEvent(event).GetSTDOUT(2048)
+            print(SBProcess.GetProcessFromEvent(event))
+            print(f"STDOUT IS: {stdout}")
+        # logDbgC(f"")
 
 
 # Step 1: Create a worker class
@@ -66,6 +73,9 @@ class EventListenerWorker(QObject):
 
     finished = pyqtSignal()
     progress = pyqtSignal(int)
+    gotEvent = pyqtSignal(object)
+    gotSTDOUT = pyqtSignal(str)
+
     debugger = None
     listener = None
     done = False
@@ -100,66 +110,64 @@ class EventListenerWorker(QObject):
 
     def eventLoop(self):
 #       global process
-        print(f"=======================>>>>>>>>>>>>>>>>>>> eventLoop STARTED!!!!!!!!!!!!!")
+#         print(f"=======================>>>>>>>>>>>>>>>>>>> eventLoop STARTED!!!!!!!!!!!!!")
+#         event = lldb.SBEvent()
+#         result = self.listener.WaitForEvent(lldb.UINT32_MAX, event)
         while not self.isDone():# and not self.aborted:# and not self.listener.should_quit:
             # time.sleep(1)
             # continue
             event = lldb.SBEvent()
             print(f"################# ====>>>>> WaitForEvent (NG)")
-            got_event = self.listener.WaitForEvent(lldb.UINT32_MAX, event)
-            print(f'GOT-EVENT: {event} / {event.GetType()} ====>>> THATS DA ONE')
-            desc = get_description(event)
-            print('Event description:', desc)
-            print('Event data flavor:', event.GetDataFlavor())
-            # if str(event.GetDataFlavor()) == "ProgressEventData":
-            #     self.event_queue.put(event)
-            #     continue
-# ##           if event.GetDataFlavor() == "Breakpoint::BreakpointEventData":
-# ##             print("GOT BREAKPOINT CHANGE!!!")
-# ##           global process
-# ##           print('Process state:', lldbutil.state_type_to_str(process.GetState()))
-# #           print()
-#
-#           # eBroadcastBitSTDOUT
-#           if SBProcess.EventIsProcessEvent(event):
-#           #             self._broadcast_process_state(SBProcess.GetProcessFromEvent(event), event)
-#           #             self.processEvent.emit(event)
-#           #             QCoreApplication.processEvents()
-#             print("PROCESS EVENT!!!")
-# #           elif event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
-# #             print(">>>>> WE GOT STDOUT")
-# #             stdout = self.getTarget().GetProcess().GetSTDOUT(256)
-# #             if stdout is not None and len(stdout) > 0:
-# #               message = {"status":"event", "type":"stdout", "output": "".join(["%02x" % ord(i) for i in stdout])}
-# #               print(message)
-# #               self.signals.event_output.emit("".join(["%02x" % ord(i) for i in stdout]))
-# #               QCoreApplication.processEvents()
-# ##                 continue
-# #             else:
-# #               continue
-# #             while stdout:
-# #               stdout = self.getTarget().GetProcess().GetSTDOUT(256)
-# #               if stdout is not None and len(stdout) > 0:
-# #                 message = {"status":"event", "type":"stdout", "output": "".join(["%02x" % ord(i) for i in stdout])}
-# #                 print(message)
-# #                 self.signals.event_output.emit("".join(["%02x" % ord(i) for i in stdout]))
-# #                 QCoreApplication.processEvents()
-# ##                 continue
-# #               else:
-# #                 break
-# #             continue
-# #           if got_event and not event.IsValid():
-# ##               self.winAddStr("Warning: Invalid or no event...")
-# #               continue
-# ##             elif not event.GetBroadcaster().IsValid():
-# ##                 continue
-#
-#           self.event_queue.put(event)
-#           self.signals.event_queued.emit(event)
-#           QCoreApplication.processEvents()
-        # print(f"TERMINATING DRIVER EVENT-LOOP ===>>> TERMINATE")
-        # self.terminate()
-        # print(f"TERMINATING DRIVER EVENT-LOOP ===>>> EXITED")
+            result = self.listener.WaitForEvent(lldb.UINT32_MAX, event)
+            # result = self.listener.GetNextEvent(event)
+            print(f"################# ====>>>>> GetNextEvent (NG) RESULT => {result} / {event} / {event.GetType()}")
+            if not event is None and event.IsValid():
+                if event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
+                    print("STD OUT EVENT LISTENER NNNNNNGGGGGGG!!!")
+                    myProc = SBProcess.GetProcessFromEvent(event)
+                    if myProc.GetState() != lldb.eStateStopped:
+                        myProc.Stop()
+                        stopped = True
+                    else:
+                        stopped = False
+                    stdout = myProc.GetSTDOUT(1024)
+
+                    if stopped:
+                        myProc.Continue()
+                    # print(SBProcess.GetProcessFromEvent(event))
+                    if stdout is None or len(stdout) == 0:
+                        print(f"!!!!!! STDOUT IS NOT VALID !!!!!!!!")
+                    else:
+                        print(f"=====>>>>> STDOUT (IN WORKER) IS: {stdout}")
+                        self.gotSTDOUT.emit(stdout)
+                        # event = lldb.SBEvent()
+                        # result = self.listener.GetNextEvent(event)
+                        # if not event is None and event.IsValid():
+                        #     if event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
+                        #         print("STD OUT EVENT LISTENER NNNNNNGGGGGGG!!!")
+                        #         myProc = SBProcess.GetProcessFromEvent(event)
+                        #         # if myProc.GetState() != lldb.eStateStopped:
+                        #         #     myProc.Stop()
+                        #         #     stopped = True
+                        #         # else:
+                        #         #     stopped = False
+                        #         stdout = myProc.GetSTDOUT(1024)
+                        #         # if stopped:
+                        #         #     myProc.Continue()
+                        #         # print(SBProcess.GetProcessFromEvent(event))
+                        #         if stdout is None or len(stdout) == 0:
+                        #             print(f"!!!!!! STDOUT IS NOT VALID !!!!!!!!")
+                        #         else:
+                        #             print(f"=====>>>>> STDOUT (IN WORKER) IS: {stdout}")
+                        #             self.gotSTDOUT.emit(stdout)
+                # result = self.listener.GetNextEvent(event)
+                # if result:
+
+                # QApplication.processEvents()
+            else:
+                time.sleep(0.1)
+            QApplication.processEvents()
+            # self.gotEvent.emit(event)
 
     def setupListeners(self):
         if self.debugger is not None: # and not debugger.GetListener().should_quit:
@@ -170,6 +178,7 @@ class EventListenerWorker(QObject):
             if not self.listener.IsValid():
                 raise "Invalid listener"
 
+            # self.listener.GetNextEvent()
             # print(f"=====================>>>>>>>>> self.debugger (ADD): {self.debugger} / {self.listener}")
             self.listener.StartListeningForEventClass(self.debugger,
                                                       lldb.SBTarget.GetBroadcasterClassName(),

@@ -136,6 +136,7 @@ class LLDBListener(QtCore.QObject, Thread):
 			broadcaster.AddListener(self.listener, mask)
 		
 	def _add_listener_to_process(self, process):
+		# return
 		if not self.should_quit:
 			# Listen for process events (Start/Stop/Interrupt/etc).
 			broadcaster = process.GetBroadcaster()
@@ -148,11 +149,11 @@ class LLDBListener(QtCore.QObject, Thread):
 			state = 'stopped'
 
 			if event is not None and event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
-				stdout = process.GetSTDOUT(1024)
-				if stdout is not None and len(stdout) > 0:
-					print(f"=============>>>>>>>>>>>>>>>>>> NEW STDOUT: {stdout}")
-				else:
-					print(f"=============>>>>>>>>>>>>>>>>>> NOOOOOOOOO NEW STDOUT!!!!!")
+				# stdout = process.GetSTDOUT(1024)
+				# if stdout is not None and len(stdout) > 0:
+				# 	print(f"=============>>>>>>>>>>>>>>>>>> NEW STDOUT: {stdout}")
+				# else:
+				# 	print(f"=============>>>>>>>>>>>>>>>>>> NOOOOOOOOO NEW STDOUT!!!!!")
 				return
 			else:
 				print(f"=============>>>>>>>>>>>>>>>>>> NOOOOOOOOO EVENT!!!!!")
@@ -214,17 +215,29 @@ class LLDBListener(QtCore.QObject, Thread):
 		
 	suspended = False
 	def run(self):
-		return
+		# return
 		logDbgC(f'STARTING LISTENER!!!! ======>>>>>> Is it only ONE TIME?')
 		while not self.should_quit:
-			event = SBEvent()
+			event = lldb.SBEvent()
 			# print("GOING to WAIT 4 EVENT...")
 			logDbgC(f"################# ====>>>>> WaitForEvent (1)")
 			if self.listener.WaitForEvent(lldb.UINT32_MAX, event):
 				if not self.should_quit:
-					print("self.gotEvent.emit(event)!!!")
-					self.gotEvent.emit(event)
+					logDbgC(f'GOT-NEW-EVENT: {event} / {event.GetType()} / {lldb.SBProcess.eBroadcastBitSTDOUT} ====>>> OLD LISTENER')
+					desc = get_description(event)
+					logDbgC(f'Event description: {desc}')
+					logDbgC(f'Event data flavor: {event.GetDataFlavor()}')
+
+					logDbgC(f"self.gotEvent.emit(event)!!!")
+					# self.gotEvent.emit(event)
 					# print("GOT NEW EVENT LISTENER!!")
+					if event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
+						# continue
+						print("STD OUT EVENT LISTENER!!!")
+						stdoutNG = lldb.SBProcess.GetProcessFromEvent(event).GetSTDOUT(2048)
+						# print(SBProcess.GetProcessFromEvent(event))
+						print(f"############# ===========>>>>>>>>>>>>> stdoutNG IS: {stdoutNG}")
+						continue
 					if SBCommandInterpreter.EventIsCommandInterpreterEvent(event):
 						print("GOT COMMANDLINE EVENT!!!")
 					elif event.GetType() == SBThread.eBroadcastBitThreadSuspended:
@@ -239,11 +252,13 @@ class LLDBListener(QtCore.QObject, Thread):
 
 
 
-	#				elif event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
-	#					print("STD OUT EVENT LISTENER!!!")
-	#					stdout = SBProcess.GetProcessFromEvent(event).GetSTDOUT(256)
-	#					print(SBProcess.GetProcessFromEvent(event))
-	#					print(stdout)
+					elif event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
+						# continue
+						print("STD OUT EVENT LISTENER!!!")
+						# sys.stdout.flush()
+						stdout = SBProcess.GetProcessFromEvent(event).GetSTDOUT(2048)
+						print(SBProcess.GetProcessFromEvent(event))
+						print(f"STDOUT IS: {stdout}")
 	#					if stdout is not None and len(stdout) > 0:
 	#						message = {"status":"event", "type":"stdout", "output": "".join(["%02x" % ord(i) for i in stdout])}
 	#						print(message)
