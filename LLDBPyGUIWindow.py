@@ -192,8 +192,8 @@ class LLDBPyGUIWindow(QMainWindow):
 				log_level: Integer representing the log level (e.g., lldb.eLevelDebug).
 				message: String containing the actual log message.
 		"""
-#		level_name = lldb.SBDebugger.GetLogMessageLevelName(log_level)
-		# print(f"=========================>>>>>>>>>>>>>>>>>>>> [{log_level}] => {message}")
+		level_name = lldb.SBDebugger.GetLogMessageLevelName(log_level)
+		logDbgC(f"=========================>>>>>>>>>>>>>>>>>>>> {level_name} ({log_level}) => {message} (my_custom_log_callback)")
 
 	tmrResetStatusBar = QtCore.QTimer()
 	bpHelper = None
@@ -219,11 +219,14 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.finish_startup()
 		pass
 
-	def __init__(self, driver = None):
+	debugger = None
+	driver = None
+
+	def __init__(self, driver = None, debugger=None):
 		super().__init__()
 
 		# self.start_operation()
-
+		self.debugger = debugger
 		self.driver = driver
 
 		self.threadLoad = QThread()

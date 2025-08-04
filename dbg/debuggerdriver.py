@@ -57,9 +57,11 @@ class DebuggerDriver(Thread):
         # This is probably not great because it does not give liblldb a chance
         # to clean up
         self.daemon = True
-        self.initialize(debugger)
+        self.debugger = debugger
+        # self.initialize(debugger)
 
     def initialize(self, debugger):
+        return
         if debugger is not None: # and not debugger.GetListener().should_quit:
             # print("INITIALISING DRIVER!!!")
             self.done = False
@@ -260,7 +262,8 @@ class DebuggerDriver(Thread):
         # print(f"TERMINATING DRIVER EVENT-LOOP ===>>> EXITED")
         
     def run(self):
-        self.eventLoop()
+        # self.eventLoop()
+        return
 
     def terminate(self):
         print(f"=======================>>>>>>>>>>>>>>>>>>> eventLoop ENDED !!!!!!!!!!!!!")

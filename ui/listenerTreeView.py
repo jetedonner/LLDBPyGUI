@@ -579,7 +579,7 @@ class ListenerWidget(QWidget):
 		self.splitter.setStretchFactor(0, 35)
 		self.splitter.setStretchFactor(1, 65)
 		self.splitter.setContentsMargins(0, 0, 0, 0)
-		self.loadListener()
+		# self.loadListener()
 	
 	def addBroadcastBitItem(self, parent, type, bit, checked=True):
 		subSectionNode = QTreeWidgetItem(parent, [BroadcastBitString(type, bit)])
@@ -633,6 +633,7 @@ class ListenerWidget(QWidget):
 #			parentItem.setCheckState(0, Qt.CheckState.PartiallyChecked)
 #		else:
 #			parentItem.setCheckState(0, Qt.CheckState.Checked if allState else Qt.CheckState.Unchecked)
+		
 		
 	def loadListener(self):
 		

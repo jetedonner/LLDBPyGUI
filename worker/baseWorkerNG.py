@@ -4,6 +4,7 @@ import time
 from PyQt6.QtCore import QObject, QThread, pyqtSignal
 
 from config import *
+from dbg.debuggerdriverNG import EventListenerController
 from dbg.listener import LLDBListener
 from ui.helper.dbgOutputHelper import logDbgC
 from worker.loadDisassemblyWorker import LoadDisassemblyWorker
@@ -55,10 +56,7 @@ class Worker(QObject):
 	runControlFlow_loadConnections = pyqtSignal()
 	endLoadControlFlowCallback = pyqtSignal(bool)
 
-
-	# def do_work(self):
-	# 	self.request_text.emit()  # Ask main thread for text
-
+	eventListener = None
 
 	# Load Listener
 	handle_breakpointEvent = None
@@ -92,6 +90,7 @@ class Worker(QObject):
 		self.thread = None
 		self.frame = None
 		self.listener = None
+		self.eventListener = None
 		self.stoppedAtOEP = False
 		self.isLoadSourceCodeActive = False
 		self.sourceFile = sourceFile
@@ -101,6 +100,10 @@ class Worker(QObject):
 		self.allInstructions = []
 		self.finishedLoadControlFlow = False
 		self.endLoadControlFlowCallback.connect(self.handle_endLoadControlFlowCallback)
+
+		self.eventListener = EventListenerController(self.parent, self.mainWin.driver.debugger)
+		self.eventListener.worker.progress.connect(self.reportProgress)
+		self.eventListener.startEventListener()
 
 	def run(self):
 		self._should_stop = False  # Reset before starting
@@ -980,20 +983,30 @@ class Worker(QObject):
 		self.logDbg.emit(f"HELLO WORLD DISASSEBLE ;-=")
 		pass
 
+	def reportProgress(self, prg):
+		self.logDbg.emit(f"------------ reportProgress({prg}) ------------")
+		pass
+
 	def loadTarget(self):
+		self.logDbgC.emit(f"HERE WE ARE !!!!!!", DebugLevel.Verbose)
+
 		self.logDbgC.emit(f"loadTarget() => Target: {self.target} ...", DebugLevel.Verbose)
 		if self.target:
 			self.process = self.target.GetProcess()
 			self.logDbgC.emit(f"loadTarget() => Process: {self.process} ...", DebugLevel.Verbose)
 
 			if self.process:
-				self.listener = LLDBListener(self.process, self.driver.debugger)
-				self.listener.setHelper = self.mainWin.setHelper
-				self.listener.breakpointEvent.connect(self.handle_breakpointEvent)
-				self.listener.processEvent.connect(self.handle_processEvent)
-				self.listener.gotEvent.connect(self.handle_gotNewEvent)
-				self.listener.addListenerCalls()
-				self.listener.start()
+				# self.listener = LLDBListener(self.process, self.driver.debugger)
+				# self.listener.setHelper = self.mainWin.setHelper
+				# self.listener.breakpointEvent.connect(self.handle_breakpointEvent)
+				# self.listener.processEvent.connect(self.handle_processEvent)
+				# self.listener.gotEvent.connect(self.handle_gotNewEvent)
+				# self.listener.addListenerCalls()
+				# self.listener.start()
+
+				# self.eventListener = EventListenerController(self.parent, self.driver.debugger)
+				# self.eventListener.worker.progress.connect(self.reportProgress)
+				# self.eventListener.startEventListener()
 
 				self.thread = self.process.GetThreadAtIndex(0)
 				self.logDbgC.emit(f"loadTarget() => Thread: {self.thread} ...", DebugLevel.Verbose)

@@ -214,6 +214,7 @@ class LLDBListener(QtCore.QObject, Thread):
 		
 	suspended = False
 	def run(self):
+		return
 		logDbgC(f'STARTING LISTENER!!!! ======>>>>>> Is it only ONE TIME?')
 		while not self.should_quit:
 			event = SBEvent()
