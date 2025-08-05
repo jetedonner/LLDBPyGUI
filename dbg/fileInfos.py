@@ -836,11 +836,11 @@ def is_hex_string(s):
 
 class FileInfos():
 	
-	targetBasename = "<not set>"
+	# targetBasename = "<not set>"
 	
 	def loadFileInfo(self, target, table):
 		exe = target.GetExecutable().GetDirectory() + "/" + target.GetExecutable().GetFilename()
-		self.targetBasename = os.path.basename(exe)
+		# self.targetBasename = os.path.basename(exe)
 		
 		mach_header = GetFileHeader(exe)
 		

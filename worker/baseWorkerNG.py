@@ -68,7 +68,7 @@ class Worker(QObject):
 	fileToLoad = ""
 	arch = ""
 	args = ""
-	targetBasename = ""
+	# targetBasename = ""
 	startAddr = 0x0
 	endAddr = 0x0
 
@@ -111,7 +111,7 @@ class Worker(QObject):
 		self.show_dialog.emit()
 
 		self.logDbg.emit(f"loadNewExecutableFile({self.fileToLoad})...")
-		self.targetBasename = os.path.basename(self.fileToLoad)
+		# self.targetBasename = os.path.basename(self.fileToLoad)
 		self.loadNewExecutableFile(self.fileToLoad)
 		self.logDbgC.emit(f"self.mainWin.driver.debugger.GetNumTargets() (baseWorkerNG): {self.mainWin.driver.debugger.GetNumTargets()}", DebugLevel.Verbose)
 		if self.mainWin.driver.debugger.GetNumTargets() > 0:
@@ -288,7 +288,7 @@ class Worker(QObject):
 							# self.sendProgressUpdate((100 / numRegisters * currReg) + (numRegSeg / numChilds * idx),
 							# 						f'Loading registers value {child.GetName()} ...')
 							if self.initTable:
-								print(f"self.loadRegisterValueCallback.emit({currReg - 1}, {child.GetName()}, {child.GetValue()}, ...)")
+								# print(f"self.loadRegisterValueCallback.emit({currReg - 1}, {child.GetName()}, {child.GetValue()}, ...)")
 								self.loadRegisterValueCallback.emit(currReg - 1, child.GetName(), child.GetValue(),
 																	getMemoryValueAtAddress(target, process,
 																							child.GetValue()))

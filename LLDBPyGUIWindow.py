@@ -222,7 +222,7 @@ class LLDBPyGUIWindow(QMainWindow):
 
 	debugger = None
 	driver = None
-	targetBasename = ""
+	# targetBasename = ""
 
 	def __init__(self, driver = None, debugger=None):
 		super().__init__()
@@ -258,7 +258,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		# Set the custom logging callback
 		self.driver.debugger.SetLoggingCallback(self.my_custom_log_callback)
 
-		self.targetBasename = "NG"
+		# self.targetBasename = "NG"
 
 		# self.spinner_overlay = SpinnerOverlay(self)
 		# self.spinner_overlay.show()
@@ -928,7 +928,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			# logDbgC(f"*************>>>> load_clicked => 1.....")
 			# self.driver.debugger = lldb.SBDebugger.Create()
 			self.threadLoad = QThread()
-			self.targetBasename = sSelectedTarget
+			# self.targetBasename = sSelectedTarget
 			self.worker = Worker(self, sSelectedTarget, True)#, ConfigClass.testTargetSource)
 			self.worker.fileToLoad = sSelectedTarget
 			self.worker.loader = ctd.cmbLoader.currentText()

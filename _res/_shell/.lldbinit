@@ -1,0 +1,17 @@
+# export PYTHONPATH="$PYTHONPATH:/Volumes/Data/dev/python/helper/ch.kimhauser.python.helper/:/Applications/Xcode.app/Contents/SharedFrameworks/LLDB.framework/Versions/Current/Resources/Python/"
+
+command script import "/Volumes/Data/dev/python/LLDBPyGUI/prettyflags.py"
+command script import /Volumes/Data/dev/python/LLDBPyGUI/ui/rflagTableWidget.py
+
+command script import /Volumes/Data/dev/python/helper/ch.kimhauser.python.helper/PyQt6/QSwitch.py
+command script import /Volumes/Data/dev/python/helper/ch.kimhauser.python.helper/PyQt6/QHEXTextEdit.py
+command script import /Volumes/Data/dev/python/helper/ch.kimhauser.python.helper/PyQt6/QHEXTextEditSplitter.py
+command script import /Volumes/Data/dev/python/helper/ch.kimhauser.python.helper/PyQt6/QConsoleTextEdit.py
+
+# command script import "/Volumes/Data/dev/_reversing/disassembler/LLDBPyGUI/LLDBPyGUI/LLDBPyGUI.py"
+# command script import "/Volumes/Data/dev/python/LLDBPyGUI/prettyflags.py"
+command script import "/Volumes/Data/dev/python/LLDBPyGUI/decode_rflags.py"
+command script import "/Volumes/Data/dev/python/LLDBPyGUI/LLDBPyGUI.py"
+# command script import "/Volumes/Data/dev/python/pyLLDBGUI/lldbpyGUI.py"
+
+# command script import "/Volumes/Data/dev/python/lldb/helper/lldbhelper.py"
