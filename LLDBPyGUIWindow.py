@@ -1697,7 +1697,7 @@ class LLDBPyGUIWindow(QMainWindow):
 
 			context = frm.GetSymbolContext(lldb.eSymbolContextEverything)
 			self.workerManager.start_loadSourceWorker(self.driver.debugger, ConfigClass.testTargetSource, self.handle_loadSourceFinished, context.GetLineEntry().GetLine())
-			self.tblRegs[3].loadRFlags(self.driver.debugger)
+			self.tblRegs[0].loadRFlags(self.driver.debugger)
 #			self.setResumeActionIcon()
 			self.setWinTitleWithState("Interrupted")
 			self.setResumeActionIcon()
@@ -1872,7 +1872,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		# tabDet2.setContentsMargins(0, 0, 0, 0)
 		tblReg2 = RFlagWidget(parent=None, driver=self.driver)
 		# tabDet2.tblWdgt = tblReg2
-		self.tblRegs.append(tblReg2.tblRFlag)
+		self.tblRegs.insert(0, tblReg2.tblRFlag)
 		# tabDet2.setLayout(QVBoxLayout())
 		# tabDet2.layout().addWidget(tblReg2)
 		# tabDet2.layout().setContentsMargins(0, 0, 0, 0)

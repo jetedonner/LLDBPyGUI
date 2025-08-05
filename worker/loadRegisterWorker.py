@@ -55,7 +55,7 @@ class LoadRegisterWorker(BaseWorker):
 							if self.initTabs:
 								self.signals.loadRegisterValue.emit(currReg - 1, child.GetName(), child.GetValue(), getMemoryValueAtAddress(target, process, child.GetValue()))
 							else:
-								self.signals.updateRegisterValue.emit(currReg - 1, child.GetName(), child.GetValue(), getMemoryValueAtAddress(target, process, child.GetValue()))
+								self.signals.updateRegisterValue.emit(currReg, child.GetName(), child.GetValue(), getMemoryValueAtAddress(target, process, child.GetValue()))
 					
 					QCoreApplication.processEvents()
 					
