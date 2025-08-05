@@ -65,6 +65,21 @@ class CreateTargetDialog(QDialog):
 		self.wdtTarget.setLayout(self.layoutTarget)
 		self.layout.addWidget(self.wdtTarget)
 
+		# LOADER
+		self.wdtLoader = QWidget()
+		self.wdtLoader.setContentsMargins(0, 0, 0, 0)
+		self.layoutLoader = QHBoxLayout()
+		self.layoutLoader.setContentsMargins(0, 0, 0, 0)
+		self.cmbLoader = QComboBox()
+		self.cmbLoader.addItems(["Mach-O Intel 64bits"])
+		self.cmbLoader.setEditable(True)  # 🔑 This enables free text input
+		self.cmbLoader.setPlaceholderText("Select an Loader ...")
+		self.layoutLoader.addWidget(QLabel("Loader:"))
+		self.cmbLoader.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+		self.layoutLoader.addWidget(self.cmbLoader)
+		self.wdtLoader.setLayout(self.layoutLoader)
+		self.layout.addWidget(self.wdtLoader)
+
 		# ARCHITECTURE
 		self.wdtArch = QWidget()
 		self.wdtArch.setContentsMargins(0, 0, 0, 0)

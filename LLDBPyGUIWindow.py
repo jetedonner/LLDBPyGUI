@@ -230,6 +230,8 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.debugger = debugger
 		self.driver = driver
 
+		self.symFuncName = ""
+		
 		self.threadLoad = QThread()
 		self.worker = Worker(self, ConfigClass.testTarget, True, ConfigClass.testTargetSource)
 		self.worker.arch = ConfigClass.testTargetArch
@@ -917,6 +919,8 @@ class LLDBPyGUIWindow(QMainWindow):
 		res = ctd.exec()
 		if res and ctd.txtTarget.text() is not None and ctd.txtTarget.text() != "":
 			self.instCnt = 0
+			self.stubsLoading = False
+			self.symFuncName = ""
 			# self.target, self.process = self.restart_debug_session(self.driver.debugger, self.target, ctd.txtTarget.text())
 			logDbgC(f"*************>>>> load_clicked => 1.....")
 			# self.driver.debugger = lldb.SBDebugger.Create()

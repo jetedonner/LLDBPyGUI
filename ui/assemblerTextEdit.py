@@ -687,6 +687,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 		
 	def resetContent(self):
 		self.setRowCount(0)
+		self.symbolCount = 0
 			
 	def addRow(self, lineNum, address, instr, args, comment, data, dataNg, rip = ""):
 		currRowCount = self.rowCount()
@@ -713,6 +714,7 @@ class DisassemblyTableWidget(BaseTableWidget):
 
 	def addRowString(self, lineNum, address, string=""):
 
+		print(f"addRowString({lineNum}, {address}, {string})")
 		table_widget = self
 		# Get the row count
 		row_count = table_widget.rowCount()
@@ -780,6 +782,7 @@ class AssemblerTextEdit(QWidget):
 		self.table.symbolCount = 0
 	
 	def appendAsmSymbol(self, addr, symbol):
+		print(f"appendAsmSymbol: {symbol}")
 		# Define the text for the spanning cell
 		# text = symbol
 		
