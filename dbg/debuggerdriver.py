@@ -162,6 +162,32 @@ class DebuggerDriver(Thread):
         # # print(f"Stderr redirected to: {stderr_path}")
         return self.target
 
+    def createTargetSWIFT(self, targetImage="./_testtarget/xcode_projects/SwiftREPLTestApp/Debug/SwiftREPLTestApp.app/Contents/MacOS/SwiftREPLTestApp"):
+        # Create debugger instance
+        # debugger = self.mainWin.driver.debugger
+        # debugger = lldb.SBDebugger.Create()
+        self.debugger.SetAsync(False)
+
+        # Create a target from the Swift executable inside the .app bundle
+        self.target = self.debugger.CreateTarget(targetImage)
+
+        if self.target:
+            # Launch the process
+            launch_info = lldb.SBLaunchInfo(None)
+            breakpoint = self.target.BreakpointCreateByName(f"$s16SwiftREPLTestApp0C8DelegateC5$mainyyFZ") # "main")
+            print(f"breakpoint: {breakpoint}")
+            process = self.target.Launch(launch_info, lldb.SBError())
+
+            if process.IsValid():
+                print("Process launched with PID:", process.GetProcessID())
+            else:
+                print("Failed to launch process.")
+        else:
+            print("Failed to create target.")
+
+        return self.target
+        # pass
+
     def attachProcess(self, pid):
         self.handleCommand("process attach -p %d" % pid)
         pass

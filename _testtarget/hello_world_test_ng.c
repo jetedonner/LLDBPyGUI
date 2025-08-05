@@ -1,8 +1,8 @@
 // NO DEBUG-INFO:
-// clang -target x86_64-apple-macos -arch x86_64 -o hello_world_test hello_world_test.c
+// clang -target x86_64-apple-macos -arch x86_64 -o hello_world_test_ng hello_world_test_ng.c -isysroot $(xcrun --show-sdk-path)
 //
 // WITH DEBUG-INFO:
-// clang -g -target x86_64-apple-macos -arch x86_64 -o hello_world_test hello_world_test.c
+// clang -g -target x86_64-apple-macos -arch x86_64 -o hello_world_test_ng hello_world_test_ng.c -isysroot $(xcrun --show-sdk-path)
 //
 // Make executable:
 // chmod u+x hello_world

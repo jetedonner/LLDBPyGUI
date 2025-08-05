@@ -108,6 +108,31 @@ class Worker(QObject):
 
 	def run(self):
 		self._should_stop = False  # Reset before starting
+		# import lldb
+
+		# # Create debugger instance
+		# debugger = self.mainWin.driver.debugger
+		# # debugger = lldb.SBDebugger.Create()
+		# debugger.SetAsync(False)
+		#
+		# # Create a target from the Swift executable inside the .app bundle
+		# target = debugger.CreateTarget("./_testtarget/xcode_projects/SwiftREPLTestApp/Debug/SwiftREPLTestApp.app/Contents/MacOS/SwiftREPLTestApp")
+		#
+		# if target:
+		# 	# Launch the process
+		# 	launch_info = lldb.SBLaunchInfo(None)
+		# 	breakpoint = target.BreakpointCreateByName("main")
+		# 	print(f"breakpoint: {breakpoint}")
+		# 	process = target.Launch(launch_info, lldb.SBError())
+		#
+		# 	if process.IsValid():
+		# 		print("Process launched with PID:", process.GetProcessID())
+		# 	else:
+		# 		print("Failed to launch process.")
+		# else:
+		# 	print("Failed to create target.")
+		#
+		# return
 		self.show_dialog.emit()
 
 		self.logDbg.emit(f"loadNewExecutableFile({self.fileToLoad})...")
@@ -1070,83 +1095,48 @@ class Worker(QObject):
 		self.driver.signals.event_queued.connect(self.mainWin.handle_event_queued)
 		self.driver.start()
 		self.logDbgC.emit(f"createTarget({filename})", DebugLevel.Info)
-		self.target = self.driver.createTarget(filename, self.arch, self.args)
+
+		if is_swift_binary(filename):
+			self.target = self.driver.createTargetSWIFT(filename)
+		else:
+			self.target = self.driver.createTarget(filename, self.arch, self.args)
+
 		self.logDbgC.emit(f"createTarget({filename}) finished ...", DebugLevel.Verbose)
 
 		if self.target.IsValid():
 			self.mainWin.target = self.target
 			self.logDbgC.emit(f"target: {self.target}", DebugLevel.Verbose)
 
-			# for module in self.target.module_iter():
-			# 	for compile_unit in module.compile_unit_iter():
-			# 		for func in compile_unit:
-			# 			if func.IsValid():
-			# 				self.logDbgC.emit(f"Objective-C Function: {func.GetName()}")
-			# for module in self.target.module_iter():
-			# 	for section in module.section_iter():
-			# 		if hasattr(section, 'symbol_in_section_iter'):
-			# 			for symbol in module.symbol_in_section_iter(section):
-			# 				if symbol.IsValid():
-			# 					name = symbol.GetName()
-			# 					start_addr = symbol.GetStartAddress().GetLoadAddress(self.target)
-			# 					self.logDbgC.emit(f"------------------>>>>>>>>>>>>>Symbol: {name}, Address: {hex(start_addr)}", DebugLevel.Verbose)
-
-			if self.mainWin.setHelper.getValue(SettingsValues.BreakpointAtMainFunc):
-				self.driver.debugger.HandleCommand('process launch --stop-at-entry')
-
-				# if len(self.driver.getTarget().modules) > 0:
-				# 	self.logDbg.emit(f"self.driver.getTarget().GetModuleAtIndex(0) (len: {len(self.driver.getTarget().modules)}): {self.driver.getTarget().GetModuleAtIndex(0)}")
-				# 	for idxMod in range(len(self.driver.getTarget().modules)):
-				# 		self.logDbg.emit(
-				# 			f"- self.driver.getTarget().GetModuleAtIndex({idxMod}): {self.driver.getTarget().GetModuleAtIndex(idxMod)}")
-
-				# for module in self.target.module_iter():
-				# 	for section in module.section_iter():
-				# 		for symbol in section.symbol_in_section_iter(section):
-				#
-				# 			if symbol.IsValid():
-				# 				# self.logDbgC.emit(f"Symbol: {symbol.GetName()}, Address: {hex(symbol.GetStartAddress().GetLoadAddress(self.target))}",DebugLevel.Verbose)
-				# 				name = symbol.GetName()
-				# 				# start_addr = symbol.GetStartAddress().GetLoadAddress(self.target)
-				# 				self.logDbgC.emit(f"===================>>>>>>>>>>>>> Symbol: {name}, Address: hex(start_addr)", DebugLevel.Verbose)
-				# for module in self.target.module_iter():
-				# 	for section in module.section_iter():
-				# 		if hasattr(section, 'symbol_in_section_iter'):
-				# 			for symbol in module.symbol_in_section_iter(section):
-				# 				if symbol.IsValid():
-				# 					name = symbol.GetName()
-				# 					start_addr = symbol.GetStartAddress().GetLoadAddress(self.target)
-				# 					self.logDbgC.emit(
-				# 						f"------------------>>>>>>>>>>>>>Symbol: {name}, Address: {hex(start_addr)}",
-				# 						DebugLevel.Verbose)
-
-				main_oep, symbol = find_main(self.driver.debugger)
-				if self.mainWin.setHelper.getValue(SettingsValues.BreakpointAtMainFunc):
-					# self.driver.debugger.HandleCommand(f'breakpoint set -a {hex(main_oep)} -N kimon')
-					bp = self.driver.getTarget().BreakpointCreateByAddress(main_oep) # .BreakpointCreateByName("main")
-					for bl in bp:
-						self.logDbgC.emit(f"bl.location: {bl}", DebugLevel.Verbose)
-					self.driver.mainID = bp.GetID()
-					self.driver.debugger.HandleCommand(f'br name add -N main {bp.GetID()}')
-					bp.SetScriptCallbackFunction("main_hit")
-					self.logDbgC.emit(f'breakpoint set "main": {bp}', DebugLevel.Verbose)
-					# self.driver.debugger.HandleCommand('breakpoint set --name main')
-
-				# Set breakpoint on scanf
-				if	self.mainWin.setHelper.getValue(SettingsValues.AutoBreakpointForScanf):
-					bp = self.driver.getTarget().BreakpointCreateByName("scanf")
-					for bl in bp:
-						self.logDbgC(f"bl.location: {bl}", DebugLevel.Verbose)
-						
-					self.driver.scanfID = bp.GetID()
-					self.driver.debugger.HandleCommand(f'br name add -N scanf {bp.GetID()}')
-					bp.SetScriptCallbackFunction("on_scanf_hit")
-					self.logDbgC.emit(f'breakpoint set "scanf": {bp}', DebugLevel.Verbose)
-
-				self.driver.debugger.HandleCommand('breakpoint set --name main')
-				# self.driver.debugger.HandleCommand(f'br list')
-				self.driver.debugger.HandleCommand('process continue')
-
+			# if self.mainWin.setHelper.getValue(SettingsValues.BreakpointAtMainFunc):
+			# 	self.driver.debugger.HandleCommand('process launch --stop-at-entry')
+			#
+			# 	main_oep, symbol = find_main(self.driver.debugger, "___debug_blank_executor_main")
+			# 	if main_oep != 0 and self.mainWin.setHelper.getValue(SettingsValues.BreakpointAtMainFunc):
+			# 		# self.driver.debugger.HandleCommand(f'breakpoint set -a {hex(main_oep)} -N kimon')
+			# 		bp = self.driver.getTarget().BreakpointCreateByAddress(main_oep) # .BreakpointCreateByName("main")
+			# 		for bl in bp:
+			# 			self.logDbgC.emit(f"bl.location: {bl}", DebugLevel.Verbose)
+			# 		self.driver.mainID = bp.GetID()
+			# 		self.driver.debugger.HandleCommand(f'br name add -N main {bp.GetID()}')
+			# 		bp.SetScriptCallbackFunction("main_hit")
+			# 		self.logDbgC.emit(f'breakpoint set "main": {bp}', DebugLevel.Verbose)
+			# 		# self.driver.debugger.HandleCommand('breakpoint set --name main')
+			#
+			# 	# Set breakpoint on scanf
+			# 	if	self.mainWin.setHelper.getValue(SettingsValues.AutoBreakpointForScanf):
+			# 		bp = self.driver.getTarget().BreakpointCreateByName("scanf")
+			# 		for bl in bp:
+			# 			self.logDbgC.emit(f"bl.location: {bl}", DebugLevel.Verbose)
+			#
+			# 		self.driver.scanfID = bp.GetID()
+			# 		self.driver.debugger.HandleCommand(f'br name add -N scanf {bp.GetID()}')
+			# 		bp.SetScriptCallbackFunction("on_scanf_hit")
+			# 		self.logDbgC.emit(f'breakpoint set "scanf": {bp}', DebugLevel.Verbose)
+			#
+			# 	self.driver.debugger.HandleCommand('breakpoint set --name main')
+			# 	# self.driver.debugger.HandleCommand(f'br list')
+			# 	self.driver.debugger.HandleCommand('process continue')
+			# self.driver.debugger.HandleCommand('process continue')
 			self.loadTarget()
 		else:
 			self.logDbgC.emit(f"Error creating target!!!", DebugLevel.Verbose)

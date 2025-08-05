@@ -1,8 +1,8 @@
 // NO DEBUG-INFO:
-// clang -target x86_64-apple-macos -arch x86_64 -o a_hello_world_test_ext a_hello_world_test_ext.c
+// clang -target x86_64-apple-macos -arch x86_64 -o a_hello_world_test_ext a_hello_world_test_ext.c -isysroot $(xcrun --show-sdk-path)
 //
 // WITH DEBUG-INFO:
-// clang -g -target x86_64-apple-macos -arch x86_64 -o a_hello_world_test_ext a_hello_world_test_ext.c
+// clang -g -target x86_64-apple-macos -arch x86_64 -o a_hello_world_test_ext a_hello_world_test_ext.c -isysroot $(xcrun --show-sdk-path)
 //
 // Make executable:
 // chmod u+x a_hello_world_test_ext

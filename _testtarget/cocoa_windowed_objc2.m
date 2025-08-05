@@ -1,8 +1,8 @@
 // NO DEBUG-INFO:
-// clang -target x86_64-apple-macos -arch x86_64 -o cocoa_windowed_objc2 cocoa_windowed_objc2.m
+// clang -target x86_64-apple-macos -arch x86_64 -o cocoa_windowed_objc2 cocoa_windowed_objc2.m -isysroot $(xcrun --show-sdk-path)
 //
 // WITH DEBUG-INFO:
-// clang -g -target x86_64-apple-macos -arch x86_64 -o cocoa_windowed_objc2 cocoa_windowed_objc2.m
+// clang -g -target x86_64-apple-macos -arch x86_64 -o cocoa_windowed_objc2 cocoa_windowed_objc2.m -isysroot $(xcrun --show-sdk-path)
 //
 // Make executable:
 // chmod u+x amicable_numbers
@@ -10,7 +10,7 @@
 // Codesign for MacOS
 // codesign --verbose=4 --timestamp --strict --options runtime -s "<YOUR SIGNING CERTIFICATE NAME>" amicable_numbers --force
 
-// Compile with: clang -framework Cocoa -o myapp myapp.c
+// Compile with: clang -framework Cocoa -o myapp myapp.c -isysroot $(xcrun --show-sdk-path)
 // main.mm
 // A simple macOS GUI application using Objective-C++ and Cocoa.
 // This file must be compiled as Objective-C++ (e.g., with a .mm extension).

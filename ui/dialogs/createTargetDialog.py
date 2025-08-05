@@ -86,7 +86,7 @@ class CreateTargetDialog(QDialog):
 		self.layoutArch = QHBoxLayout()
 		self.layoutArch.setContentsMargins(0, 0, 0, 0)
 		self.cmbArch = QComboBox()
-		self.cmbArch.addItems(["x86_64-apple-macosx15.1.1", "ARM64", "x86_64", "AARCH"])
+		self.cmbArch.addItems(["x86_64-apple-macosx15.1.1", "arm64-apple-macosx15.1.0", "ARM64", "x86_64", "AARCH"])
 		self.cmbArch.setEditable(True)  # 🔑 This enables free text input
 		self.cmbArch.setPlaceholderText("Select an architecture ...")
 		self.layoutArch.addWidget(QLabel("Arch:"))

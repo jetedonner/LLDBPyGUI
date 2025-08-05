@@ -252,6 +252,11 @@ def showSaveFileDialog(app=None, nameFilter="JSON (*.json)"):
 	
 def showOpenFileDialog(path="./"):
 	dialog = QFileDialog(None, "Select executable or library", "./_testtarget", "All Files (*.*)")
+
+	dialog.setOption(QFileDialog.Option.DontUseNativeDialog, True)
+	# dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+	# dialog.setNameFilter("All Files (*)")
+
 	dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
 	dialog.setNameFilter("Executables (*.exe *.com *.bat *);;Libraries (*.dll *.so *.dylib)")
 	

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import subprocess
 import lldb
 from ctypes import *
 from lib.settings import *
@@ -386,16 +387,16 @@ class MACH_HEADER(Structure):
 		("flags",           c_uint)
 	]
 
-def find_main(debugger):
+def find_main(debugger, mainFunctionName="main"):
 	target = debugger.GetSelectedTarget()
 	if not target:
 		logDbgC(f"No target loaded")
-		return 0
+		return 0, None
 
-	main_symbol = target.FindFunctions("main")
+	main_symbol = target.FindFunctions(mainFunctionName)
 	if main_symbol.GetSize() == 0:
 		logDbgC(f"Could not find 'main' function")
-		return 0
+		return 0, None
 
 	symbol_context = main_symbol.GetContextAtIndex(0)
 	address = symbol_context.GetSymbol().GetStartAddress()
@@ -825,6 +826,16 @@ def detect_objc(module):
 	# 			langs.add("Swift")
 	# return langs
 	return False
+
+
+def is_swift_binary(path):
+	result = subprocess.run(["nm", path], capture_output=True, text=True)
+	return "swift_" in result.stdout
+
+# if is_swift_binary("/path/to/YourAppExecutable"):
+# 	print("This binary uses Swift.")
+# else:
+# 	print("No Swift symbols found.")
 
 def is_hex_string(s):
 	try:

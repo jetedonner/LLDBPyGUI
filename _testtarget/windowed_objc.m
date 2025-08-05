@@ -1,8 +1,8 @@
 // NO DEBUG-INFO:
-// clang -target x86_64-apple-macos -arch x86_64 -o amicable_numbers amicable_numbers.c
+// clang -target x86_64-apple-macos -arch x86_64 -o amicable_numbers amicable_numbers.c -isysroot $(xcrun --show-sdk-path)
 //
 // WITH DEBUG-INFO:
-// clang -g -target x86_64-apple-macos -arch x86_64 -o amicable_numbers amicable_numbers.c
+// clang -g -target x86_64-apple-macos -arch x86_64 -o amicable_numbers amicable_numbers.c -isysroot $(xcrun --show-sdk-path)
 //
 // Make executable:
 // chmod u+x amicable_numbers
