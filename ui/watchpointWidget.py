@@ -240,71 +240,74 @@ class WatchpointsTableWidget(BaseTableWidget):
 		pass
 		
 	def contextMenuEvent(self, event):
-		pass
-		if self.item(self.selectedItems()[0].row(), 0).isBPEnabled:
-			self.actionEnableWP.setText("Disable Watchpoint")
-		else:
-			self.actionEnableWP.setText("Enable Watchpoint")
-			
-#		for i in dir(event):
-#			print(i)
-#			print(event.pos())
-#			print(self.itemAt(event.pos().x(), event.pos().y()))
-#			print(self.selectedItems())
-		self.context_menu.exec(event.globalPos())
+		if len(self.selectedItems()) > 0:
+			if self.item(self.selectedItems()[0].row(), 0).isBPEnabled:
+				self.actionEnableWP.setText("Disable Watchpoint")
+			else:
+				self.actionEnableWP.setText("Enable Watchpoint")
+
+	#		for i in dir(event):
+	#			print(i)
+	#			print(event.pos())
+	#			print(self.itemAt(event.pos().x(), event.pos().y()))
+	#			print(self.selectedItems())
+			self.context_menu.exec(event.globalPos())
 		
 	def handle_deleteWP(self):
-		row = self.selectedItems()[0].row()
-		selItem = self.item(row, 1)
-		print(f"{selItem.text()[1:]}")
-		if self.driver.getTarget().DeleteWatchpoint(int(selItem.text()[1:])):
-			self.removeRow(row)
-		else:
-			print(f"Could not delete Watchpoint #{selItem.text()[1:]}")
+		if len(self.selectedItems()) > 0:
+			row = self.selectedItems()[0].row()
+			selItem = self.item(row, 1)
+			print(f"{selItem.text()[1:]}")
+			if self.driver.getTarget().DeleteWatchpoint(int(selItem.text()[1:])):
+				self.removeRow(row)
+			else:
+				print(f"Could not delete Watchpoint #{selItem.text()[1:]}")
 		
 	def handle_enableWP(self):
 #		item.enableBP(state)
-		selItem = self.item(self.selectedItems()[0].row(), 0)
-		selItem.isBPEnabled = not selItem.isBPEnabled
-		if self.item(self.selectedItems()[0].row(), 0).isBPEnabled:
-#			self.actionEnableWP.setText("Disable Watchpoint")
-#			self.item(self.selectedItems()[0].row(), 0).isBPEnabled
-			selItem.setIcon(ConfigClass.iconEyeRed)
-		else:
-			selItem.setIcon(ConfigClass.iconEyeGrey)
+		if len(self.selectedItems()) > 0:
+			selItem = self.item(self.selectedItems()[0].row(), 0)
+			selItem.isBPEnabled = not selItem.isBPEnabled
+			if self.item(self.selectedItems()[0].row(), 0).isBPEnabled:
+	#			self.actionEnableWP.setText("Disable Watchpoint")
+	#			self.item(self.selectedItems()[0].row(), 0).isBPEnabled
+				selItem.setIcon(ConfigClass.iconEyeRed)
+			else:
+				selItem.setIcon(ConfigClass.iconEyeGrey)
 		
 	def item_changed_handler(self, row, col):
-		if not self.ommitCellChanged:
-			if col == 6: # Type changed
-				print(f"def item_changed_handler(self, row, col):")
-#				self.wpHelper.SetCondition
-				target = self.driver.getTarget()
-				wpFound = False
-				for i in range(target.GetNumWatchpoints()):
-					wp_cur = target.GetWatchpointAtIndex(i)
-					if "#" + str(wp_cur.GetID()) == self.item(self.selectedItems()[0].row(), 1).text():
-						wp_cur.SetCondition(self.item(self.selectedItems()[0].row(), col).text())
-						print(f"SETTING TYPE: {wp_cur}")
-						break
+		if len(self.selectedItems()) > 0:
+			if not self.ommitCellChanged:
+				if col == 6: # Type changed
+					print(f"def item_changed_handler(self, row, col):")
+	#				self.wpHelper.SetCondition
+					target = self.driver.getTarget()
+					wpFound = False
+					for i in range(target.GetNumWatchpoints()):
+						wp_cur = target.GetWatchpointAtIndex(i)
+						if "#" + str(wp_cur.GetID()) == self.item(self.selectedItems()[0].row(), 1).text():
+							wp_cur.SetCondition(self.item(self.selectedItems()[0].row(), col).text())
+							print(f"SETTING TYPE: {wp_cur}")
+							break
+					pass
+				elif col == 8: # Name changed
+					target = self.driver.getTarget()
+					wpFound = False
+					for i in range(target.GetNumWatchpoints()):
+						wp_cur = target.GetWatchpointAtIndex(i)
+						if "#" + str(wp_cur.GetID()) == self.item(self.selectedItems()[0].row(), 1).text():
+							wp_cur.SetIgnoreCount(int(self.item(self.selectedItems()[0].row(), col).text()))
+							print(f"SETTING IGNORE-COUNT: {wp_cur}")
+							break
+				elif col == 9: # Name changed
+					target = self.driver.getTarget()
+					wpFound = False
+					for i in range(target.GetNumWatchpoints()):
+						wp_cur = target.GetWatchpointAtIndex(i)
+						if "#" + str(wp_cur.GetID()) == self.item(self.selectedItems()[0].row(), 1).text():
+							wp_cur.SetCondition(self.item(self.selectedItems()[0].row(), col).text())
+							break
 				pass
-			elif col == 8: # Name changed
-				target = self.driver.getTarget()
-				wpFound = False
-				for i in range(target.GetNumWatchpoints()):
-					wp_cur = target.GetWatchpointAtIndex(i)
-					if "#" + str(wp_cur.GetID()) == self.item(self.selectedItems()[0].row(), 1).text():
-						wp_cur.SetIgnoreCount(int(self.item(self.selectedItems()[0].row(), col).text()))
-						print(f"SETTING IGNORE-COUNT: {wp_cur}")
-						break
-			elif col == 9: # Name changed
-				target = self.driver.getTarget()
-				wpFound = False
-				for i in range(target.GetNumWatchpoints()):
-					wp_cur = target.GetWatchpointAtIndex(i)
-					if "#" + str(wp_cur.GetID()) == self.item(self.selectedItems()[0].row(), 1).text():
-						wp_cur.SetCondition(self.item(self.selectedItems()[0].row(), col).text())
-						break
-			pass
 	
 	def reloadWatchpoints(self, initTable = True):
 		self.workerManager.start_loadWatchpointsWorker(self.handle_loadWatchpointsFinished, self.handle_loadWatchpointValue, self.handle_updateWatchpointValue, initTable)

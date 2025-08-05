@@ -229,7 +229,7 @@ class LLDBListener(QtCore.QObject, Thread):
 					logDbgC(f'Event data flavor: {event.GetDataFlavor()}')
 
 					logDbgC(f"self.gotEvent.emit(event)!!!")
-					# self.gotEvent.emit(event)
+					self.gotEvent.emit(event)
 					# print("GOT NEW EVENT LISTENER!!")
 					if event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
 						# continue

@@ -109,7 +109,11 @@ class QHistoryLineEdit(QLineEdit):
 		if event.key() in (Qt.Key.Key_Up, Qt.Key.Key_Down):
 #			print("Up or down key pressed")
 			if event.key() == Qt.Key.Key_Up:
-				if self.currCmd > 0:
+				if self.currCmd == -1:
+					if len(self.lstCommands) > 0:
+						self.currCmd = len(self.lstCommands) - 1
+						self.setText(self.lstCommands[self.currCmd])
+				elif self.currCmd > 0:
 					self.currCmd -= 1
 					if self.currCmd < len(self.lstCommands):
 						self.setText(self.lstCommands[self.currCmd])
@@ -142,7 +146,7 @@ class QHistoryLineEdit(QLineEdit):
 					self.currCmd = len(self.lstCommands) - 1
 			else:
 				self.lstCommands.append(newCommand)
-				self.currCmd = len(self.lstCommands) - 1
+				self.currCmd = -1 #len(self.lstCommands) - 1
 			if self.persistentHistory:
 				self.save_history(self.lstCommands)
 		return newCommand

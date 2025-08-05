@@ -1107,35 +1107,35 @@ class Worker(QObject):
 			self.mainWin.target = self.target
 			self.logDbgC.emit(f"target: {self.target}", DebugLevel.Verbose)
 
-			# if self.mainWin.setHelper.getValue(SettingsValues.BreakpointAtMainFunc):
-			# 	self.driver.debugger.HandleCommand('process launch --stop-at-entry')
-			#
-			# 	main_oep, symbol = find_main(self.driver.debugger, "___debug_blank_executor_main")
-			# 	if main_oep != 0 and self.mainWin.setHelper.getValue(SettingsValues.BreakpointAtMainFunc):
-			# 		# self.driver.debugger.HandleCommand(f'breakpoint set -a {hex(main_oep)} -N kimon')
-			# 		bp = self.driver.getTarget().BreakpointCreateByAddress(main_oep) # .BreakpointCreateByName("main")
-			# 		for bl in bp:
-			# 			self.logDbgC.emit(f"bl.location: {bl}", DebugLevel.Verbose)
-			# 		self.driver.mainID = bp.GetID()
-			# 		self.driver.debugger.HandleCommand(f'br name add -N main {bp.GetID()}')
-			# 		bp.SetScriptCallbackFunction("main_hit")
-			# 		self.logDbgC.emit(f'breakpoint set "main": {bp}', DebugLevel.Verbose)
-			# 		# self.driver.debugger.HandleCommand('breakpoint set --name main')
-			#
-			# 	# Set breakpoint on scanf
-			# 	if	self.mainWin.setHelper.getValue(SettingsValues.AutoBreakpointForScanf):
-			# 		bp = self.driver.getTarget().BreakpointCreateByName("scanf")
-			# 		for bl in bp:
-			# 			self.logDbgC.emit(f"bl.location: {bl}", DebugLevel.Verbose)
-			#
-			# 		self.driver.scanfID = bp.GetID()
-			# 		self.driver.debugger.HandleCommand(f'br name add -N scanf {bp.GetID()}')
-			# 		bp.SetScriptCallbackFunction("on_scanf_hit")
-			# 		self.logDbgC.emit(f'breakpoint set "scanf": {bp}', DebugLevel.Verbose)
-			#
-			# 	self.driver.debugger.HandleCommand('breakpoint set --name main')
-			# 	# self.driver.debugger.HandleCommand(f'br list')
-			# 	self.driver.debugger.HandleCommand('process continue')
+			if self.mainWin.setHelper.getValue(SettingsValues.BreakpointAtMainFunc):
+				self.driver.debugger.HandleCommand('process launch --stop-at-entry')
+
+				main_oep, symbol = find_main(self.driver.debugger)#, "___debug_blank_executor_main")
+				if main_oep != 0 and self.mainWin.setHelper.getValue(SettingsValues.BreakpointAtMainFunc):
+					# self.driver.debugger.HandleCommand(f'breakpoint set -a {hex(main_oep)} -N kimon')
+					bp = self.driver.getTarget().BreakpointCreateByAddress(main_oep) # .BreakpointCreateByName("main")
+					for bl in bp:
+						self.logDbgC.emit(f"bl.location: {bl}", DebugLevel.Verbose)
+					self.driver.mainID = bp.GetID()
+					self.driver.debugger.HandleCommand(f'br name add -N main {bp.GetID()}')
+					bp.SetScriptCallbackFunction("main_hit")
+					self.logDbgC.emit(f'breakpoint set "main": {bp}', DebugLevel.Verbose)
+					# self.driver.debugger.HandleCommand('breakpoint set --name main')
+
+				# Set breakpoint on scanf
+				if	self.mainWin.setHelper.getValue(SettingsValues.AutoBreakpointForScanf):
+					bp = self.driver.getTarget().BreakpointCreateByName("scanf")
+					for bl in bp:
+						self.logDbgC.emit(f"bl.location: {bl}", DebugLevel.Verbose)
+
+					self.driver.scanfID = bp.GetID()
+					self.driver.debugger.HandleCommand(f'br name add -N scanf {bp.GetID()}')
+					bp.SetScriptCallbackFunction("on_scanf_hit")
+					self.logDbgC.emit(f'breakpoint set "scanf": {bp}', DebugLevel.Verbose)
+
+				self.driver.debugger.HandleCommand('breakpoint set --name main')
+				# self.driver.debugger.HandleCommand(f'br list')
+				self.driver.debugger.HandleCommand('process continue')
 			# self.driver.debugger.HandleCommand('process continue')
 			self.loadTarget()
 		else:

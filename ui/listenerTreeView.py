@@ -163,6 +163,7 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 			sectionNode.setIcon(0, ConfigClass.iconAnon)
 			return
 		elif SBWatchpoint.EventIsWatchpointEvent(event):
+			print(f"SBWatchpoint.EventIsWatchpointEvent(event) ....")
 			self.window().tabWatchpoints.reloadWatchpoints(False)
 			addEventToListenerTreeItem(sectionNode, event)
 #			sectionNode.setIcon(0, ConfigClass.iconGlasses)
