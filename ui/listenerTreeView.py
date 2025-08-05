@@ -204,7 +204,7 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 				process = self.driver.getTarget().GetProcess()
 				if process.GetState() == lldb.eStateRunning : #or process.GetState() == lldb.eStateStepping:
 					self.window().setWinTitleWithState("Running")
-					logDbgC(f"event  .....")
+					# logDbgC(f"event  .....")
 					self.window().txtMultiline.clearPC()
 					self.window().setResumeActionIcon(False)
 					pass

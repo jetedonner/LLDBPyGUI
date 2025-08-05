@@ -231,6 +231,17 @@ class DisassemblyTableWidget(BaseTableWidget):
 				break
 		pass
 
+	def getLineNum(self, address):
+		for i in range(self.rowCount()):
+			if self.item(i, COL_ADDRESS) != None and self.item(i, COL_ADDRESS).text() == address:
+				# item = self.item(i, COL_BP)
+				# #				item.toggleBPEnabled()
+				# logDbgC(f"assemblerTextEdit.enableBP...")
+				# item.enableBP(enabled)
+				# lib.utils.setStatusBar(f"Enabled breakpoint @: 0x{address:X} ({enabled})")
+				return i
+		return None
+
 	def getRowForAddress(self, address):
 		for i in range(self.rowCount()):
 			if self.item(i, COL_ADDRESS) != None and self.item(i, COL_ADDRESS).text() == address:
@@ -885,7 +896,7 @@ class AssemblerTextEdit(QWidget):
 	
 	currentPCRow = -1
 	def clearPC(self):
-		logDbgC(f"clearPC ...")
+		# logDbgC(f"clearPC ...")
 		if self.table.item(self.currentPCRow, COL_PC) != None:
 			if self.table.item(self.currentPCRow, COL_PC).text().endswith("I"):
 				self.table.item(self.currentPCRow, COL_PC).setText('I')
@@ -903,7 +914,7 @@ class AssemblerTextEdit(QWidget):
 		pass
 		
 	def setPC(self, pc, pushLocation = False):
-		logDbgC(f"pc: {getAddrStr(pc)}")
+		# logDbgC(f"pc: {getAddrStr(pc)}")
 		if isinstance(pc, str):
 			currentPC = pc.lower()
 		else:

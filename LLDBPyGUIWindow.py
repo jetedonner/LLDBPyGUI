@@ -1958,7 +1958,7 @@ class LLDBPyGUIWindow(QMainWindow):
 				# line_number = line_entry.GetLine()
 				line_number = frame.GetLineEntry().GetLine()
 				#  print(f"line_entry: {line_entry} / line_number: {line_number}")
-				logDbgC(f"line_number: {line_number}")
+				# logDbgC(f"line_number: {line_number}")
 				if line_number != 0xFFFFFFFF and line_number >= 0:
 					self.txtSource.scroll_to_lineNG(line_number)
 				self.tabWidgetDbg.setCurrentIndex(currTabIdx)

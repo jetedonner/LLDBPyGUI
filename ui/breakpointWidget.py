@@ -387,13 +387,13 @@ class BreakpointTreeWidget(BaseTreeWidget):
 		# print(f'ITEM CHANGED => {item.text(col)} / {col}')
 		if col == 6 and item.childCount() == 0:
 			target = self.window().driver.getTarget()
-			logDbgC(f"handle_itemChanged(col == 6): target.GetNumBreakpoints() == {target.GetNumBreakpoints()}")
+			# logDbgC(f"handle_itemChanged(col == 6): target.GetNumBreakpoints() == {target.GetNumBreakpoints()}")
 			found = False
 			for i in range(target.GetNumBreakpoints()):
 				bp = target.GetBreakpointAtIndex(i)
-				logDbgC(f"target.GetBreakpointAtIndex(i) == {target.GetBreakpointAtIndex(i)} / bp: {bp}")
+				# logDbgC(f"target.GetBreakpointAtIndex(i) == {target.GetBreakpointAtIndex(i)} / bp: {bp}")
 				for bl in bp:
-					logDbgC(f"bl == {bl}")
+					# logDbgC(f"bl == {bl}")
 					if item.text(0) == str(bp.GetID()) + "." + str(bl.GetID()):
 						bp.SetScriptCallbackFunction(item.text(col))
 						found = True

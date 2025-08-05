@@ -164,7 +164,7 @@ class RFlagTableWidget(BaseTableWidget):
 
 		self.rflags_value = rflags_reg.GetValueAsUnsigned()
 		# rflags_value = self.rflags_value
-		logDbgC(f"rflags_value: {hex(self.rflags_value)}", DebugLevel.Verbose)
+		# logDbgC(f"rflags_value: {hex(self.rflags_value)}", DebugLevel.Verbose)
 
 		# flags = []
 
@@ -177,11 +177,11 @@ class RFlagTableWidget(BaseTableWidget):
 		self.addRow("hex", hex(self.rflags_value), "Complete Flag with all bits as HEX")
 		self.addRow("binary", format(self.rflags_value, 'b'), "Complete Flag with all bits as BINARY")
 		self.addRow("quick", pfl_cmd(get_main_window().driver.debugger, "", res, []), "Quickview all flags")
-		logDbgC(
-			f"rFlags / eFlags:\n- Unsigned: {hex(self.rflags_value)} / {self.rflags_value}\n- Binary: " + format(
-				self.rflags_value, 'b') + "\n- Flags: " + pfl_cmd(get_main_window().driver.debugger, "", res,
-																		   []), DebugLevel.Verbose )
-		logDbgC(f"RFLAGS: 0x{self.rflags_value:016x}", DebugLevel.Verbose)
+		# logDbgC(
+		# 	f"rFlags / eFlags:\n- Unsigned: {hex(self.rflags_value)} / {self.rflags_value}\n- Binary: " + format(
+		# 		self.rflags_value, 'b') + "\n- Flags: " + pfl_cmd(get_main_window().driver.debugger, "", res,
+		# 																   []), DebugLevel.Verbose )
+		# logDbgC(f"RFLAGS: 0x{self.rflags_value:016x}", DebugLevel.Verbose)
 
 		self.addRow("", "", "")
 		self.addRow("FLAG DETAILS:", "", "")

@@ -223,12 +223,13 @@ class LLDBListener(QtCore.QObject, Thread):
 			logDbgC(f"################# ====>>>>> WaitForEvent (1)")
 			if self.listener.WaitForEvent(lldb.UINT32_MAX, event):
 				if not self.should_quit:
-					logDbgC(f'GOT-NEW-EVENT: {event} / {event.GetType()} / {lldb.SBProcess.eBroadcastBitSTDOUT} ====>>> OLD LISTENER')
 					desc = get_description(event)
-					logDbgC(f'Event description: {desc}')
-					logDbgC(f'Event data flavor: {event.GetDataFlavor()}')
+					logDbgC(f'GOT-NEW-EVENT: {event}\nEvent data flavor: {event.GetDataFlavor()}\nEvent description: {desc}\n- {event.GetType()} / {lldb.SBProcess.eBroadcastBitSTDOUT} ====>>> OLD LISTENER')
 
-					logDbgC(f"self.gotEvent.emit(event)!!!")
+					# logDbgC(f'Event description: {desc}')
+					# logDbgC(f'Event data flavor: {event.GetDataFlavor()}')
+
+					# logDbgC(f"self.gotEvent.emit(event)!!!")
 					self.gotEvent.emit(event)
 					# print("GOT NEW EVENT LISTENER!!")
 					if event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:

@@ -143,7 +143,8 @@ class QHistoryLineEdit(QLineEdit):
 			if len(self.lstCommands) > 0:
 				if self.lstCommands[len(self.lstCommands) - 1] != newCommand:
 					self.lstCommands.append(newCommand)
-					self.currCmd = len(self.lstCommands) - 1
+					# self.currCmd = len(self.lstCommands) - 1
+					self.currCmd = -1  # len(self.lstCommands) - 1
 			else:
 				self.lstCommands.append(newCommand)
 				self.currCmd = -1 #len(self.lstCommands) - 1
