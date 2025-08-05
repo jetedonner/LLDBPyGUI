@@ -1536,6 +1536,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			self.resetGUI()
 			state = 'exited'
 			self.should_quit = True
+			self.worker.listener.should_quit = True
 			return
 		thread = process.selected_thread
 		# print('Process event: %s, reason: %d' % (state, thread.GetStopReason()))

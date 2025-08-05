@@ -163,6 +163,7 @@ class Worker(QObject):
 
 	def stop(self):
 		self._should_stop = True
+		self.listener.should_quit = True
 
 	def handle_endLoadControlFlowCallback(self, success):
 		# self.logDbg.emit(f"Result load control flow: {success}")

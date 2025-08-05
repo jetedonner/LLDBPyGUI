@@ -222,7 +222,7 @@ class LLDBListener(QtCore.QObject, Thread):
 			# print("GOING to WAIT 4 EVENT...")
 			logDbgC(f"################# ====>>>>> WaitForEvent (1)")
 			if self.listener.WaitForEvent(lldb.UINT32_MAX, event):
-				if not self.should_quit:
+				if not self.should_quit and event is not None:
 					desc = get_description(event)
 					logDbgC(f'GOT-NEW-EVENT: {event}\nEvent data flavor: {event.GetDataFlavor()}\nEvent description: {desc}\n- {event.GetType()} / {lldb.SBProcess.eBroadcastBitSTDOUT} ====>>> OLD LISTENER')
 
