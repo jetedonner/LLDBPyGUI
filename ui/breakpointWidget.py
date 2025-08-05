@@ -117,7 +117,7 @@ class BreakpointTreeWidget(BaseTreeWidget):
 		self.actionGoToAddress = self.context_menu.addAction("GoTo address")
 		self.actionGoToAddress.triggered.connect(self.handle_gotoAddr)
 		self.context_menu.addSeparator()
-		self.actionToggleSingleShot = self.context_menu.addAction("Toggle single shot")
+		self.actionToggleSingleShot = self.context_menu.addAction("Toggle one shot")
 		self.actionToggleSingleShot.triggered.connect(self.handle_toggleSingleShot)
 
 		self.setFont(ConfigClass.font)

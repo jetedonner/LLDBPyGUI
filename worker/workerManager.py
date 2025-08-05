@@ -88,6 +88,7 @@ class WorkerManager(QObject):
 		self.threadpool.start(self.workerExecCommand)
 		
 	def start_loadSourceWorker(self, debugger, sourceFile, handle_loadSourceFinished, lineNum = 1):
+		print(f"start_loadSourceWorker({sourceFile})")
 		self.workerLoadSource = LoadSourceCodeWorker(debugger, sourceFile, lineNum)
 		self.workerLoadSource.signals.finished.connect(handle_loadSourceFinished)
 		

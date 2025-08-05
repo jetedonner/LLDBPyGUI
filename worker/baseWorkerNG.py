@@ -167,6 +167,7 @@ class Worker(QObject):
 		self.isLoadSourceCodeActive = True
 
 		self.sourceFile = sourcefileToUse = filename if filename != "" else self.sourceFile
+		print(f"RUN LOAD SOURCECODE: {self.sourceFile} ...")
 		context = self.frame.GetSymbolContext(lldb.eSymbolContextEverything)
 		self.lineNum = context.GetLineEntry().GetLine()
 		# Create the filespec for 'main.c'.

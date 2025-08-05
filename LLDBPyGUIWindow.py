@@ -231,7 +231,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.driver = driver
 
 		self.symFuncName = ""
-		
+
 		self.threadLoad = QThread()
 		self.worker = Worker(self, ConfigClass.testTarget, True, ConfigClass.testTargetSource)
 		self.worker.arch = ConfigClass.testTargetArch
@@ -1700,7 +1700,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			self.loadStacktrace()
 
 			context = frm.GetSymbolContext(lldb.eSymbolContextEverything)
-			self.workerManager.start_loadSourceWorker(self.driver.debugger, ConfigClass.testTargetSource, self.handle_loadSourceFinished, context.GetLineEntry().GetLine())
+			self.workerManager.start_loadSourceWorker(self.driver.debugger, self.worker.sourceFile, self.handle_loadSourceFinished, context.GetLineEntry().GetLine())
 			self.tblRegs[0].loadRFlags(self.driver.debugger)
 #			self.setResumeActionIcon()
 			self.setWinTitleWithState("Interrupted")
