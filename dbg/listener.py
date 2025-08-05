@@ -233,12 +233,15 @@ class LLDBListener(QtCore.QObject, Thread):
 					# print("GOT NEW EVENT LISTENER!!")
 					if event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
 						# continue
+						# p (event)
 						print("STD OUT EVENT LISTENER!!!")
+						sys.stdout.flush()
 						stdoutNG = lldb.SBProcess.GetProcessFromEvent(event).GetSTDOUT(2048)
 						# print(SBProcess.GetProcessFromEvent(event))
 						print(f"############# ===========>>>>>>>>>>>>> stdoutNG IS: {stdoutNG}")
+
 						continue
-					if SBCommandInterpreter.EventIsCommandInterpreterEvent(event):
+					elif SBCommandInterpreter.EventIsCommandInterpreterEvent(event):
 						print("GOT COMMANDLINE EVENT!!!")
 					elif event.GetType() == SBThread.eBroadcastBitThreadSuspended:
 						print('THREAD SUSPENDED: %s' % str(event))
@@ -249,9 +252,6 @@ class LLDBListener(QtCore.QObject, Thread):
 							self.suspended = False
 					elif event.GetType() == SBTarget.eBroadcastBitModulesLoaded:
 						print('Module load: %s' % str(event))
-
-
-
 					elif event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
 						# continue
 						print("STD OUT EVENT LISTENER!!!")

@@ -81,6 +81,7 @@ class Worker(QObject):
 		self._should_stop = False
 		self.mainWin = mainWinToUse
 		self.fileToLoad = filename
+		self.loader = ""
 		self.arch = ""
 		self.args = ""
 		self.loadSourceCode = True
@@ -287,6 +288,7 @@ class Worker(QObject):
 							# self.sendProgressUpdate((100 / numRegisters * currReg) + (numRegSeg / numChilds * idx),
 							# 						f'Loading registers value {child.GetName()} ...')
 							if self.initTable:
+								print(f"self.loadRegisterValueCallback.emit({currReg - 1}, {child.GetName()}, {child.GetValue()}, ...)")
 								self.loadRegisterValueCallback.emit(currReg - 1, child.GetName(), child.GetValue(),
 																	getMemoryValueAtAddress(target, process,
 																							child.GetValue()))

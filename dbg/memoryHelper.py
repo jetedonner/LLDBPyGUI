@@ -32,7 +32,7 @@ def read_memory(process, address, size):
 	if error.Success():
 		return data
 	else:
-		print("Error reading memory:", error)
+		# print("Error reading memory:", error)
 		return None
 	
 def getMemoryValueAtAddress(target, process, address):

@@ -222,6 +222,7 @@ class LLDBPyGUIWindow(QMainWindow):
 
 	debugger = None
 	driver = None
+	targetBasename = ""
 
 	def __init__(self, driver = None, debugger=None):
 		super().__init__()
@@ -273,7 +274,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.bpHelper = BreakpointHelperNG(self.driver)
 		self.devHelper = DevHelper(self.driver, self.bpHelper)
 
-		self.setWinTitleWithState("GUI Started")
+		self.setWinTitleWithState("Started")
 		self.setBaseSize(WINDOW_SIZE * 2, WINDOW_SIZE)
 		self.setMinimumSize(WINDOW_SIZE * 2, WINDOW_SIZE + 72)
 		self.move(1200, 200)
@@ -795,7 +796,8 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.loadFileStruct(index)
 
 	def setWinTitleWithState(self, state):
-		self.setWindowTitle(APP_NAME + " " + APP_VERSION + " - " + APP_RELEASE_DATE + " - " + self.targetBasename + " - " + state)
+		# " - " + APP_RELEASE_DATE +
+		self.setWindowTitle(APP_NAME + " " + APP_VERSION + " - " + os.path.basename(self.worker.fileToLoad) + " - " + state)
 		# QCoreApplication.processEvents()
 		# QApplication.processEvents()
 
@@ -917,28 +919,30 @@ class LLDBPyGUIWindow(QMainWindow):
 	def load_clicked(self):
 		ctd = CreateTargetDialog()
 		res = ctd.exec()
-		if res and ctd.txtTarget.text() is not None and ctd.txtTarget.text() != "":
+		sSelectedTarget = ctd.txtTarget.text()
+		if res and sSelectedTarget is not None and sSelectedTarget != "":
 			self.instCnt = 0
 			self.stubsLoading = False
 			self.symFuncName = ""
 			# self.target, self.process = self.restart_debug_session(self.driver.debugger, self.target, ctd.txtTarget.text())
-			logDbgC(f"*************>>>> load_clicked => 1.....")
+			# logDbgC(f"*************>>>> load_clicked => 1.....")
 			# self.driver.debugger = lldb.SBDebugger.Create()
 			self.threadLoad = QThread()
-
-			self.worker = Worker(self, ctd.txtTarget.text(), True)#, ConfigClass.testTargetSource)
-			self.worker.fileToLoad = ctd.txtTarget.text()
+			self.targetBasename = sSelectedTarget
+			self.worker = Worker(self, sSelectedTarget, True)#, ConfigClass.testTargetSource)
+			self.worker.fileToLoad = sSelectedTarget
+			self.worker.loader = ctd.cmbLoader.currentText()
 			self.worker.arch = ctd.cmbArch.currentText()
 			self.worker.args = ctd.txtArgs.text()
 			self.worker.loadSourceCode = ctd.loadSourceCode
-			logDbgC(f"*************>>>> load_clicked => 2.....")
+			# logDbgC(f"*************>>>> load_clicked => 2.....")
 			self.worker.moveToThread(self.threadLoad)
 
 			self.threadLoad.started.connect(self.worker.run)
 			self.worker.show_dialog.connect(self.start_operation)
 			self.worker.finished.connect(self.stopWorkerAndQuitThread)
 			self.worker.progressUpdateCallback.connect(self.handle_progressUpdate)
-			logDbgC(f"*************>>>> load_clicked => 3.....")
+			# logDbgC(f"*************>>>> load_clicked => 3.....")
 			# Setup CALLBACKS
 			self.worker.loadFileInfosCallback.connect(self.loadFileInfosCallback)
 			self.worker.loadJSONCallback.connect(self.treStats.loadJSONCallback)
@@ -955,7 +959,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			self.worker.loadRegisterCallback.connect(self.handle_loadRegister)
 			self.worker.loadRegisterValueCallback.connect(self.handle_loadRegisterValue)
 			self.worker.loadVariableValueCallback.connect(self.handle_loadVariableValue)
-			logDbgC(f"*************>>>> load_clicked => 4.....")
+			# logDbgC(f"*************>>>> load_clicked => 4.....")
 			self.worker.loadBreakpointsValueCallback.connect(self.wdtBPsWPs.handle_loadBreakpointValue)
 			self.worker.updateBreakpointsValueCallback.connect(self.wdtBPsWPs.handle_updateBreakpointValue)
 			self.worker.loadWatchpointsValueCallback.connect(
@@ -965,7 +969,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			self.worker.finishedLoadingSourceCodeCallback.connect(self.handle_loadSourceFinished)
 			self.worker.loadStacktraceCallback.connect(self.handle_loadStacktrace)
 			self.worker.runControlFlow_loadConnections.connect(self.runControlFlow_loadConnections)
-			logDbgC(f"*************>>>> load_clicked => 5.....")
+			# logDbgC(f"*************>>>> load_clicked => 5.....")
 			self.txtMultiline.resetContent()
 			self.bpHelper.deleteAllBPs()
 			self.wdtBPsWPs.treBPs.clear()
@@ -974,13 +978,13 @@ class LLDBPyGUIWindow(QMainWindow):
 			self.setResumeActionIcon(True)
 			self.tabWidgetReg.clear()
 			self.rflagsLoaded = 0
-			logDbgC(f"*************>>>> load_clicked => 6.....")
+			# logDbgC(f"*************>>>> load_clicked => 6.....")
 			# # self.wdtBPsWPs.treBPs.clear()
 			# global event_queue
 			# event_queue = queue.Queue()
 			# # self.listener.should_quit = False
 			self.should_quit = False
-			logDbgC(f"*************>>>> load_clicked => 7.....")
+			# logDbgC(f"*************>>>> load_clicked => 7.....")
 			# global driver
 			# driver = dbg.debuggerdriver.createDriver(self.driver.debugger, event_queue)
 			# self.driver = driver
@@ -988,9 +992,9 @@ class LLDBPyGUIWindow(QMainWindow):
 			# self.txtMultiline.table.bpHelper.driver = self.driver
 			# logDbgC(f"*************>>>> load_clicked => 8.....")
 			# self.driver.start()
-			logDbgC(f"*************>>>> load_clicked => 9.....")
+			# logDbgC(f"*************>>>> load_clicked => 9.....")
 			self.threadLoad.start()
-			logDbgC(f"*************>>>> load_clicked => 10.....")
+			# logDbgC(f"*************>>>> load_clicked => 10.....")
 
 	def handle_tabWidgetMainCurrentChanged(self, idx):
 		if idx == 2:

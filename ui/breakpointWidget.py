@@ -221,7 +221,8 @@ class BreakpointTreeWidget(BaseTreeWidget):
 
 	def show_notification(self, message=""):
 		# self.window().tabWidgetDbg.setCurrentWidget(self.window().tabWidgetConsoles)
-		self.window().tabWidgetDbg.setCurrentIndex(8)
+		self.window().tabWidgetMain.setCurrentIndex(4)
+		# self.window().tabWidgetDbg.setCurrentIndex(8)
 		self.window().tabWidgetConsoles.setCurrentIndex(0)
 		self.window().wdtCommands.txtCmd.setFocus()
 		if message is None or message == "":

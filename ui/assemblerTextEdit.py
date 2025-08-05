@@ -713,8 +713,10 @@ class DisassemblyTableWidget(BaseTableWidget):
 		return item
 
 	def addRowString(self, lineNum, address, string=""):
-
 		print(f"addRowString({lineNum}, {address}, {string})")
+		if string == "":
+			return
+
 		table_widget = self
 		# Get the row count
 		row_count = table_widget.rowCount()
