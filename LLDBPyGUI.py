@@ -91,6 +91,7 @@ def __lldb_init_module(debugger, internal_dict):
 	ci.HandleCommand('type summary add --summary-string "these are more words" MyProjectClass', res)
 
 	ci.HandleCommand('command script add -f LLDBPyGUI.feed_input feedinput', res)
+	ci.HandleCommand('command script add -f LLDBPyGUI.disassemble_current_function dsf', res)
 	ci.HandleCommand('command script add -f LLDBPyGUI.launchtest launchtest', res)
 	ci.HandleCommand("process launch --stop-at-entry", res)
 
@@ -201,6 +202,28 @@ def feed_input(debugger, command, result, internal_dict):
 		print(f"================== >>>>>>>>>>>>>>> STDO: {stdo}")
 	else:
 		print(f"NO STDOUT AVAILABLE")
+
+def disassemble_current_function(debugger, command, result, internal_dict):
+	target2 = debugger.GetSelectedTarget()
+	process2 = target2.GetProcess()
+	thread2 = process2.GetSelectedThread()
+	frame2 = thread2.GetSelectedFrame()
+
+	function = frame2.GetFunction()
+	if not function.IsValid():
+		result.PutCString("No valid function at current frame.")
+		return
+
+	instructions = function.GetInstructions(target2)
+	for inst in instructions:
+		addr = inst.GetAddress()
+		mnemonic = inst.GetMnemonic(target2)
+		operands = inst.GetOperands(target2)
+		comment = inst.GetComment(target2)
+
+		result.PutCString(f"{addr}: {mnemonic} {operands} ; {comment}")
+
+	print(f"Swift result: {result}")
 
 def cmd_banner(debugger,command,result,dict): 
 	print(f"" + BOLD + "" + RED + "#=================================================================================#")

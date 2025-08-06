@@ -162,6 +162,35 @@ class DebuggerDriver(Thread):
         # # print(f"Stderr redirected to: {stderr_path}")
         return self.target
 
+    def launch_with_breakpoint(self, debugger, exe_path="./_testtarget/xcode_projects/SwiftREPLTestApp/Debug/SwiftREPLTestApp.app/Contents/MacOS/SwiftREPLTestApp"):
+        # Create target from executable
+        target2 = debugger.CreateTarget(exe_path)
+        if not target2.IsValid():
+            print("❌ Failed to create target.")
+            return
+
+        # Set breakpoint at 'main' or Swift entry point
+        breakpoint2 = target2.BreakpointCreateByName("main")
+        if not breakpoint2.IsValid() or breakpoint2.GetNumLocations() == 0:
+            print("⚠️ Could not set breakpoint at 'main'.")
+        else:
+            print(f"✅ Breakpoint set at 'main' with {breakpoint2.GetNumLocations()} location(s).")
+
+        # Launch the process
+        launch_info = lldb.SBLaunchInfo(None)
+        launch_info.SetExecutableFile(lldb.SBFileSpec(exe_path), True)
+        launch_info.SetLaunchFlags(lldb.eLaunchFlagStopAtEntry)  # Optional: stop at entry point
+
+        error = lldb.SBError()
+        process2 = target2.Launch(launch_info, error)
+
+        if process2.IsValid():
+            print("🚀 Process launched and stopped at entry.")
+        else:
+            print(f"❌ Launch failed: {error.GetCString()}")
+
+        return target2
+
     def createTargetSWIFT(self, targetImage="./_testtarget/xcode_projects/SwiftREPLTestApp/Debug/SwiftREPLTestApp.app/Contents/MacOS/SwiftREPLTestApp"):
         # Create debugger instance
         # debugger = self.mainWin.driver.debugger
@@ -174,7 +203,7 @@ class DebuggerDriver(Thread):
         if self.target:
             # Launch the process
             launch_info = lldb.SBLaunchInfo(None)
-            breakpoint = self.target.BreakpointCreateByName(f"$s16SwiftREPLTestApp0C8DelegateC5$mainyyFZ") # "main")
+            breakpoint = self.target.BreakpointCreateByName(f"showMessageBox", "SwiftREPLTestApp.ViewController") # f"$s16SwiftREPLTestApp0C8DelegateC5$mainyyFZ") # f"$s16SwiftREPLTestApp0C8DelegateC5$mainyyFZ", "SwiftREPLTestApp") # # "main")
             print(f"breakpoint: {breakpoint}")
             process = self.target.Launch(launch_info, lldb.SBError())
 

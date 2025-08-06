@@ -146,7 +146,7 @@ class Worker(QObject):
 			self.target = self.mainWin.driver.getTarget()
 			self.logDbgC.emit(f"self.target (baseWorkerNG): {self.target}", DebugLevel.Verbose)
 			if self.target:
-				logDbgC(f"self.target.GetExecutable().GetFilename(): {self.target.GetExecutable().GetFilename()}", DebugLevel.Verbose)
+				self.logDbgC.emit(f"self.target.GetExecutable().GetFilename(): {self.target.GetExecutable().GetFilename()}", DebugLevel.Verbose)
 				exe = self.target.GetExecutable().GetDirectory() + "/" + self.target.GetExecutable().GetFilename()
 				# self.targetBasename = os.path.basename(exe)
 				mach_header = GetFileHeader(exe)
@@ -232,7 +232,7 @@ class Worker(QObject):
 			with open(file_path, 'r') as file:
 				lines = file.readlines()
 		else:
-			logDbgC(f"The source code file: {file_path} could not be found!")
+			self.logDbgC.emit(f"The source code file: {file_path} could not be found!", DebugLevel.Verbose)
 
 		# code_lines = [
 		# 	line for line in lines
@@ -246,7 +246,7 @@ class Worker(QObject):
 			with open(file_path, 'r') as file:
 				lines = file.readlines()
 		else:
-			logDbgC(f"The file: {file_path} could not be found!")
+			self,logDbgC.emit(f"The file: {file_path} could not be found!", DebugLevel.Verbose)
 
 		# code_lines = [
 		# 	line for line in lines
@@ -383,10 +383,10 @@ class Worker(QObject):
 			else:
 				sourceFilesFound = find_source_file(self.fileToLoad) # self.sourceFile if self.sourceFile != "" else
 				if len(sourceFilesFound) > 0:
-					logDbgC(f"Tried to auto-find sourcefile => Found: {len(sourceFilesFound)}: {sourceFilesFound[0]}! Loading file ...")
+					self.logDbgC.emit(f"Tried to auto-find sourcefile => Found: {len(sourceFilesFound)}: {sourceFilesFound[0]}! Loading file ...", DebugLevel.Verbose)
 					self.runLoadSourceCode(sourceFilesFound[0])
 				else:
-					logDbgC(f"Tried to auto-find sourcefile => NOTHING Found!!!")
+					self.logDbgC.emit(f"Tried to auto-find sourcefile => NOTHING Found!!!", DebugLevel.Verbose)
 		else:
 			self.runControlFlow_loadConnections.emit()
 			# QCoreApplication.processEvents()
@@ -1115,7 +1115,7 @@ class Worker(QObject):
 		self.logDbgC.emit(f"createTarget({filename})", DebugLevel.Info)
 
 		if is_swift_binary(filename):
-			self.target = self.driver.createTargetSWIFT(filename)
+			self.target = self.driver.launch_with_breakpoint(self.driver.debugger, filename)  #.createTargetSWIFT(filename)
 		else:
 			self.target = self.driver.createTarget(filename, self.arch, self.args)
 
@@ -1125,35 +1125,35 @@ class Worker(QObject):
 			self.mainWin.target = self.target
 			self.logDbgC.emit(f"target: {self.target}", DebugLevel.Verbose)
 
-			if self.mainWin.setHelper.getValue(SettingsValues.BreakpointAtMainFunc):
-				self.driver.debugger.HandleCommand('process launch --stop-at-entry')
-
-				main_oep, symbol = find_main(self.driver.debugger)#, "___debug_blank_executor_main")
-				if main_oep != 0 and self.mainWin.setHelper.getValue(SettingsValues.BreakpointAtMainFunc):
-					# self.driver.debugger.HandleCommand(f'breakpoint set -a {hex(main_oep)} -N kimon')
-					bp = self.driver.getTarget().BreakpointCreateByAddress(main_oep) # .BreakpointCreateByName("main")
-					for bl in bp:
-						self.logDbgC.emit(f"bl.location: {bl}", DebugLevel.Verbose)
-					self.driver.mainID = bp.GetID()
-					self.driver.debugger.HandleCommand(f'br name add -N main {bp.GetID()}')
-					bp.SetScriptCallbackFunction("main_hit")
-					self.logDbgC.emit(f'breakpoint set "main": {bp}', DebugLevel.Verbose)
-					# self.driver.debugger.HandleCommand('breakpoint set --name main')
-
-				# Set breakpoint on scanf
-				if	self.mainWin.setHelper.getValue(SettingsValues.AutoBreakpointForScanf):
-					bp = self.driver.getTarget().BreakpointCreateByName("scanf")
-					for bl in bp:
-						self.logDbgC.emit(f"bl.location: {bl}", DebugLevel.Verbose)
-
-					self.driver.scanfID = bp.GetID()
-					self.driver.debugger.HandleCommand(f'br name add -N scanf {bp.GetID()}')
-					bp.SetScriptCallbackFunction("on_scanf_hit")
-					self.logDbgC.emit(f'breakpoint set "scanf": {bp}', DebugLevel.Verbose)
-
-				self.driver.debugger.HandleCommand('breakpoint set --name main')
-				# self.driver.debugger.HandleCommand(f'br list')
-				self.driver.debugger.HandleCommand('process continue')
+			# if self.mainWin.setHelper.getValue(SettingsValues.BreakpointAtMainFunc):
+			# 	self.driver.debugger.HandleCommand('process launch --stop-at-entry')
+			#
+			# 	main_oep, symbol = find_main(self.driver.debugger)#, "___debug_blank_executor_main")
+			# 	if main_oep != 0 and self.mainWin.setHelper.getValue(SettingsValues.BreakpointAtMainFunc):
+			# 		# self.driver.debugger.HandleCommand(f'breakpoint set -a {hex(main_oep)} -N kimon')
+			# 		bp = self.driver.getTarget().BreakpointCreateByAddress(main_oep) # .BreakpointCreateByName("main")
+			# 		for bl in bp:
+			# 			self.logDbgC.emit(f"bl.location: {bl}", DebugLevel.Verbose)
+			# 		self.driver.mainID = bp.GetID()
+			# 		self.driver.debugger.HandleCommand(f'br name add -N main {bp.GetID()}')
+			# 		bp.SetScriptCallbackFunction("main_hit")
+			# 		self.logDbgC.emit(f'breakpoint set "main": {bp}', DebugLevel.Verbose)
+			# 		# self.driver.debugger.HandleCommand('breakpoint set --name main')
+			#
+			# 	# Set breakpoint on scanf
+			# 	if	self.mainWin.setHelper.getValue(SettingsValues.AutoBreakpointForScanf):
+			# 		bp = self.driver.getTarget().BreakpointCreateByName("scanf")
+			# 		for bl in bp:
+			# 			self.logDbgC.emit(f"bl.location: {bl}", DebugLevel.Verbose)
+			#
+			# 		self.driver.scanfID = bp.GetID()
+			# 		self.driver.debugger.HandleCommand(f'br name add -N scanf {bp.GetID()}')
+			# 		bp.SetScriptCallbackFunction("on_scanf_hit")
+			# 		self.logDbgC.emit(f'breakpoint set "scanf": {bp}', DebugLevel.Verbose)
+			#
+			# 	self.driver.debugger.HandleCommand('breakpoint set --name main')
+			# 	# self.driver.debugger.HandleCommand(f'br list')
+			# 	self.driver.debugger.HandleCommand('process continue')
 			# self.driver.debugger.HandleCommand('process continue')
 			self.loadTarget()
 		else:
