@@ -50,6 +50,14 @@ def hex_to_string(hex_values):
     # Convert each hex value to an integer, then to its ASCII character
     return ''.join(chr(int(h, 16)) for h in hex_values)
 
+def getLoadAddress(address, target):
+    # address = sym.GetStartAddress()
+    if address.IsValid():
+        # global driver
+        load_addr = address.GetLoadAddress(target)
+        return load_addr
+        # logDbgC(INDENT2 + f"Symbol load address: 0x{load_addr:x}")
+
 # # Example usage
 # hex_input = ['73', '68', '6f', '77']
 # result = hex_to_string(hex_input)

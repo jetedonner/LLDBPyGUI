@@ -192,7 +192,7 @@ class BreakpointTreeWidget(BaseTreeWidget):
 					if setPC:
 						for i in range(subitem.columnCount()):
 							subitem.setBackground(i, ConfigClass.colorGreen)
-
+						self.driver.GetTarget().GetCu
 						if subitem.text(3) == f"scanf":
 
 							import platform

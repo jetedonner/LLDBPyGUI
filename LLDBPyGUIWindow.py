@@ -1549,6 +1549,8 @@ class LLDBPyGUIWindow(QMainWindow):
 #				print(f"frame.GetModule() => {frame.GetModule().GetFileSpec().GetFilename()}")
 #							frame = self.thread.GetFrameAtIndex(z)
 			if frame:
+				logDbgC(
+					f"====>>>> Module: {frame.GetModule().GetFileSpec().GetFilename()}")
 				# print(frame)
 				if not self.inited:
 					return
@@ -1695,10 +1697,12 @@ class LLDBPyGUIWindow(QMainWindow):
 
 
 	def handle_debugStepCompleted(self, kind, success, rip, frm):
+		logDbgC(f"handle_debugStepCompleted({kind}, {success}, {rip}, {frm}) ====>>>> Module: {frm.GetModule().GetFileSpec().GetFilename()}")
 		if success:
 			self.rip = rip
-			self.txtMultiline.setPC(int(str(self.rip), 16))
-			self.wdtBPsWPs.treBPs.setPC(self.rip)
+			if self.rip != "":
+				self.txtMultiline.setPC(int(str(self.rip), 16))
+				self.wdtBPsWPs.treBPs.setPC(self.rip)
 			self.start_loadRegisterWorker(False)
 			self.wdtBPsWPs.reloadBreakpoints(False)
 			# self.tabWatchpoints.reloadWatchpoints(False)
@@ -1706,7 +1710,8 @@ class LLDBPyGUIWindow(QMainWindow):
 
 			context = frm.GetSymbolContext(lldb.eSymbolContextEverything)
 			self.workerManager.start_loadSourceWorker(self.driver.debugger, self.worker.sourceFile, self.handle_loadSourceFinished, context.GetLineEntry().GetLine())
-			self.tblRegs[0].loadRFlags(self.driver.debugger)
+			if len(self.tblRegs) > 0:
+				self.tblRegs[0].loadRFlags(self.driver.debugger)
 #			self.setResumeActionIcon()
 			self.setWinTitleWithState("Interrupted")
 			self.setResumeActionIcon()

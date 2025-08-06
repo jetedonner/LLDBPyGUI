@@ -148,15 +148,15 @@ class LLDBListener(QtCore.QObject, Thread):
 			print(f"===============>>>>>>>>>>>>>>>> INSIDE _broadcast_process_state")
 			state = 'stopped'
 
-			if event is not None and event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
-				# stdout = process.GetSTDOUT(1024)
-				# if stdout is not None and len(stdout) > 0:
-				# 	print(f"=============>>>>>>>>>>>>>>>>>> NEW STDOUT: {stdout}")
-				# else:
-				# 	print(f"=============>>>>>>>>>>>>>>>>>> NOOOOOOOOO NEW STDOUT!!!!!")
-				return
-			else:
-				print(f"=============>>>>>>>>>>>>>>>>>> NOOOOOOOOO EVENT!!!!!")
+			# if event is not None and event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
+			# 	# stdout = process.GetSTDOUT(1024)
+			# 	# if stdout is not None and len(stdout) > 0:
+			# 	# 	print(f"=============>>>>>>>>>>>>>>>>>> NEW STDOUT: {stdout}")
+			# 	# else:
+			# 	# 	print(f"=============>>>>>>>>>>>>>>>>>> NOOOOOOOOO NEW STDOUT!!!!!")
+			# 	return
+			# else:
+			# 	print(f"=============>>>>>>>>>>>>>>>>>> NOOOOOOOOO EVENT!!!!!")
 
 			if process.state == eStateStepping or process.state == eStateRunning:
 				state = 'running'
@@ -166,7 +166,7 @@ class LLDBListener(QtCore.QObject, Thread):
 			thread = process.selected_thread
 			# print('Process event: %s, reason: %d' % (state, thread.GetStopReason()))
 			if thread.GetStopReason() == lldb.eStopReasonBreakpoint:
-				# print(f'REASON BP RFEACHED (listener) Event: {event} => Continuing...')
+				print(f'REASON BP RFEACHED (listener) Event: {event} => Continuing...')
 				self.suspended = True
 			elif thread.GetStopReason() == lldb.eStopReasonWatchpoint:
 				# print(f'REASON WATCHPOINT RFEACHED (listener) Event: {event} => Continuing...')
@@ -200,7 +200,8 @@ class LLDBListener(QtCore.QObject, Thread):
 			
 	def _breakpoint_event(self, event):
 		if not self.should_quit:
-			# print(f"_breakpoint_event")
+			# print()
+			print(f"_breakpoint_event")
 			breakpoint = SBBreakpoint.GetBreakpointFromEvent(event)
 			bpEventType = SBBreakpoint.GetBreakpointEventTypeFromEvent(event)
 			self.breakpointEvent.emit(event)
@@ -278,7 +279,7 @@ class LLDBListener(QtCore.QObject, Thread):
 						# print("STD OUT EVENT ALT!!!")
 						# pass
 					elif SBBreakpoint.EventIsBreakpointEvent(event):
-						# print("GOT BREAKPOINT EVENT YESSSSS!!!")
+						print("GOT BREAKPOINT EVENT YESSSSS!!!")
 						self._breakpoint_event(event)
 					elif event.GetType() == lldb.SBTarget.eBroadcastBitWatchpointChanged:
 						wp = lldb.SBWatchpoint.GetWatchpointFromEvent(event)

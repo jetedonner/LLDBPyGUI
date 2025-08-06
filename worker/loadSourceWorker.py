@@ -78,6 +78,9 @@ class LoadSourceCodeWorker(QRunnable):
 		QApplication.processEvents()
 
 	def count_lines_of_code(self, file_path):
+		if file_path == "":
+			return 0
+
 		with open(file_path, 'r') as file:
 			lines = file.readlines()
 

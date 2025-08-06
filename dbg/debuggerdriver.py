@@ -21,6 +21,7 @@ from PyQt6 import uic, QtWidgets, QtCore
 
 from dbg.fileInfos import *
 from config import *
+from lib.utils import getLoadAddress
 from ui.helper.dbgOutputHelper import logDbgC
 
 
@@ -144,6 +145,7 @@ class DebuggerDriver(Thread):
     def createTarget(self, target_image, arch="x86_64-apple-macosx15.1.1", args=None):
         print(f"createTarget({target_image}). / args: {args}...")
         self.target = self.debugger.CreateTargetWithFileAndArch(target_image, arch)# , lldb.LLDB_ARCH_DEFAULT)
+        self.target.getLoadAddress = getLoadAddress
         # assert self.target
         print(f"New TARGET IS: {self.target}")
         print(f"FINISHED: createTarget({target_image}). / args: {args}...")

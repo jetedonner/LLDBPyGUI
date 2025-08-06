@@ -99,13 +99,17 @@ class DebugWorker(BaseWorker):
 				
 				frame = thread.GetFrameAtIndex(0)
 				pprint(frame)
+				print(f"GOT IT ....")
 				if frame:
 					registerList = frame.GetRegisters()
 					numRegisters = registerList.GetSize()
 					if numRegisters > 0:
 #						print(f'GetPCAddress => {hex(frame.GetPCAddress().GetFileAddress())}')
 						# import pdb; pdb.set_trace()
-						self.signals.debugStepCompleted.emit(self.kind, True, frame.register["rip"].value, frame)
+						if frame.register["rip"]:
+							self.signals.debugStepCompleted.emit(self.kind, True, frame.register["rip"].value, frame)
+						else:
+							self.signals.debugStepCompleted.emit(self.kind, True, "", frame)
 						self.isRunning = False
 #						pass
 					else:
