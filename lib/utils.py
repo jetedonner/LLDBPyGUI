@@ -17,9 +17,9 @@ def setStatusBar(msg):
 
 def random_qcolor():
     random.seed(time.time())
-    r = random.randint(127, 255)
-    g = random.randint(127, 255)
-    b = random.randint(127, 255)
+    r = random.randint(0, 255)
+    g = random.randint(0, 255)
+    b = random.randint(0, 255)
     return QColor(r, g, b)
 
 def find_source_file(executable_path):

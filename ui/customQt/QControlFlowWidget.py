@@ -438,9 +438,11 @@ class QControlFlowWidget(QWidget):
                     rowEnd = int(tblDisassembly.getRowForAddress(sAddrJumpTo))
 
                     if (rowStart < rowEnd):
-                        newConObj = QControlFlowWidget.draw_flowConnectionNG(rowStart, rowEnd, int(sAddrJumpFrom, 16), int(sAddrJumpTo, 16), self.window().txtMultiline.table, QColor("lightblue"), radius)
+                        # QColor("lightblue")
+                        newConObj = QControlFlowWidget.draw_flowConnectionNG(rowStart, rowEnd, int(sAddrJumpFrom, 16), int(sAddrJumpTo, 16), self.window().txtMultiline.table, random_qcolor(), radius)
                     else:
-                        newConObj = QControlFlowWidget.draw_flowConnectionNG(rowEnd, rowStart, int(sAddrJumpFrom, 16), int(sAddrJumpTo, 16), self.window().txtMultiline.table, QColor("lightgreen"), radius, 1, True)
+                        # QColor("lightgreen")
+                        newConObj = QControlFlowWidget.draw_flowConnectionNG(rowEnd, rowStart, int(sAddrJumpFrom, 16), int(sAddrJumpTo, 16), self.window().txtMultiline.table, random_qcolor(), radius, 1, True)
                     newConObj.parentControlFlow = self
                     self.addConnection(newConObj)
                     # if radius >= 10:
@@ -703,9 +705,11 @@ class QControlFlowWidget(QWidget):
                     rowStart = int(self.window().txtMultiline.table.getRowForAddress(sAddrJumpFrom))
                     rowEnd = int(self.window().txtMultiline.table.getRowForAddress(sAddrJumpTo))
                     if (rowStart < rowEnd):
-                        newConObj = self.draw_flowConnection(rowStart, rowEnd, QColor("lightblue"), radius)
+                        # QColor("lightblue")
+                        newConObj = self.draw_flowConnection(rowStart, rowEnd, random_qcolor(), radius)
                     else:
-                        newConObj = self.draw_flowConnection(rowEnd, rowStart, QColor("lightgreen"), radius, 1, True)
+                        # QColor("lightgreen")
+                        newConObj = self.draw_flowConnection(rowEnd, rowStart, random_qcolor(), radius, 1, True)
 
                     newConObj.parentControlFlow = self
                     newConObj.setToolTip(f"Branch from {sAddrJumpFrom} to {sAddrJumpTo}")
@@ -793,8 +797,10 @@ class QControlFlowWidget(QWidget):
         # arrow_head.arrow_size = arrow_size
 
         arrow_headNG = HoverPolygonItem(polygon, connection, startArrow)
-        arrow_headNG.setPen(QPen(QColor("lightgreen")))
-        arrow_headNG.setBrush(QBrush(QColor("transparent")) if arrow_size == 8 else QBrush(QColor("lightgreen")))
+        # QColor("lightgreen")
+        arrow_headNG.setPen(QPen(connection.color))
+        # QColor("lightgreen")
+        arrow_headNG.setBrush(QBrush(QColor("transparent")) if arrow_size == 8 else QBrush(connection.color))
         arrow_headNG.fromPos = fromPos
         arrow_headNG.toPos = toPos
         arrow_headNG.arrow_size = arrow_size

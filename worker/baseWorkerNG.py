@@ -934,9 +934,11 @@ class Worker(QObject):
 			#         rowEnd = int(tblDisassembly.getRowForAddress(sAddrJumpTo))
 			#		rad = self.radius
 					if (rowStart < rowEnd):
-						newConObj = QControlFlowWidget.draw_flowConnectionNG(rowStart, rowEnd, int(sAddrJumpFrom, 16), int(sAddrJumpTo, 16), None, QColor("lightblue"), self.radius, 1, False) # self.window().txtMultiline.table
+						# QColor("lightblue")
+						newConObj = QControlFlowWidget.draw_flowConnectionNG(rowStart, rowEnd, int(sAddrJumpFrom, 16), int(sAddrJumpTo, 16), None, random_qcolor(), self.radius, 1, False) # self.window().txtMultiline.table
 					else:
-						newConObj = QControlFlowWidget.draw_flowConnectionNG(rowStart, rowEnd, int(sAddrJumpFrom, 16), int(sAddrJumpTo, 16), None, QColor("lightgreen"), self.radius, 1, True)
+						# QColor("lightgreen")
+						newConObj = QControlFlowWidget.draw_flowConnectionNG(rowStart, rowEnd, int(sAddrJumpFrom, 16), int(sAddrJumpTo, 16), None, random_qcolor(), self.radius, 1, True)
 					# newConObj.parentControlFlow = self
 					# self.addConnection(newConObj)
 					newConObj.mnemonic = sMnemonic
