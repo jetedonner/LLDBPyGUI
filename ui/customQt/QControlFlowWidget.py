@@ -687,8 +687,8 @@ class QControlFlowWidget(QWidget):
 
             con.setToolTip(
                 f"Branch ({con.mnemonic.upper()})\n- from: {hex(con.origAddr)}\n- to: {hex(con.destAddr)}\n- distance: {hex(con.jumpDist)}\n- row from: {con.origRow} to: {con.destRow}")
-            if radius <= 130:
-                radius += 15
+            if radius <= 200:
+                radius += 20
             idx += 1
 
     def loadInstructions(self):
