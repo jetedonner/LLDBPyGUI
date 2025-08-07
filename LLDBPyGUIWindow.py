@@ -224,7 +224,7 @@ class LLDBPyGUIWindow(QMainWindow):
 	driver = None
 	# targetBasename = ""
 
-	def __init__(self, driver = None, debugger=None):
+	def __init__(self, driver = None, debugger=None, loadExec2=False):
 		super().__init__()
 
 		# self.start_operation()
@@ -234,7 +234,10 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.symFuncName = ""
 
 		self.threadLoad = QThread()
-		self.worker = Worker(self, ConfigClass.testTarget, True, ConfigClass.testTargetSource)
+		if not loadExec2:
+			self.worker = Worker(self, ConfigClass.testTarget, True, ConfigClass.testTargetSource)
+		else:
+			self.worker = Worker(self, ConfigClass.testTarget2, True, ConfigClass.testTargetSource2)
 		self.worker.arch = ConfigClass.testTargetArch
 		self.worker.args = ConfigClass.testTargetArgs
 

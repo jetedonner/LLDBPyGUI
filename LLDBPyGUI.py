@@ -82,6 +82,7 @@ def __lldb_init_module(debugger, internal_dict):
 		
 	# the hook that makes everything possible :-)
 	ci.HandleCommand(f"command script add -h '({PROMPT_TEXT}) Start the {APP_NAME}.' -f LLDBPyGUI.startLLDBPyGUI pyg", res)
+	ci.HandleCommand(f"command script add -h '({PROMPT_TEXT}) Start the {APP_NAME}.' -f LLDBPyGUI.startLLDBPyGUI2 pyg2", res)
 
 	ci.HandleCommand(f"command script add -h '({PROMPT_TEXT}) Display {APP_NAME} banner.' --function LLDBPyGUI.cmd_banner banner", res)
 	ci.HandleCommand(
@@ -263,7 +264,41 @@ def close_application():
 		driver.debugger.Terminate()
 
 
-	
+def startLLDBPyGUI2(debugger, command, result, dict):
+	cmd_banner(debugger, command, result, dict)
+
+	debugger.SetAsync(False)
+
+	#		debugger.SetAsync(True)
+	# pyGUIApp = QApplication([])
+	pyGUIApp = QApplication(sys.argv)  # Pass sys.argv explicitly!
+	pyGUIApp.aboutToQuit.connect(close_application)
+
+	ConfigClass.initIcons()
+	pyGUIApp.setWindowIcon(ConfigClass.iconBugGreen)
+
+	#	driver = None
+	global event_queue
+	event_queue = queue.Queue()
+
+	global driver
+	driver = dbg.debuggerdriver.createDriver(debugger, event_queue)
+
+	pyGUIWindow = LLDBPyGUIWindow(driver, debugger, True)  # QConsoleTextEditWindow(debugger)
+	pyGUIWindow.app = pyGUIApp
+	#	pymobiledevice3GUIWindow.loadTarget()
+	pyGUIWindow.show()
+
+	tmrAppStarted = QtCore.QTimer()
+	tmrAppStarted.singleShot(500, pyGUIWindow.onQApplicationStarted)
+	# sys.exit(pyGUIApp.exec())
+	# pyGUIApp.exec()
+	try:
+		sys.exit(pyGUIApp.exec())
+	except SystemExit:
+		print("PyQt application exited cleanly.")
+	pass
+
 def startLLDBPyGUI(debugger, command, result, dict):
 	
 	cmd_banner(debugger, command, result, dict)

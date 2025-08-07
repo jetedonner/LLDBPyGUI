@@ -1059,6 +1059,7 @@ class Worker(QObject):
 
 				self.thread = self.process.GetThreadAtIndex(0)
 				self.logDbgC.emit(f"loadTarget() => Thread: {self.thread} ...", DebugLevel.Verbose)
+
 				if self.thread:
 					self.isInsideTextSectionGetRangeVarsReady()
 					self.logDbgC.emit(f"loadTarget() => Thread.GetNumFrames(): {self.thread.GetNumFrames()} ...", DebugLevel.Verbose)

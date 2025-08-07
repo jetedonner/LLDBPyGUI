@@ -46,12 +46,14 @@ class DebugWorker(BaseWorker):
 					# print("Trying to StepInto ...")
 					thread.StepInstruction(False)
 					if thread.GetStopReason() == lldb.eStopReasonBreakpoint:
+						print(f'GOT if thread.GetStopReason() == lldb.eStopReasonBreakpoint:')
 						self.isRunning = False
 					# print("After StepInto ...")
 				elif self.kind == StepKind.StepOut:
 					# print("Trying to StepOut ...")
 					thread.StepOut()
 					if thread.GetStopReason() == lldb.eStopReasonBreakpoint:
+						print(f'GOT if thread.GetStopReason() == lldb.eStopReasonBreakpoint:')
 						self.isRunning = False
 					# print("After StepOut ...")
 				elif self.kind == StepKind.StepOver:
@@ -60,7 +62,7 @@ class DebugWorker(BaseWorker):
 					# print("After StepOver ...")
 #					ID = thread.GetThreadID()
 					if thread.GetStopReason() == lldb.eStopReasonBreakpoint:
-						
+						print(f'GOT if thread.GetStopReason() == lldb.eStopReasonBreakpoint:')
 #						print(f'GOT if thread.GetStopReason() == lldb.eStopReasonBreakpoint:')
 #						frame = thread.GetFrameAtIndex(0)
 #						self.signals.setPC.emit(frame.register["rip"].value)
@@ -81,6 +83,7 @@ class DebugWorker(BaseWorker):
 						print(error)
 
 					if thread.GetStopReason() == lldb.eStopReasonBreakpoint:
+						print(f'GOT if thread.GetStopReason() == lldb.eStopReasonBreakpoint:')
 						self.isRunning = False
 				else:
 					# print("Trying to StepOver ...")
@@ -88,7 +91,7 @@ class DebugWorker(BaseWorker):
 					# print("After StepOver ...")
 #					ID = thread.GetThreadID()
 					if thread.GetStopReason() == lldb.eStopReasonBreakpoint:
-#						print(f'GOT if thread.GetStopReason() == lldb.eStopReasonBreakpoint:')
+						print(f'GOT if thread.GetStopReason() == lldb.eStopReasonBreakpoint:')
 #						from lldbutil import print_stacktrace
 #						print_stacktrace(thread)
 						self.isRunning = False
