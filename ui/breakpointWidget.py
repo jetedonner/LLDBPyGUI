@@ -110,7 +110,11 @@ class BreakpointTreeWidget(BaseTreeWidget):
 		self.actionEnableAllBP = self.context_menu.addAction("Enable All Breakpoints")
 		self.actionDisableAllBP = self.context_menu.addAction("Disable All Breakpoints")
 		self.context_menu.addSeparator()
-		
+
+		self.actionShowInFinder = self.context_menu.addAction("Show in Finder")
+		self.actionShowInFinder.triggered.connect(self.handle_showInFinder)
+		self.actionShowInTerminal = self.context_menu.addAction("Show in Terminal")
+		self.actionShowInTerminal.triggered.connect(self.handle_showInTerminal)
 		self.actionShowMemoryFrom = self.context_menu.addAction("Show memory")
 		self.actionShowMemoryTo = self.context_menu.addAction("Show memory after End")
 		self.context_menu.addSeparator()
@@ -121,7 +125,7 @@ class BreakpointTreeWidget(BaseTreeWidget):
 		self.actionToggleSingleShot.triggered.connect(self.handle_toggleSingleShot)
 
 		self.setFont(ConfigClass.font)
-		self.setHeaderLabels(['#', 'State', 'Address', 'Name', 'Hit', 'Condition', 'Commands', 'Shot'])
+		self.setHeaderLabels(['#', 'State', 'Address', 'Name', 'Hit', 'Condition', 'Commands', '1 Shot', 'Module'])
 		self.header().resizeSection(0, 96)
 		self.header().resizeSection(1, 56)
 		self.header().resizeSection(2, 128)
@@ -129,7 +133,8 @@ class BreakpointTreeWidget(BaseTreeWidget):
 		self.header().resizeSection(4, 128)
 		self.header().resizeSection(5, 128)
 		self.header().resizeSection(6, 250)
-		self.header().resizeSection(7, 40)
+		self.header().resizeSection(7, 48)
+		self.header().resizeSection(8, 140)
 		# self.header().resizeSection(8, 256)
 		# self.header().resizeSection(9, 40)
 		self.setMouseTracking(True)
@@ -258,8 +263,8 @@ class BreakpointTreeWidget(BaseTreeWidget):
 			cmd = cmds.GetStringAtIndex(0)
 		else:
 			cmd = ""
-			
-		bpNode = EditableTreeItem(self, [str(bp.GetID()), '', '', name, str(bp.GetHitCount()), bp.GetCondition(), cmd, 'x' if bp.IsOneShot() else '-'])
+
+		bpNode = EditableTreeItem(self, [str(bp.GetID()), '', '', name, str(bp.GetHitCount()), bp.GetCondition(), cmd, 'Yes' if bp.IsOneShot() else 'No', ''])
 		bpNode.enableBP(bp.IsEnabled())
 		idx = 1
 		loadAddr = ""
@@ -274,10 +279,12 @@ class BreakpointTreeWidget(BaseTreeWidget):
 #				bp.SetScriptCallbackFunction("lldbpyGUIWindow.my_callback", extra_args)
 			
 			txtID = str(bp.GetID()) + "." + str(idx)
-			sectionNode = EditableTreeItem(bpNode, [txtID, '', hex(bl.GetLoadAddress()), name, str(bl.GetHitCount()), bl.GetCondition(), '', '-'])
+
+			sectionNode = EditableTreeItem(bpNode, [txtID, '', hex(bl.GetLoadAddress()), name, str(bl.GetHitCount()), bl.GetCondition(), '', 'Yes' if bp.IsOneShot() else 'No', bl.GetAddress().module.GetFileSpec().GetFilename()])
 			loadAddr = hex(bl.GetLoadAddress())
 			sectionNode.enableBP(bl.IsEnabled())
 			sectionNode.setToolTip(1, f"Enabled: {bl.IsEnabled()}")
+			sectionNode.setToolTip(8, f"File: {bl.GetAddress().module.GetFileSpec().fullpath}")
 			sectionNode.setTextAlignment(0, Qt.AlignmentFlag.AlignLeft)
 			idx += 1
 		bpNode.setExpanded(True)
@@ -343,8 +350,15 @@ class BreakpointTreeWidget(BaseTreeWidget):
 #				del removed_item  # Alternatively, you can use removed_item.delete()
 				
 		pass
-		
-	
+
+	def handle_showInFinder(self):
+		logDbgC(f"handle_showInFinderU() ...")
+		pass
+
+	def handle_showInTerminal(self):
+		logDbgC(f"handle_showInTerminal() ...")
+		pass
+
 	def handle_gotoAddr(self):
 		newAddr = self.currentItem().text(2)
 		if newAddr != "":
@@ -791,10 +805,20 @@ class BPsWPsWidget(QWidget):
 		self.cmdSaveBPs.setToolTip("Save breakpoints")
 		self.cmdSaveBPs.setStatusTip("Save breakpoints")
 		self.cmdSaveBPs.clicked.connect(self.cmdSaveBPs_clicked)
-		
+
+		self.cmdAddBPByName = QClickLabel()
+		self.cmdAddBPByName.setContentsMargins(0, 0, 0, 0)
+		self.cmdAddBPByName.setPixmap(ConfigClass.pixName.scaledToWidth(24))
+		self.cmdAddBPByName.setToolTip("Add breakpoint by name")
+		self.cmdAddBPByName.setStatusTip("Add breakpoint by name")
+		self.cmdAddBPByName.clicked.connect(self.cmdAddBPByName_clicked)
+
+
+
 		self.layBPCtrls.addWidget(self.cmdDeleteAll)
 		self.layBPCtrls.addWidget(self.cmdSaveBPs)
 		self.layBPCtrls.addWidget(self.cmdLoadBPs)
+		self.layBPCtrls.addWidget(self.cmdAddBPByName)
 
 		self.spacer = QSpacerItem(0, 200, QSizePolicy.Policy.Maximum, QSizePolicy.Policy.MinimumExpanding)
 		# self.spacer.setContentsMargins(0, 0, 0, 0)
@@ -835,7 +859,10 @@ class BPsWPsWidget(QWidget):
 		if dlg.exec() and dlg.button_clicked == QDialogButtonBox.StandardButton.Ok:
 			print(f"Delete All BPs YESSS ...")
 			
-		
+	def cmdAddBPByName_clicked(self):
+		logDbgC(f"Set BP by Name ....")
+		pass
+
 	def reloadBreakpoints(self, initTable = True):
 		self.workerManager.start_loadBreakpointsWorker(self.handle_loadBreakpointsFinished, self.handle_loadBreakpointValue, self.handle_updateBreakpointValue, initTable)
 		

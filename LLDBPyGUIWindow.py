@@ -495,8 +495,8 @@ class LLDBPyGUIWindow(QMainWindow):
 
 		self.tabWidgetDbg.addTab(self.tabWatchpoints, "Watchpoints")
 
-		self.wdtStopHook = StopHookWidget(self.workerManager)
-		self.tabWidgetDbg.addTab(self.wdtStopHook, "Stop-Hooks")
+		# self.wdtStopHook = StopHookWidget(self.workerManager)
+		# self.tabWidgetDbg.addTab(self.wdtStopHook, "Stop-Hook")
 
 		self.txtSource = SourceTextEdit()
 		self.tabWidgetDbg.addTab(self.txtSource, "Sourcecode")

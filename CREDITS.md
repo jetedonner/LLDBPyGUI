@@ -35,6 +35,6 @@
 - <a href="https://www.flaticon.com/free-icons/ui" title="ui icons">Ui icons created by alfanz - Flaticon</a>
 - <a href="https://www.flaticon.com/free-icons/shrink" title="shrink icons">Shrink icons created by Metami septiana - Flaticon</a>
 - <a href="https://www.flaticon.com/free-icons/clear" title="clear icons">Clear icons created by iconmas - Flaticon</a>
-
+- <a href="https://www.flaticon.com/free-icons/about-person" title="about person icons">About person icons created by Paul J. - Flaticon</a>
 
 ### Event-Listener

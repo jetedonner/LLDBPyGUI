@@ -175,8 +175,8 @@ class ConfigClass():
 #	testTargetSource = "/Volumes/Data/dev/_reversing/disassembler/LLDBPyGUI/pyLLDBGUI/LLDBPyGUI/testtarget/hello_world_test.c"
 
 	# SIMPLE
-	# testTarget =  "./_testtarget/a_hello_world_test" #amicable_numbers" #a_hello_world_test" #amicable_numbers" #cocoa_windowed_objc2" #amicable_numbers" #a_hello_world_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
-	# testTargetSource = "./_testtarget/a_hello_world_test.c" #amicable_numbers.c" #a_hello_world_test.c" #amicable_numbers.c" #cocoa_windowed_objc2.m" #amicable_numbers.c" #a_hello_world_test.c"
+	testTarget =  "./_testtarget/a_hello_world_test" #amicable_numbers" #a_hello_world_test" #amicable_numbers" #cocoa_windowed_objc2" #amicable_numbers" #a_hello_world_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
+	testTargetSource = "./_testtarget/a_hello_world_test.c" #amicable_numbers.c" #a_hello_world_test.c" #amicable_numbers.c" #cocoa_windowed_objc2.m" #amicable_numbers.c" #a_hello_world_test.c"
 
 	testTarget2 =  "./_testtarget/a_hello_world_test" #amicable_numbers" #a_hello_world_test" #amicable_numbers" #cocoa_windowed_objc2" #amicable_numbers" #a_hello_world_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
 	testTargetSource2 = "./_testtarget/a_hello_world_test.c" #amicable_numbers.c" #a_hello_world_test.c" #amicable_numbers.c" #cocoa_windowed_objc2.m" #amicable_numbers.c" #a_hello_world_test.c"
@@ -194,8 +194,8 @@ class ConfigClass():
 	# testTargetSource = "./_testtarget/cocoa_windowed_objc2.m"  # a_hello_world_test.c" #amicable_numbers.c" #cocoa_windowed_objc2.m" #amicable_numbers.c" #a_hello_world_test.c"
 
 	# SWIFT (NOT SWIFTUI)
-	testTarget = "./_testtarget/xcode_projects/SwiftREPLTestApp/Debug/SwiftREPLTestApp.app/Contents/MacOS/SwiftREPLTestApp"  # a_hello_world_test" #amicable_numbers" #cocoa_windowed_objc2" #amicable_numbers" #a_hello_world_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
-	testTargetSource = "./_testtarget/xcode_projects/SwiftREPLTestApp/SwiftREPLTestApp/ViewController.swift"  # a_hello_world_test.c" #amicable_numbers.c" #cocoa_windowed_objc2.m" #amicable_numbers.c" #a_hello_world_test.c"
+	# testTarget = "./_testtarget/xcode_projects/SwiftREPLTestApp/Debug/SwiftREPLTestApp.app/Contents/MacOS/SwiftREPLTestApp"  # a_hello_world_test" #amicable_numbers" #cocoa_windowed_objc2" #amicable_numbers" #a_hello_world_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
+	# testTargetSource = "./_testtarget/xcode_projects/SwiftREPLTestApp/SwiftREPLTestApp/ViewController.swift"  # a_hello_world_test.c" #amicable_numbers.c" #cocoa_windowed_objc2.m" #amicable_numbers.c" #a_hello_world_test.c"
 
 	testTargetArch = "x86_64-apple-macosx15.1.1"
 	testTargetArgs = ""
@@ -230,6 +230,8 @@ class ConfigClass():
 	pixLoad = None
 	pixReload = None
 	pixTrash = None
+
+	pixName = None
 	
 	iconEyeRed = None
 	iconEyeGrey = None
@@ -240,6 +242,8 @@ class ConfigClass():
 	iconStd = None
 	iconBPEnabled = None
 	iconBPDisabled = None
+	iconName = None
+
 	iconBin = None
 	iconPause = None
 	iconPlay = None
@@ -283,6 +287,8 @@ class ConfigClass():
 		ConfigClass.pixDelete = QPixmap(os.path.join(resources_root, 'delete.png')).scaled(QSize(48, 48))
 		ConfigClass.pixSave = QPixmap(os.path.join(resources_root, 'save.png')).scaled(QSize(48, 48))
 
+		ConfigClass.pixName = QPixmap(os.path.join(resources_root, 'id-card.png')).scaled(QSize(48, 48))
+
 		ConfigClass.iconClear = QIcon(os.path.join(resources_root, 'clear.png'))
 		ConfigClass.iconShrink = QIcon(os.path.join(resources_root, 'shrink.png'))
 		ConfigClass.iconMarkdown = QIcon(os.path.join(resources_root, 'markdown.png'))
@@ -316,6 +322,9 @@ class ConfigClass():
 		ConfigClass.iconStepInto = QIcon(os.path.join(resources_root, 'stepInto.png'))
 		ConfigClass.iconStepOut = QIcon(os.path.join(resources_root, 'stepOut.png'))
 		ConfigClass.iconStop = QIcon(os.path.join(resources_root, 'stop.png'))
+
+		ConfigClass.iconName = QIcon(os.path.join(resources_root, 'id-card.png'))
+
 
 
 class ByteGrouping(enum.Enum):
