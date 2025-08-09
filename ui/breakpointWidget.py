@@ -9,10 +9,11 @@ import pyperclip
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
-from PyQt6 import uic, QtWidgets
+from PyQt6 import uic, QtWidgets, QtGui
 
 import dbg.breakpointHelper
 from dbg.breakpointHelper import *
+from ui.assemblerTextEdit import CustomStyledItemDelegate, COL_PC, COL_LINE
 from ui.customQt.QClickLabel import *
 from ui.dialogs.dialogHelper import *
 from ui.baseTreeWidget import *
@@ -23,6 +24,56 @@ from ui.dialogs.notification import Notification
 from ui.helper.dbgOutputHelper import logDbgC
 from ui.helper.lldbutil import get_module_from_breakpoint_location, get_module_from_bp_location
 
+
+class CustomStyledBPTableItemDelegate(QStyledItemDelegate):
+
+	# # self, option, QStyleOptionViewItem = None, *args, ** kwargs
+	# def initStyleOption(self, option, index):
+	# 	super(CustomStyledBPTableItemDelegate, self).initStyleOption(option, index)
+	#
+	# 	color = QtGui.QColor("#abb2bf")
+	#
+	# 	if index.column() == COL_PC or index.column() == COL_LINE or True:
+	# 		# color = QtGui.QColor("#000000")
+	#
+	# 		cg = (
+	# 			QtGui.QPalette.ColorGroup.Normal
+	# 			if option.state & QtWidgets.QStyle.StateFlag.State_Enabled
+	# 			else QtGui.QPalette.ColorGroup.Disabled
+	# 		)
+	# 		if True:
+	# 			option.palette.setColor(cg, QtGui.QPalette.ColorRole.HighlightedText, color)
+	# 			option.palette.setColor(cg, QtGui.QPalette.ColorRole.Text, color)
+	# 			option.palette.setBrush(QtGui.QPalette.ColorRole.Text, QBrush(color))
+
+	def paint(self, painter, option, index):
+		super(CustomStyledBPTableItemDelegate, self).paint(painter, option, index)
+		if index.column() == COL_PC or index.column() == COL_LINE:
+			color = QtGui.QColor("#000000")
+			painter._color = color
+			option.font.setBold(True)
+		else:
+			color = QtGui.QColor("#FFFFFF")
+			painter._color = color
+			option.font.setBold(False)
+
+		# super().paint(painter, option, index)
+
+		# super().paint(painter, option, index)
+		# print(f"CustomDelegate paint() / index: {dir(index)}....")
+		if option.state & QStyle.StateFlag.State_Selected:  # Qt.State_Selected:
+			brush = QBrush(Qt.GlobalColor.darkYellow)
+			# Set custom background color for selected rows
+			option.backgroundBrush = brush  # Adjust color as desired
+		else:
+		# option.palette.setColor(QPalette.ColorRole.Text, QColor("black"))
+		# Create a temporary QPixmap and fill it with the brush color
+			pixmap = QPixmap(option.rect.size())  # Adjust dimensions as needed
+			pixmap.fill(Qt.GlobalColor.transparent)
+			image = pixmap.toImage()
+			painter.drawImage(option.rect, image)  # option.background())
+
+		# super().paint(painter, option, index)
 
 class EditableTreeItem(QTreeWidgetItem):
 	
@@ -64,7 +115,10 @@ class BreakpointTreeWidget(BaseTreeWidget):
 
 		self.oldBPName = ""
 		self.setContentsMargins(0, 0, 0, 0)
-		# self.setStyleSheet("""
+
+		self.delegate = CustomStyledBPTableItemDelegate()
+		self.setItemDelegate(self.delegate)
+	# self.setStyleSheet("""
 		# 	QTreeWidget {
 		# 		/* background-color: #f0f0f0;
 		# 		gridline-color: #ccc;
@@ -198,6 +252,7 @@ class BreakpointTreeWidget(BaseTreeWidget):
 					if setPC:
 						for i in range(subitem.columnCount()):
 							subitem.setBackground(i, ConfigClass.colorGreen)
+							# subitem.
 						# self.driver.GetTarget().GetCu
 						if subitem.text(3) == f"scanf":
 

@@ -98,6 +98,7 @@ class CustomStyledItemDelegate(QStyledItemDelegate):
 			if option.text == "I" or option.text == ">I":
 				option.palette.setColor(cg, QtGui.QPalette.ColorRole.HighlightedText, color)
 				option.palette.setColor(cg, QtGui.QPalette.ColorRole.Text, color)
+				QBrush(color).setStyle()
 				option.palette.setBrush(QtGui.QPalette.ColorRole.Text, QBrush(color))
 		# if option.state & QtWidgets.QStyle.StateFlag.State_Selected:
 		# 	option.palette.setColor(cg, QtGui.QPalette.ColorRole.HighlightedText, color)
@@ -120,35 +121,16 @@ class CustomStyledItemDelegate(QStyledItemDelegate):
 			painter._color = color
 
 		super().paint(painter, option, index)
-		# print(f"CustomDelegate paint() / index: {dir(index)}....")
-		if option.state & QStyle.StateFlag.State_Selected:# Qt.State_Selected:
-			# option.palette.setColor(QPalette.ColorRole.Text, QColor("black"))
 
+		if option.state & QStyle.StateFlag.State_Selected:# Qt.State_Selected:
 			brush = QBrush(Qt.GlobalColor.darkYellow)
 			# Set custom background color for selected rows
 			option.backgroundBrush = brush # Adjust color as desired
-
-
 		else:
-			# option.palette.setColor(QPalette.ColorRole.Text, QColor("black"))
 			# Create a temporary QPixmap and fill it with the brush color
 			pixmap = QPixmap(option.rect.size())  # Adjust dimensions as needed
-			# logDbg(f"index.column: {index.column()}")
 			pixmap.fill(Qt.GlobalColor.transparent)
-			# if index.column() != 1:
-			# 	return
-			# 	# pixmap.fill(Qt.GlobalColor.black)
-			# 	# painter.setBrush(QColor("black"))
-			# 	pass
-			# else:
-			# 	pixmap.fill(Qt.GlobalColor.transparent)
-
-			# if index.column == 0:
-			# 	pixmap.fill(Qt.GlobalColor.black)
-
-			# Convert the QPixmap to a QImage
 			image = pixmap.toImage()
-			
 			painter.drawImage(option.rect, image)#option.background())
 
 COL_LINE = -1
@@ -160,8 +142,6 @@ COL_OPERANDS = 4
 COL_HEX = 5
 COL_DATA = 6
 COL_COMMENT = 7
-		# painter.setBrush(QBrush(QColor("black")))
-		# painter.end()
 		
 class DisassemblyTableWidget(BaseTableWidget):
 	

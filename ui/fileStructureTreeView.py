@@ -47,9 +47,11 @@ class FileStructureTreeWidget(BaseTreeWidget):
 		daItem = self.currentItem()
 		if daItem:
 			modName = (self.selectedModule.GetFileSpec().GetFilename() if self.selectedModule is not None else "")
+			addr = daItem.text(3)
 			# self.window().driver.debugger.HandleCommand(f"br set -a {daItem.text(1)} -s SwiftREPLTestApp.debug.dylib")
-			logDbgC(f"modName: {modName} => br set -a {daItem.text(3)} -s {modName}")
-			self.window().driver.debugger.HandleCommand(f"br set -a {daItem.text(3)} -s {modName}")
+			logDbgC(f"modName: {modName} => br set -a {addr} -s {modName}")
+			self.window().driver.debugger.HandleCommand(f"br set -a {addr} -s {modName}")
+			# self.window().updateStatusBar(f"Set breakpoint @ {addr} in module: {modName} ...")
 			# # Set breakpoint by address
 			# # self.selectedModule
 			# bp = target.BreakpointCreateByAddress(address.GetLoadAddress(target))

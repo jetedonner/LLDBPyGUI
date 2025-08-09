@@ -21,7 +21,7 @@ class SettingsValues(Enum):
 	EventListenerTimestampFormat = ("Event-Listener Timestamp Format", "%Y-%m-%d %H:%M:%S", str)
 	KeepWatchpointsEnabled = ("Keep watchpoints enabled", True, bool)
 	HexGrouping = ("Hex-Value Grouping", 1, int)
-	StatusBarMsgTimeout = ("StatusBar message timeout", 1500, int)
+	StatusBarMsgTimeout = ("StatusBar message timeout", 2500, int)
 	ExitLLDBOnAppExit = ("Exit LLDB on App exit", True, bool)
 	ShowDateInLogView = ("Show date in logView", True, bool)
 	AutoBreakpointForScanf = ("Automatically set breakpoints for scanf calls", True, bool)

@@ -32,6 +32,10 @@ class SpinnerDialog(QDialog):
 		self.movie.setScaledSize(QSize(64, 64))
 		self.gif_label.setMovie(self.movie)
 		self.movie.start()
+
+		from PyQt6.QtCore import QThread
+		print("Current thread isMainThread(): ", QThread.currentThread().isMainThread())
+		print(QThread.currentThread().currentThreadId())
 		
 		bg_color = QColor(220, 220, 220, 128)  # Adjust alpha value for desired transparency
 

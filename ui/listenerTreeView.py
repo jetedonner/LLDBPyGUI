@@ -212,6 +212,38 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 				elif process.GetState() == lldb.eStateStopped:
 					self.window().setWinTitleWithState(f"Interrupted")
 					self.window().setResumeActionIcon(True)
+					thread = self.driver.getTarget().GetProcess().GetThreadAtIndex(0)
+					reason = thread.GetStopReason()
+					# if reason == lldb.eStopReasonWatchpoint:
+					# 	print(f"WATCHPOINT HIT!!!")
+					# 	sectionNode.setIcon(0, ConfigClass.iconGlasses)
+					#
+					# 	wp = SBWatchpoint.GetWatchpointFromEvent(event)
+					# 	subSectionNode = QTreeWidgetItem(sectionNode, ["Watchpoint ID: ", str(wp.GetID())])
+					#
+					# 	self.window().txtMultiline.setPC(self.driver.getPC(), True)
+					# 	self.window().updateStatusBar("Watchpoint hit ...", True, 3000)
+					# 	self.window().setResumeActionIcon()
+
+					if reason == lldb.eStopReasonBreakpoint:
+						print(f"===========>>>>>>>>>>>>>> BREAKPOINT HIT!!!!!!")
+						if bp_id == -1:
+							bp_id = thread.GetStopReasonDataAtIndex(0)
+						# for idx in range(thread.GetStopReasonDataCount()):
+						# 	if idx == 0:
+						# 		bp_id = thread.GetStopReasonDataAtIndex(idx)
+						# 	logDbg(f"StopReasonData({idx}): {thread.GetStopReasonDataAtIndex(idx)}")
+
+						if isinstance(extObj, lldb.SBTarget):
+							breakpoint = extObj.FindBreakpointByID(int(bp_id))
+						else:
+							breakpoint = extObj.GetTarget().FindBreakpointByID(int(bp_id))
+
+						if breakpoint is not None: # and breakpoint.GetID() == self.driver.mainID:
+							addr = breakpoint.location[0].GetLoadAddress()
+							self.window().txtMultiline.setPC(addr)
+							self.window().wdtBPsWPs.treBPs.setPC(hex(addr))
+							pass
 				pass
 				
 				

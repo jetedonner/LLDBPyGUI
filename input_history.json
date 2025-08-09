@@ -1,1 +1,1 @@
-["br list ", "br s -s libexternal.dylib -a 0x3f4c"]
+["br list ", "br s -s libexternal.dylib -a 0x3f4c", "dis"]
