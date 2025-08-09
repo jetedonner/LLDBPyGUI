@@ -28,6 +28,7 @@ class SpinnerDialog(QDialog):
 	
 		# Load and set the animated GIF
 		self.movie = QMovie(f"{os.path.join(ConfigClass.resRootDir, 'Bean-Eater@1x-1.0s-200px-200px.gif')}") # 1472.gif") # Linear-DNA.gif") #Bean-Eater@1x-1.0s-200px-200px.gif") #DoubleRingSpinner.gif") #Loading-Eclipse-200pxX200px.gif") #
+		self.movie.setCacheMode(QMovie.CacheMode.CacheAll)
 		self.movie.setScaledSize(QSize(64, 64))
 		self.gif_label.setMovie(self.movie)
 		self.movie.start()

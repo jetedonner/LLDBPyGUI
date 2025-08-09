@@ -1739,7 +1739,7 @@ class LLDBPyGUIWindow(QMainWindow):
 
 	def start_loadDisassemblyWorkerNG(self, modulePath, initTable = True):
 		self.instCnt = 1
-		self.start_operation()
+		# self.start_operation()
 		# self.symFuncName = ""
 		# import pdb; pdb.set_trace()
 		# print(f'start_loadDisassemblyWorker')
@@ -1747,7 +1747,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		if initTable:
 			self.txtMultiline.resetContent()
 			self.wdtControlFlow.resetContent()
-		self.workerManager.start_loadDisassemblyWorkerNG(self.handle_loadSymbol, self.handle_loadInstruction, self.handle_workerFinished, modulePath, initTable)
+		self.workerManager.start_loadDisassemblyWorkerNG(self.start_operation, self.handle_loadSymbol, self.handle_loadInstruction, self.handle_workerFinished, modulePath, initTable)
 
 	def start_loadDisassemblyWorker(self, initTable = True):
 		self.symFuncName = ""

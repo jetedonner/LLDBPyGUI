@@ -7,6 +7,7 @@ from worker.baseWorker import *
 from ui.helper.dbgOutputHelper import *
 	
 class LoadDisassemblyWorkerNGSignals(BaseWorkerSignals):
+	show_dialog = pyqtSignal()
 	loadInstruction = pyqtSignal(object)
 	loadSymbolCallback = pyqtSignal(str)
 	finishedLoadModuleCallback = pyqtSignal(object, str)
@@ -24,6 +25,7 @@ class LoadDisassemblyWorkerNG(BaseWorker):
 	def workerFunc(self):
 		super(LoadDisassemblyWorkerNG, self).workerFunc()
 		print(f"LoadDisassemblyWorkerNG.workerFunc() ....")
+		self.signals.show_dialog.emit()
 		# self.sendStatusBarUpdate("Reloading disassembly ...")
 		self.target = self.driver.getTarget()
 		

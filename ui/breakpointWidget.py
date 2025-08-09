@@ -679,7 +679,7 @@ class BreakpointTreeWidget(BaseTreeWidget):
 				# self.window().txtMultiline.viewAddress(daItem.text(2))
 				logDbgC(f"Disassemble module: {daItem.text(8)} / {daItem.toolTip(8)}....")
 				self.disassemble_dylib(self.driver.debugger, daItem.toolTip(8))
-				pass
+				# pass
 			else:
 				if col == 3 or col == 5 or col == 6:
 					self.openPersistentEditor(daItem, col)

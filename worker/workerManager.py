@@ -46,8 +46,9 @@ class WorkerManager(QObject):
 		self.loadDisassemblyWorker.signals.loadInstruction.connect(handle_loadInstruction)
 		self.threadpool.start(self.loadDisassemblyWorker)
 
-	def start_loadDisassemblyWorkerNG(self, handle_loadSymbol, handle_loadInstruction, handle_workerFinished, modulePath, initTable=True):
+	def start_loadDisassemblyWorkerNG(self, show_dialog,  handle_loadSymbol, handle_loadInstruction, handle_workerFinished, modulePath, initTable=True):
 		self.loadDisassemblyWorkerNG = LoadDisassemblyWorkerNG(self.driver, modulePath, initTable)
+		self.loadDisassemblyWorkerNG.signals.show_dialog.connect(show_dialog)
 		self.loadDisassemblyWorkerNG.signals.finishedLoadModuleCallback.connect(handle_workerFinished)
 		#		self.loadDisassemblyWorker.signals.sendStatusBarUpdate.connect(self.handle_statusBarUpdate)
 		#		self.loadDisassemblyWorker.signals.sendProgressUpdate.connect(self.handle_progressUpdate)
