@@ -1,5 +1,7 @@
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // NG: clang -g -o hello_library_exec hello_library_exec.c -ldl -isysroot $(xcrun --show-sdk-path)
+//     clang -g -o hello_library_exec hello_library_exec.c -ldl
+//     clang -g -o hello_library_exec hello_library_exec.c -L. -lexternal
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 

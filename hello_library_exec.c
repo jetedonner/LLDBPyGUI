@@ -1,5 +1,7 @@
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // NG: clang -g -o hello_library_exec hello_library_exec.c -ldl -isysroot $(xcrun --show-sdk-path)
+//     clang -g -o hello_library_exec hello_library_exec.c -ldl
+//     clang -g -o hello_library_exec hello_library_exec.c -L. -lexternal
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
@@ -36,12 +38,22 @@ int main() {
         return 1;
     }
 
+    void (*callExternalFuncWithParam)(int param) = dlsym(handle, "callExternalFuncWithParam");
+    if (!callExternalFuncWithParam) {
+        fprintf(stderr, "❌ Failed to find symbol: %s\n", dlerror());
+        dlclose(handle);
+        return 1;
+    }
+
     while (1) {
         if (idx % 3 == 0) {
             subfunc(idx, testVar);
         }
-        if (idx % 9 == 0) {
+        if (idx % 6 == 0) {
             callExternalFunc();  // Call the function from the dylib
+        }
+        if (idx % 9 == 0) {
+            callExternalFuncWithParam(idx);  // Call the function from the dylib
         }
         printf("...\n");
         fflush(stdout);

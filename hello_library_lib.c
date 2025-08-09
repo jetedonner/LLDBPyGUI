@@ -14,6 +14,7 @@
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // NG: clang -g -dynamiclib -o libexternal.dylib hello_library_lib.c -isysroot $(xcrun --show-sdk-path)
+//     clang -g -dynamiclib -o libexternal.dylib hello_library_lib.c
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 // external_lib.c
@@ -21,5 +22,10 @@
 
 void callExternalFunc() {
     printf("HELLO From Library!!!\n");
+    fflush(stdout);
+}
+
+void callExternalFuncWithParam(int param) {
+    printf("HELLO From Library WITH PARAM: %d!!!\n", param);
     fflush(stdout);
 }
