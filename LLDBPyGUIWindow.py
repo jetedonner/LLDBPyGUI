@@ -554,7 +554,8 @@ class LLDBPyGUIWindow(QMainWindow):
 
 		self.tabWidgetMain = QTabWidget()
 		self.tabWidgetMain.setContentsMargins(0, 0, 0, 0)
-		self.tabWidgetMain.addTab(self.splitter, "Debugger")
+		self.idxDbgTab = self.tabWidgetMain.addTab(self.splitter, "Debugger")
+		# self.tabWidgetMain.setTabText(idxDbgTab, f"Debugger - <module>")
 		self.tabWidgetMain.setContentsMargins(0, 0, 0, 0)
 		self.tabWidgetMain.currentChanged.connect(self.handle_tabWidgetMainCurrentChanged)
 
@@ -700,6 +701,10 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.updateStatusBar("LLDBPyGUI loaded successfully!")
 
 		self._restore_size()
+
+	def setDbgTabLbl(self, moduleName=""):
+		self.tabWidgetMain.setTabText(self.idxDbgTab, f"Debugger{' - ' + moduleName if moduleName != '' else '' }")
+		pass
 
 	def handle_loadStacktrace(self):
 		self.loadStacktrace()
@@ -1808,6 +1813,8 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.wdtControlFlow.draw_instructions()
 		self.wdtControlFlow.loadConnectionsFromWorker(connections)
 		logDbgC(f"self.driver.getPC(): {hex(self.driver.getPC())} / {self.driver.getPC()}", DebugLevel.Verbose)
+		logDbgC(f"Loaded module: {self.driver.getTarget().module[0].GetFileSpec().GetFilename()} ...")
+		self.setDbgTabLbl(f"{self.driver.getTarget().module[0].GetFileSpec().GetFilename()}")
 
 		return
 		self.start_loadRegisterWorker()

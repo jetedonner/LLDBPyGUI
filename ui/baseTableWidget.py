@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from PyQt6.QtWidgets import *
+from PyQt6.QtCore import Qt
 
 class BaseTableWidget(QTableWidget):
 	
@@ -41,7 +42,19 @@ class BaseTableWidget(QTableWidget):
                 padding: 10px;*/
 		    }
 		""")
-		
+
+	def mousePressEvent(self, event):
+		modifiers = event.modifiers()
+		if modifiers & Qt.KeyboardModifier.ShiftModifier: # or modifiers & Qt.KeyboardModifier.GroupSwitchModifier:
+			index = self.indexAt(event.pos())
+			if index.isValid():
+				row = index.row()
+				column = index.column()
+				item = self.item(row, column)
+				QApplication.clipboard().setText(item.text())
+				self.window().updateStatusBar(f"Copied '{item.text()}' to clipboard ...")
+		super().mousePressEvent(event)
+
 	def getSelectedRow(self):
 		if self.selectedItems() != None and len(self.selectedItems()) > 0:
 			return self.selectedItems()[0].row()

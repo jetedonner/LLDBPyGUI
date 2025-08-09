@@ -461,9 +461,37 @@ class DisassemblyTableWidget(BaseTableWidget):
 		self.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
 		self.setShowGrid(False)
 		self.setMouseTracking(True)
+		self.cellClicked.connect(self.on_cell_clicked)
 		self.cellDoubleClicked.connect(self.on_double_click)
 		self.setVerticalScrollBar(QScrollBar())
 		self.verticalScrollBar().valueChanged.connect(self.on_scroll)
+
+	# def mousePressEvent(self, event):
+	# 	# if event.button() == Qt.MouseButton.LeftButton:
+	# 	# 	modifiers = event.modifiers()
+	# 	# 	if modifiers & Qt.KeyboardModifier.ShiftModifier:
+	# 	# 		print("🔑 Shift was pressed during click!")
+	# 	# super().mousePressEvent(event)
+	# 	modifiers = event.modifiers()
+	# 	if modifiers & Qt.KeyboardModifier.ShiftModifier:
+	# 		print("🔑 Shift was pressed during click!")
+	# 		index = self.indexAt(event.pos())
+	# 		if index.isValid():
+	# 			row = index.row()
+	# 			column = index.column()
+	# 			item = self.item(row, column)
+	# 			print(f"🖱️ Clicked cell: ({row}, {column}) → {item.text()}")
+	# 			clipboard = QApplication.clipboard()
+	# 			clipboard.setText(item.text())
+	# 			self.window().updateStatusBar(f"Copied '{item.text()}' to clipboard ...")
+	# 	super().mousePressEvent(event)
+
+	def on_clicked(self):
+		logDbgC(f"cellClicked().... ")
+		pass
+
+	def on_cell_clicked(self, row, column):
+		print(f"Cell clicked: ({row}, {column})")
 
 	def keyPressEvent(self, event):
 		if event.key() == Qt.Key.Key_Left:

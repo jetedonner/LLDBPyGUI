@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
-
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import *
+
+from ui.helper.dbgOutputHelper import logDbgC
+
 
 class BaseTreeWidget(QTreeWidget):
 	
@@ -43,3 +46,16 @@ class BaseTreeWidget(QTreeWidget):
 		""")
 		
 		self.driver = driver
+
+	def mousePressEvent(self, event):
+		modifiers = event.modifiers()
+		if modifiers & Qt.KeyboardModifier.ShiftModifier:
+			index = self.indexAt(event.pos())
+			if index.isValid():
+				item = self.itemFromIndex(index)
+				if item:
+					column = index.column()
+					text = item.text(column)
+					QApplication.clipboard().setText(text)
+					self.window().updateStatusBar(f"Copied '{text}' to clipboard ...")
+		super().mousePressEvent(event)
