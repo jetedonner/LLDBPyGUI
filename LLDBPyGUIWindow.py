@@ -1771,7 +1771,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.threadDecompMod.started.connect(self.workerDecomp.run)
 		self.workerDecomp.show_dialog.connect(self.start_operation)
 		self.workerDecomp.loadSymbolCallback.connect(self.handle_loadSymbol)
-		self.workerDecomp.loadInstructionCallback.connect(self.handle_loadInstruction)
+		self.workerDecomp.loadInstructionCallback.connect(self.handle_loadInstructionNG)
 		self.workerDecomp.finishedLoadInstructionsCallback.connect(self.handle_workerFinishedNG)
 		self.workerDecomp.logDbg.connect(logDbg)
 		self.workerDecomp.logDbgC.connect(logDbgC)
@@ -1859,6 +1859,72 @@ class LLDBPyGUIWindow(QMainWindow):
 		# pass
 		# QApplication.processEvents()
 
+	def handle_loadInstructionNG(self, instruction):
+		self.instCnt += 1
+		target = self.driver.getTarget()
+		# # print(instruction)
+		# # logDbgC(f"handle_loadInstruction({instruction}) ... => {self.symFuncName} / {instruction.GetAddress().GetFunction().GetName()}")
+		# stubsFunctName = None
+		# if self.symFuncName != instruction.GetAddress().GetFunction().GetName():
+		# 	self.symFuncName = instruction.GetAddress().GetFunction().GetName()
+		#
+		# 	if self.symFuncName is None and not self.stubsLoading:
+		# 		# Assuming you have an SBInstruction object called 'instruction'
+		# 		address = instruction.GetAddress()
+		# 		symbol = address.GetSymbol()
+		# 		# logDbgC(f"==========>>>>>>> symbol: {symbol}")
+		# 		# self.symFuncName = symbol.name
+		# 		stubsFunctName = symbol.name
+		# 		self.symFuncName = "__stubs"
+		# 		# if not self.stubsLoading:
+		# 		self.stubsLoading = True
+		# 		self.txtMultiline.appendAsmSymbol(str(instruction.GetAddress().GetLoadAddress(target)),
+		# 										  self.symFuncName)
+		# 	else:
+		# 		if not self.stubsLoading:
+		# 			self.txtMultiline.appendAsmSymbol(str(instruction.GetAddress().GetLoadAddress(target)),
+		# 											  self.symFuncName)
+		# 			self.instCnt += 1
+		# # else:
+		# # 	address = instruction.GetAddress()
+		# # 	stubsFunctName = address.GetSymbol().name
+		#
+		# if self.symFuncName is None and self.stubsLoading:
+		# 	# self.txtMultiline.appendAsmSymbol(str(instruction.GetAddress().GetLoadAddress(target)), self.symFuncName)
+		# 	address = instruction.GetAddress()
+		# 	stubsFunctName = address.GetSymbol().name
+		#
+		# #		print(f'instruction.GetComment(target) => {instruction.GetComment(target)}')
+
+		daData = str(instruction.GetData(target))
+		idx = daData.find("                             ")
+		if idx == -1:
+			idx = daData.find("		            ")
+			if idx == -1:
+				idx = daData.find("		         ")
+				if idx == -1:
+					idx = daData.find("		      ")
+		#					if idx == -1:
+		#						idx = daData.find("		      ")
+		if idx != -1:
+			daHex = daData[:idx]
+			daDataNg = daData[idx:]
+		else:
+			# print(f"idx == -1")
+			daHex = ""
+			daDataNg = ""
+		#		self.txtMultiline.appendAsmText(hex(int(str(instruction.GetAddress().GetLoadAddress(target)), 10)), instruction.GetMnemonic(target),  instruction.GetOperands(target), instruction.GetComment(target), str(instruction.GetData(target)).replace("                             ", "\t\t").replace("		            ", "\t\t\t").replace("		         ", "\t\t").replace("		      ", "\t\t").replace("			   ", "\t\t\t"), True)
+		# logDbgC(f"!!!!!!!!!!!!!!!!¨ALREADY HERE !!!!!!!!!!!!!!!!!!")
+		# comment = stubsFunctName or instruction.GetComment(target)
+		comment = instruction.GetComment(target)
+		self.txtMultiline.appendAsmText(hex(int(str(instruction.GetAddress().GetLoadAddress(target)), 10)),
+										instruction.GetMnemonic(target), instruction.GetOperands(target), comment,
+										daHex, "".join(str(daDataNg).split()), True, "", self.instCnt - 1)
+
+	# QApplication.processEvents()
+	# pass
+	# QApplication.processEvents()
+
 	def handle_workerFinished(self, connections = [], moduleName="<no name>"):
 #		print(f"Current RIP: {self.rip} / {hex(self.rip)} / DRIVER: {self.driver.getPC()} / {self.driver.getPC(True)}")
 		QApplication.processEvents()
@@ -1881,7 +1947,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		if(len(connections) > 0):
 			self.wdtControlFlow.draw_instructions()
 			self.wdtControlFlow.loadConnectionsFromWorker(connections)
-		logDbgC(f"self.driver.getPC(): {hex(self.driver.getPC())} / {self.driver.getPC()}", DebugLevel.Verbose)
+		# logDbgC(f"self.driver.getPC(): {hex(self.driver.getPC())} / {self.driver.getPC()}", DebugLevel.Verbose)
 		logDbgC(f"Loaded module: {self.driver.getTarget().module[0].GetFileSpec().GetFilename()} ...")
 		self.setDbgTabLbl(f"{moduleName}")
 		self.dialog.close()

@@ -137,7 +137,7 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 			print(f"stdout IS NONE or LEN == 0")
 			
 	def addNewEvent(self, event, extObj):
-		logDbgC(f"listenerTreeView.addNewEvent(...) ...")
+		# logDbgC(f"listenerTreeView.addNewEvent(...) ...")
 		sectionNode = QTreeWidgetItem(self, [BroadcastBitString(str(event.GetBroadcasterClass()), event.GetType()), self.getTimestamp()])
 		
 		subSectionNode = QTreeWidgetItem(sectionNode, ["Type: ", BroadcastBitString(str(event.GetBroadcasterClass()), event.GetType()) + " (" + str(event.GetType()) + ")"])
@@ -269,7 +269,7 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 				for bl in bp:
 					arrBPConditions[str(bp.GetID()) + "." + str(bl.GetID())] = bl.GetCondition()
 					arrBPHits[str(bp.GetID()) + "." + str(bl.GetID())] = 0
-					logDbgC(f"addNewEvent...")
+					# logDbgC(f"addNewEvent...")
 					self.bpHelper.enableBP(hex(bl.GetAddress().GetLoadAddress(self.driver.getTarget())) , True)
 					self.window().wdtBPsWPs.treBPs.addBP(bp)
 				pass
@@ -335,7 +335,7 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 
 				if breakpoint is not None and breakpoint.GetID() == self.driver.mainID:
 					if breakpoint.MatchesName("main"):
-						logDbgC(f"if breakpoint.MatchesName('main')")
+						# self.logDbgC.emit(f"if breakpoint.MatchesName('main')", DebugLevel.Verbose)
 						for module in self.driver.getTarget().module_iter():
 							for section in module.section_iter():
 								if hasattr(section, 'symbol_in_section_iter'):
@@ -343,23 +343,24 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 										if symbol.IsValid():
 											name = symbol.GetName()
 											start_addr = symbol.GetStartAddress().GetLoadAddress(self.target)
-											self.logDbgC.emit(f"------------------>>>>>>>>>>>>>Symbol: {name}, Address: {hex(start_addr)}", DebugLevel.Verbose)
+											# self.logDbgC.emit(f"------------------>>>>>>>>>>>>>Symbol: {name}, Address: {hex(start_addr)}", DebugLevel.Verbose)
 					pass
 				elif breakpoint is not None and breakpoint.GetID() == self.driver.scanfID:
 
 					if breakpoint.MatchesName("scanf"):
-						logDbgC(f"if breakpoint.MatchesName('scanf')")
+						# logDbgC(f"if breakpoint.MatchesName('scanf')")
 						self.window().txtMultiline.table.handle_gotoAddr()
-					logDbgC(f"breakpoint.GetTarget(): {breakpoint.GetTarget()}")
+					# logDbgC(f"breakpoint.GetTarget(): {breakpoint.GetTarget()}")
 					slNames = lldb.SBStringList()
 					breakpoint.GetNames(slNames)
 
-					logDbgC(f"FOUND BREAKPOINT-NAMES: {len(slNames)}")
+					# logDbgC(f"FOUND BREAKPOINT-NAMES: {len(slNames)}")
 
 					for name in slNames:
-						logDbgC(f"Name for breakpoint (ID: {breakpoint.GetID()}) found: {name}")
+						# logDbgC(f"Name for breakpoint (ID: {breakpoint.GetID()}) found: {name}")
 						if name == "scanf":
-							logDbgC(f"SCANF FOUND !!!!")
+							# logDbgC(f"SCANF FOUND !!!!")
+							print(f"SCANF FOUND !!!!")
 							# self.window().txtMultiline.table.handle_gotoAddr()
 
 				self.bp_loc = 0
@@ -559,7 +560,7 @@ class ListenerWidget(QWidget):
 	
 	def handle_gotNewEvent(self, event, extObj=None):
 		# if not self.should_quit
-		logDbgC(f"listenerTreeView.handle_gotNewEvent(...) ...")
+		# logDbgC(f"listenerTreeView.handle_gotNewEvent(...) ...")
 		print(f"Got new event: {event} => {get_description(event)}")
 		if extObj == None:
 			extObj = self.driver.getTarget().GetProcess()

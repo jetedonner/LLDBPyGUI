@@ -1,6 +1,8 @@
 from PyQt6.QtCore import QObject, pyqtSignal
 from PyQt6.QtWidgets import QApplication
 
+from ui.helper.lldbutil import symbol_type_to_str
+
 
 class DecompileModuleWorker(QObject):
 
@@ -56,35 +58,86 @@ class DecompileModuleWorker(QObject):
         print(f"LoadDisassemblyWorkerNG.disassemble_entire_target() ....")
         # thread = self.target.GetProcess().GetSelectedThread()
         idxOuter = 0
+        INDENT = "    "
+        INDENT2 = INDENT + INDENT
+        self.allInstructions = []
+        idxInstructions = 0
+        idxSym = 0
         for module in self.target.module_iter():
             if module.GetFileSpec().fullpath != self.modulePath:
                 # print(
                 #     f"LoadDisassemblyWorkerNG.disassemble_entire_target() => module.GetFileSpec().fullpath: {module.GetFileSpec().fullpath} / {self.modulePath}....")
                 continue
             else:
-                # if idxOuter != 0:
-                # 	idxOuter += 1
-                # 	continue
+                print('Number of sections: %d' % module.GetNumSections())
+                for sec in module.section_iter():
+                    print(sec)
 
-                # Iterate over all functions in the module
-                for sym in module:
-                    if not sym.IsValid():
-                        continue
-                    instructions = sym.GetInstructions(target)
-                    if instructions.GetSize() == 0:
-                        continue
+                    # Iterates the text section and prints each symbols within each sub-section.
+                    for subsec in sec:
+                        print(INDENT + repr(subsec))
+                        for sym in module.symbol_in_section_iter(subsec):
+                            print(INDENT2 + repr(sym))
+                            print(INDENT2 + 'symbol type: %s' % symbol_type_to_str(sym.GetType()))
 
-                    # print(f"\n🔧 Function: {sym.GetName()}")
-                    self.loadSymbolCallback.emit(sym.GetName())
-                    for inst in instructions:
-                        self.loadInstructionCallback.emit(inst)
-                        QApplication.processEvents()
-                    # print(f"Address: {inst.GetAddress()}")
-                    # print(f"Instruction: {inst}")
-                    # print(f'sym.GetName() => {sym.GetName()} / instruction.GetAddress().GetFunction().GetName() => {inst.GetAddress().GetFunction().GetName()}')
-                    # print(f'COMMENT => {inst.GetComment(self.target)}')
-                    # self.signals.loadInstruction.emit(instruction)
+                        lstSym = module.symbol_in_section_iter(subsec)
+                        # if isObjC and subsec.GetName() == "__stubs":
+                        #     self.loadSymbolCallback.emit(subsec.GetName())
+
+                        for smbl in lstSym:    
+                            # self.logDbgC.emit(f"===========>>>>>>>>>>> symbl: {smbl}", DebugLevel.Verbose)
+                            # .GetStartAddress().GetFunction()
+                            # if isObjC and not subsec.GetName() == "__stubs":
+
+                            self.loadSymbolCallback.emit(smbl.GetName())
+                            instructions = smbl.GetStartAddress().GetFunction().GetInstructions(target)
+                            print(f"len(instructions): {len(instructions)} ...")
+                            if len(instructions) > 0:
+                                self.allInstructions += instructions
+                                for instruction in instructions:
+                                    # self.logDbgC.emit(f"----------->>>>>>>>>>> INSTRUCTION: {instruction.GetMnemonic(self.target)} ... ", DebugLevel.Verbose)
+                                    self.loadInstructionCallback.emit(instruction)
+                                    QApplication.processEvents()
+                                    idxInstructions += 1
+                                    # self.checkLoadConnection(instruction, idxInstructions + (idxSym + 1))
+                            else:
+                                instructions = smbl.GetInstructions(target)
+                                if instructions.GetSize() == 0:
+                                    continue
+
+                                self.allInstructions += instructions
+                                for inst in instructions:
+                                    self.loadInstructionCallback.emit(inst)
+                                    QApplication.processEvents()
+                                    idxInstructions += 1
+                            idxSym += 1
+
+
+
+
+                # # Iterate over all functions in the module
+                # for sym in module:
+                #     if not sym.IsValid():
+                #         continue
+                #
+                #     print(f"\n🔧 Function: {sym.GetName()}")
+                #     self.loadSymbolCallback.emit(sym.GetName())
+                #     QApplication.processEvents()
+                #
+                #     instructions = sym.GetInstructions(target)
+                #     if instructions.GetSize() == 0:
+                #         continue
+                #
+                #     for inst in instructions:
+                #         self.loadInstructionCallback.emit(inst)
+                #         QApplication.processEvents()
+                #     # print(f"Address: {inst.GetAddress()}")
+                #     # print(f"Instruction: {inst}")
+                #     # print(f'sym.GetName() => {sym.GetName()} / instruction.GetAddress().GetFunction().GetName() => {inst.GetAddress().GetFunction().GetName()}')
+                #     # print(f'COMMENT => {inst.GetComment(self.target)}')
+                #     # self.signals.loadInstruction.emit(instruction)
 
                 self.finishedLoadInstructionsCallback.emit([], module.GetFileSpec().GetFilename())
+                QApplication.processEvents()
                 break
     pass

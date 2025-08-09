@@ -164,6 +164,9 @@ class LLDBListener(QtCore.QObject, Thread):
 				state = 'exited'
 				print(f"self.worker.listener.should_quit = True (4)")
 				self.should_quit = True
+			elif process.state == eStateStopped:
+				print(f"IS WAITING FOR INPUT: {self.is_waiting_for_input(process)}")
+				pass
 			thread = process.selected_thread
 			# print('Process event: %s, reason: %d' % (state, thread.GetStopReason()))
 			if thread.GetStopReason() == lldb.eStopReasonBreakpoint:
@@ -195,10 +198,33 @@ class LLDBListener(QtCore.QObject, Thread):
 	#     error = lldb.SBError()
 	#     thread.Resume(error)
 	#     process.Continue()
-			
-			
-			
-			
+
+	# import lldb
+
+	def is_waiting_for_input(self, process):
+		if not process.IsValid() or process.GetState() != lldb.eStateStopped:
+			return False
+
+		thread = process.GetSelectedThread()
+		frame = thread.GetSelectedFrame()
+		function_name = frame.GetFunctionName()
+
+		# Check for known input functions
+		input_functions = ["read", "fgets", "scanf", "__srget", "getchar", "gets", "fgetc"]
+		if any(func in function_name for func in input_functions):
+			print(f"🛑 App is likely waiting for input in: {function_name}")
+			return True
+
+		# Optionally inspect deeper frames
+		for i in range(thread.GetNumFrames()):
+			f = thread.GetFrameAtIndex(i)
+			fn = f.GetFunctionName()
+			if any(func in fn for func in input_functions):
+				print(f"🛑 App is likely waiting for input (frame {i}): {fn}")
+				return True
+
+		return False
+
 	def _breakpoint_event(self, event):
 		if not self.should_quit:
 			# print()

@@ -815,7 +815,7 @@ class Worker(QObject):
 		self.checkLoadConnection(self.allInstructions)
 
 		for con in self.connections:
-			logDbgC(f"===>>> Connection: {hex(con.origAddr)} / {hex(con.destAddr)} => {con.origRow} / {con.destRow}")
+			self.logDbgC.emit(f"===>>> Connection: {hex(con.origAddr)} / {hex(con.destAddr)} => {con.origRow} / {con.destRow}", DebugLevel.Verbose)
 			# pass
 		self.progressUpdateCallback.emit(35, f"Read disassembly and created control flow connections ...")
 		QApplication.processEvents()
@@ -871,7 +871,7 @@ class Worker(QObject):
 		try:
 			return self.endAddr > int(addr, 16) >= self.startAddr
 		except Exception as e:
-			logDbgC(f"Exception: {e}", DebugLevel.Error)
+			self.logDbgC.emit(f"Exception: {e}", DebugLevel.Error)
 			return False
 
 	
@@ -884,23 +884,23 @@ class Worker(QObject):
 
 			if sMnemonic is not None and sMnemonic.startswith(JMP_MNEMONICS) and not sMnemonic.startswith(JMP_MNEMONICS_EXCLUDE):
 				sAddrJumpTo = instruction.GetOperands(self.target)
-				logDbgC(f"checkLoadConnection()..... {instruction} ===>>> JumpTo: {sAddrJumpTo}")
+				self.logDbgC.emit(f"checkLoadConnection()..... {instruction} ===>>> JumpTo: {sAddrJumpTo}", DebugLevel.Verbose)
 
 				if sAddrJumpTo is None or not is_hex_string(sAddrJumpTo):
-					logDbgC(f"checkLoadConnection() RETURN OF ERROR ..... sAddrJumpTo: {sAddrJumpTo}")
+					self.logDbgC.emit(f"checkLoadConnection() RETURN OF ERROR ..... sAddrJumpTo: {sAddrJumpTo}", DebugLevel.Verbose)
 					continue
 
-				logDbgC(f"checkLoadConnection()..... sAddrJumpTo: {sAddrJumpTo} / end: {hex(self.endAddr)} / start: {hex(self.startAddr)}")
+				self.logDbgC.emit(f"checkLoadConnection()..... sAddrJumpTo: {sAddrJumpTo} / end: {hex(self.endAddr)} / start: {hex(self.startAddr)}", DebugLevel.Verbose)
 
 				bOver = self.startAddr < int(sAddrJumpTo, 16) < self.endAddr
 				if bOver:
-					logDbgC(
-						f"checkLoadConnection()..... sAddrJumpTo IS INSIDE ALTERNATIVE: {sAddrJumpTo} / end: {hex(self.endAddr)} / start: {hex(self.startAddr)}")
+					self.logDbgC.emit(
+						f"checkLoadConnection()..... sAddrJumpTo IS INSIDE ALTERNATIVE: {sAddrJumpTo} / end: {hex(self.endAddr)} / start: {hex(self.startAddr)}", DebugLevel.Verbose)
 					# pass
 
 				if self.isInsideTextSection(sAddrJumpTo) or bOver:
 					if self.isInsideTextSection(sAddrJumpTo):
-						logDbgC(f"IS NOT OVER CONNECTION!!!!")
+						self.logDbgC.emit(f"IS NOT OVER CONNECTION!!!!", DebugLevel.Verbose)
 						sAddrStartInt = int(str(instruction.GetAddress().GetLoadAddress(self.target)), 10)
 						sAddrJumpFrom = hex(sAddrStartInt)
 						rowStart = int(self.get_line_number(sAddrStartInt))# idxInstructions#int(self.get_line_number(int(sAddrJumpFrom, 16)))
@@ -913,13 +913,13 @@ class Worker(QObject):
 								break
 							idx += 1
 						if lineEnd is None:
-							logDbgC(f"IS NOT OVER CONNECTION!!!! ==>> RETURN")
+							self.logDbgC.emit(f"IS NOT OVER CONNECTION!!!! ==>> RETURN", DebugLevel.Verbose)
 							continue
 							# pass
 						rowEnd = int(lineEnd)
-						logDbgC(f"Found connection from line: {rowStart} to: {rowEnd} ({sAddrJumpFrom} / {sAddrJumpTo})")
+						self.logDbgC.emit(f"Found connection from line: {rowStart} to: {rowEnd} ({sAddrJumpFrom} / {sAddrJumpTo})", DebugLevel.Verbose)
 					elif bOver:
-						logDbgC(f"IS OVER CONNECTION!!!!")
+						self.logDbgC.emit(f"IS OVER CONNECTION!!!!", DebugLevel.Verbose)
 						sAddrStartInt = int(str(instruction.GetAddress().GetLoadAddress(self.target)), 10)# int(str(instruction.GetAddress().GetLoadAddress(self.target)), 10)
 						sAddrJumpFrom = hex(sAddrStartInt)
 						rowStart = int(self.get_line_number(
@@ -927,11 +927,11 @@ class Worker(QObject):
 						# lineEnd = self.get_line_number(int(sAddrJumpTo, 16))
 						lineEnd = self.mainWin.txtMultiline.table.getLineNum(sAddrJumpTo)
 						if lineEnd is None:
-							logDbgC(f"IS OVER CONNECTION!!!! ==>> RETURN")
+							self.logDbgC.emit(f"IS OVER CONNECTION!!!! ==>> RETURN", DebugLevel.Verbose)
 							continue
 							# pass
 						rowEnd = int(lineEnd)
-						logDbgC(f"Found connection from line: {rowStart} to: {rowEnd} ({sAddrJumpFrom} / {sAddrJumpTo})")
+						self.logDbgC.emit(f"Found connection from line: {rowStart} to: {rowEnd} ({sAddrJumpFrom} / {sAddrJumpTo})", DebugLevel.Verbose)
 
 
 			# pass
@@ -951,14 +951,14 @@ class Worker(QObject):
 					# newConObj.parentControlFlow = self
 					# self.addConnection(newConObj)
 					newConObj.mnemonic = sMnemonic
-					logDbgC(f"Connection (Branch) is a: {newConObj.mnemonic} / {sMnemonic})")
+					self.logDbgC.emit(f"Connection (Branch) is a: {newConObj.mnemonic} / {sMnemonic})", DebugLevel.Verbose)
 					if abs(newConObj.jumpDist / 2) <= (newConObj.radius / 2):
 						newConObj.radius = newConObj.jumpDist / 2
 					self.connections.append(newConObj)
 					if self.radius <= 130:
 						self.radius += 15
 				else:
-					logDbgC(f"checkLoadConnection()..... sAddrJumpTo NOT IN TARGET")
+					self.logDbgC.emit(f"checkLoadConnection()..... sAddrJumpTo NOT IN TARGET", DebugLevel.Verbose)
 					# self.connections.sort(key=lambda x: abs(x.jumpDist), reverse=True)
 					#
 					# idx = 1

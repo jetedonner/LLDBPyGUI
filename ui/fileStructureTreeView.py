@@ -73,7 +73,7 @@ class FileStructureTreeWidget(BaseTreeWidget):
 			self.window().doReadMemory(int(daItem.text(1), 16), int(daItem.text(3), 16))
 		# 		self.openPersistentEditor(daItem, col)
 		# 		self.editItem(daItem, col)
-		elif col == 0 and daItem.parent().text(0) == "__text" and daItem.childCount() == 0:
+		elif col == 0 and daItem.parent() is not None and daItem.parent().text(0) == "__text" and daItem.childCount() == 0:
 			self.window().tabWidgetMain.setCurrentWidget(self.window().splitter)
 			self.window().txtMultiline.viewAddress(daItem.text(1))
 		pass
