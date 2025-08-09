@@ -135,6 +135,12 @@ class Worker(QObject):
 		# return
 		self.show_dialog.emit()
 
+		arch = get_arch_from_macholib(self.fileToLoad)[0]
+		self.logDbg.emit(f"MACH-O Header: {arch} => {MachoCPUType.to_str(MachoCPUType.create_cputype_value(arch))}")
+		# if (arch & MachoCPUType.CPU_TYPE_ARM64.value) == MachoCPUType.CPU_TYPE_ARM64.value:
+		if arch & MachoCPUType.CPU_TYPE_ARM64.value:
+			self.logDbg.emit(f"MACH-O Header: {MachoCPUType.to_str(MachoCPUType.create_cputype_value(arch))} is ARM64 .... YESSSSS!!!!!!")
+
 		self.logDbg.emit(f"loadNewExecutableFile({self.fileToLoad})...")
 		# self.targetBasename = os.path.basename(self.fileToLoad)
 		self.loadNewExecutableFile(self.fileToLoad)

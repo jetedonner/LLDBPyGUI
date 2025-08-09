@@ -15,6 +15,7 @@ from ui.hexToStringWidget import HexToStringWidget
 from ui.rememberLocationsTableWidget import RememberLocationsTableWidget
 from ui.rflagTableWidget import RFlagTableWidget, RFlagWidget
 from ui.stopHookWidget import StopHookWidget
+from worker.decompileModuleWorker import DecompileModuleWorker
 
 try:
 	import queue
@@ -217,6 +218,12 @@ class LLDBPyGUIWindow(QMainWindow):
 	def stopWorkerAndQuitThread(self):
 		self.worker.stop()
 		self.threadLoad.quit()
+		self.finish_startup()
+		pass
+
+	def stopWorkerAndQuitThreadNG(self):
+		# self.workerDecomp.stop()
+		self.threadDecompMod.quit()
 		self.finish_startup()
 		pass
 
@@ -1437,7 +1444,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		pass
 
 	def loadFileInfosCallback(self, mach_header, targetRet):
-
+		self.tblFileInfos.resetContent()
 		self.tblFileInfos.addRow("Magic", MachoMagic.to_str(MachoMagic.create_magic_value(mach_header.magic)),
 					 hex(mach_header.magic))
 		self.tblFileInfos.addRow("CPU Type", MachoCPUType.to_str(MachoCPUType.create_cputype_value(mach_header.cputype)),
@@ -1736,6 +1743,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.isProcessRunning = False
 		pass
 
+	threadDecompMod = None
 
 	def start_loadDisassemblyWorkerNG(self, modulePath, initTable = True):
 		self.instCnt = 1
@@ -1747,7 +1755,28 @@ class LLDBPyGUIWindow(QMainWindow):
 		if initTable:
 			self.txtMultiline.resetContent()
 			self.wdtControlFlow.resetContent()
-		self.workerManager.start_loadDisassemblyWorkerNG(self.start_operation, self.handle_loadSymbol, self.handle_loadInstruction, self.handle_workerFinished, modulePath, initTable)
+		# self.workerManager.start_loadDisassemblyWorkerNG(self.start_operation, self.handle_loadSymbol, self.handle_loadInstruction, self.handle_workerFinished, modulePath, initTable)
+
+		self.threadDecompMod = QThread()
+		# self.targetBasename = sSelectedTarget
+		self.workerDecomp = DecompileModuleWorker(self.driver, modulePath, initTable)  # , ConfigClass.testTargetSource)
+		# self.workerDecomp.fileToLoad = sSelectedTarget
+		# self.workerDecomp.loader = ctd.cmbLoader.currentText()
+		# self.workerDecomp.arch = ctd.cmbArch.currentText()
+		# self.workerDecomp.args = ctd.txtArgs.text()
+		# self.workerDecomp.loadSourceCode = ctd.loadSourceCode
+		# logDbgC(f"*************>>>> load_clicked => 2.....")
+		self.workerDecomp.moveToThread(self.threadDecompMod)
+
+		self.threadDecompMod.started.connect(self.workerDecomp.run)
+		self.workerDecomp.show_dialog.connect(self.start_operation)
+		self.workerDecomp.loadSymbolCallback.connect(self.handle_loadSymbol)
+		self.workerDecomp.loadInstructionCallback.connect(self.handle_loadInstruction)
+		self.workerDecomp.finishedLoadInstructionsCallback.connect(self.handle_workerFinishedNG)
+		self.workerDecomp.logDbg.connect(logDbg)
+		self.workerDecomp.logDbgC.connect(logDbgC)
+		# self.worker.progressUpdateCallback.connect(self.handle_progressUpdate)
+		self.threadDecompMod.start()
 
 	def start_loadDisassemblyWorker(self, initTable = True):
 		self.symFuncName = ""
@@ -1760,9 +1789,11 @@ class LLDBPyGUIWindow(QMainWindow):
 
 	def handle_loadSymbol(self, symbol):
 		self.txtMultiline.appendAsmSymbol(0x0, str(symbol))
+		# QApplication.processEvents()
 
 	def handle_loadString(self, addr, idx, string):
 		self.txtMultiline.appendString(addr, idx, string)
+		# QApplication.processEvents()
 		pass
 
 	instCnt = 0
@@ -1770,7 +1801,7 @@ class LLDBPyGUIWindow(QMainWindow):
 	def handle_loadInstruction(self, instruction):
 		self.instCnt += 1
 		target = self.driver.getTarget()
-		print(instruction)
+		# print(instruction)
 		# logDbgC(f"handle_loadInstruction({instruction}) ... => {self.symFuncName} / {instruction.GetAddress().GetFunction().GetName()}")
 		stubsFunctName = None
 		if self.symFuncName != instruction.GetAddress().GetFunction().GetName():
@@ -1780,7 +1811,7 @@ class LLDBPyGUIWindow(QMainWindow):
 				# Assuming you have an SBInstruction object called 'instruction'
 				address = instruction.GetAddress()
 				symbol = address.GetSymbol()
-				logDbgC(f"==========>>>>>>> symbol: {symbol}")
+				# logDbgC(f"==========>>>>>>> symbol: {symbol}")
 				# self.symFuncName = symbol.name
 				stubsFunctName = symbol.name
 				self.symFuncName = "__stubs"
@@ -1826,10 +1857,26 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.txtMultiline.appendAsmText(hex(int(str(instruction.GetAddress().GetLoadAddress(target)), 10)), instruction.GetMnemonic(target),  instruction.GetOperands(target), comment, daHex, "".join(str(daDataNg).split()), True, "", self.instCnt - 1)
 		# QApplication.processEvents()
 		# pass
+		# QApplication.processEvents()
 
 	def handle_workerFinished(self, connections = [], moduleName="<no name>"):
 #		print(f"Current RIP: {self.rip} / {hex(self.rip)} / DRIVER: {self.driver.getPC()} / {self.driver.getPC(True)}")
 		QApplication.processEvents()
+		self.txtMultiline.setPC(self.driver.getPC(), True)
+		if(len(connections) > 0):
+			self.wdtControlFlow.draw_instructions()
+			self.wdtControlFlow.loadConnectionsFromWorker(connections)
+		logDbgC(f"self.driver.getPC(): {hex(self.driver.getPC())} / {self.driver.getPC()}", DebugLevel.Verbose)
+		logDbgC(f"Loaded module: {self.driver.getTarget().module[0].GetFileSpec().GetFilename()} ...")
+		self.setDbgTabLbl(f"{moduleName}")
+		self.dialog.close()
+
+	def handle_workerFinishedNG(self, connections = [], moduleName="<no name>"):
+#		print(f"Current RIP: {self.rip} / {hex(self.rip)} / DRIVER: {self.driver.getPC()} / {self.driver.getPC(True)}")
+		QApplication.processEvents()
+		self.threadDecompMod.quit()
+		# self.finish_startup()
+
 		self.txtMultiline.setPC(self.driver.getPC(), True)
 		if(len(connections) > 0):
 			self.wdtControlFlow.draw_instructions()

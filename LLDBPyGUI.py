@@ -300,7 +300,9 @@ def startLLDBPyGUI2(debugger, command, result, dict):
 	pass
 
 def startLLDBPyGUI(debugger, command, result, dict):
-	
+
+	# sys.setrecursionlimit(1000000)
+
 	cmd_banner(debugger, command, result, dict)
 	
 	debugger.SetAsync(False)

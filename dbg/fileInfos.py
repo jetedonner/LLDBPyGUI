@@ -36,6 +36,13 @@ from enum import Enum
 #if bitmask & MyEnum.VALUE_D.value:
 #	print("Bitmask includes VALUE_D")
 
+from macholib.MachO import MachO
+
+def get_arch_from_macholib(path):
+    macho = MachO(path)
+    archs = [header.header.cputype for header in macho.headers]
+    return archs  # Will return numeric CPU type codes
+
 class MachoFlag(enum.Enum):
 	MH_NONE = 0x0
 	# Mach haeder "flag" constant bits
@@ -239,6 +246,7 @@ class MachoCPUType(enum.Enum):
 	CPU_TYPE_MC98000 = 10
 	CPU_TYPE_HPPA = 11
 	CPU_TYPE_ARM = 12
+	CPU_TYPE_ARM64 = CPU_TYPE_ARM | CPU_ARCH_ABI64
 	CPU_TYPE_MC88000 = 13
 	CPU_TYPE_SPARC = 14
 	CPU_TYPE_I860 = 15
@@ -276,6 +284,8 @@ class MachoCPUType(enum.Enum):
 			return "CPU_TYPE_HPPA"
 		elif magic == cls.CPU_TYPE_ARM:
 			return "CPU_TYPE_ARM"
+		elif magic == cls.CPU_TYPE_ARM64:
+			return "CPU_TYPE_ARM64"
 		elif magic == cls.CPU_TYPE_MC88000:
 			return "CPU_TYPE_MC88000"
 		elif magic == cls.CPU_TYPE_SPARC:
