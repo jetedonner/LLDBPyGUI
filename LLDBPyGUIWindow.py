@@ -1826,15 +1826,16 @@ class LLDBPyGUIWindow(QMainWindow):
 		# QApplication.processEvents()
 		# pass
 
-	def handle_workerFinished(self, connections = []):
+	def handle_workerFinished(self, connections = [], moduleName="<no name>"):
 #		print(f"Current RIP: {self.rip} / {hex(self.rip)} / DRIVER: {self.driver.getPC()} / {self.driver.getPC(True)}")
 		QApplication.processEvents()
 		self.txtMultiline.setPC(self.driver.getPC(), True)
-		self.wdtControlFlow.draw_instructions()
-		self.wdtControlFlow.loadConnectionsFromWorker(connections)
+		if(len(connections) > 0):
+			self.wdtControlFlow.draw_instructions()
+			self.wdtControlFlow.loadConnectionsFromWorker(connections)
 		logDbgC(f"self.driver.getPC(): {hex(self.driver.getPC())} / {self.driver.getPC()}", DebugLevel.Verbose)
 		logDbgC(f"Loaded module: {self.driver.getTarget().module[0].GetFileSpec().GetFilename()} ...")
-		self.setDbgTabLbl(f"{self.driver.getTarget().module[0].GetFileSpec().GetFilename()}")
+		self.setDbgTabLbl(f"{moduleName}")
 		self.dialog.close()
 
 		return

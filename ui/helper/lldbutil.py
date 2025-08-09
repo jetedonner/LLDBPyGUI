@@ -952,6 +952,52 @@ def get_ESRs(frame):
     """
     return get_registers(frame, "exception state")
 
+import lldb
+
+def get_module_from_breakpoint_location(bp_loc):
+    if not bp_loc.IsValid():
+        print("❌ Invalid breakpoint location.")
+        return None
+
+    # Get the address where the breakpoint is set
+    addr = bp_loc.GetAddress()
+    if not addr.IsValid():
+        print("❌ Invalid address.")
+        return None
+
+    # Get the module from the address
+    module = addr.GetModule()
+    if not module.IsValid():
+        print("❌ No module found for this address.")
+        return None
+
+    # Get the module's file path
+    module_path = module.GetFileSpec().GetFilename()
+    print(f"📦 Breakpoint is in module: {module_path}")
+    return module
+
+def get_module_from_bp_location(bp_loc):
+    if not bp_loc.IsValid():
+        print("❌ Invalid breakpoint location.")
+        return None
+
+    addr = bp_loc.GetAddress()
+    if not addr.IsValid():
+        print("❌ Invalid address.")
+        return None
+
+    # Use symbol context to resolve module
+    context = addr.GetSymbolContext(lldb.eSymbolContextModule)
+    module = context.GetModule()
+
+    if module.IsValid():
+        print("📦 Module name:", module.GetFileSpec().GetFilename())
+        return module
+    else:
+        print("⚠️ Module not resolved yet (library may not be loaded).")
+        return None
+
+
 # ======================================
 # Utility classes/functions for SBValues
 # ======================================

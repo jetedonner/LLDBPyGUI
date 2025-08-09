@@ -39,7 +39,7 @@ class Worker(QObject):
 	loadInstructionCallback = pyqtSignal(object)
 	loadStringCallback = pyqtSignal(str, int, str)
 	loadSymbolCallback = pyqtSignal(str)
-	finishedLoadInstructionsCallback = pyqtSignal(object)
+	finishedLoadInstructionsCallback = pyqtSignal(object, str)
 	loadRegisterCallback = pyqtSignal(str)
 	loadRegisterValueCallback = pyqtSignal(int, str, str, str)
 	loadVariableValueCallback = pyqtSignal(str, str, str, str, str)
@@ -546,9 +546,10 @@ class Worker(QObject):
 									# func_start = subsec.GetStartAddress()
 									# func_end = subsec.GetEndAddress()
 									# logDbgC(f"__stubs: start_addr: {start_addr} / end_addr: {end_addr}")
-									estimated_count = size // 6
+									estimated_count = size // 4
 									instructions = self.target.ReadInstructions(lldb.SBAddress(start_addr, self.target),
 																	int(estimated_count))
+									# instructions = subsec.addr.GetFunction().GetInstructions(self.target)
 									# insts = target.ReadInstructions(lldb.SBAddress(start_addr, target), lldb.SBAddress(end_addr, target))
 									for instruction in instructions:
 										# result.PutCString(str(inst))
@@ -813,7 +814,7 @@ class Worker(QObject):
 		self.progressUpdateCallback.emit(35, f"Read disassembly and created control flow connections ...")
 		QApplication.processEvents()
 		self.connections.sort(key=lambda x: abs(x.jumpDist), reverse=True)
-		self.finishedLoadInstructionsCallback.emit(self.connections)
+		self.finishedLoadInstructionsCallback.emit(self.connections, self.target.GetExecutable().GetFilename())
 		QApplication.processEvents()
 		self.loadRegisters()
 

@@ -55,7 +55,7 @@ class DisassemblyImageTableWidgetItem(QTableWidgetItem):
 		super().__init__(self.iconStd, "", QTableWidgetItem.ItemType.Type)
 		self.iconBPEnabled = ConfigClass.iconBPEnabled
 		self.iconBPDisabled = ConfigClass.iconBPDisabled
-		# self.setFlags(self.flags() & ~Qt.ItemFlag.ItemIsEditable)
+		self.setFlags(self.flags() & ~Qt.ItemFlag.ItemIsEditable)
 			
 	def setBPOn(self, on = True):
 		if on:
@@ -800,8 +800,8 @@ class DisassemblyTableWidget(BaseTableWidget):
 	def addItem(self, row, col, txt):
 		
 		item = QTableWidgetItem(txt, QTableWidgetItem.ItemType.Type)
-		# if col != COL_HEX:
-		# 	item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable) #Qt.ItemFlag.ItemIsSelectable)
+		if col != COL_HEX:
+			item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable) #Qt.ItemFlag.ItemIsSelectable)
 		
 		# Insert the items into the row
 		self.setItem(row, col, item)

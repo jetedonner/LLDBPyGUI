@@ -17,6 +17,8 @@ from ui.helper.lldbutil import symbol_type_to_str
 class FileStructureTreeWidget(BaseTreeWidget):
 	
 #	actionShowMemory = None
+
+	selectedModule = None
 	
 	def __init__(self):
 		super().__init__(None)
@@ -44,7 +46,17 @@ class FileStructureTreeWidget(BaseTreeWidget):
 	def handle_setbp(self, event=None):
 		daItem = self.currentItem()
 		if daItem:
-			self.window().driver.debugger.HandleCommand(f"br set -a {daItem.text(1)}  -s SwiftREPLTestApp.debug.dylib")
+			modName = (self.selectedModule.GetFileSpec().GetFilename() if self.selectedModule is not None else "")
+			# self.window().driver.debugger.HandleCommand(f"br set -a {daItem.text(1)} -s SwiftREPLTestApp.debug.dylib")
+			logDbgC(f"modName: {modName} => br set -a {daItem.text(3)} -s {modName}")
+			self.window().driver.debugger.HandleCommand(f"br set -a {daItem.text(3)} -s {modName}")
+			# # Set breakpoint by address
+			# # self.selectedModule
+			# bp = target.BreakpointCreateByAddress(address.GetLoadAddress(target))
+			# if bp.IsValid() and bp.GetNumLocations() > 0:
+			# 	result.PutCString(f"✅ Breakpoint set at address: 0x{address.GetLoadAddress(target):x}")
+			# else:
+			# 	result.PutCString("⚠️ Breakpoint could not be resolved at address.")
 		pass
 
 	def mouseDoubleClickEvent(self, event):
@@ -92,6 +104,7 @@ class FileStructureWidget(QWidget):
 		self.layFile = QHBoxLayout()
 		self.wdtFile.setLayout(self.layFile)
 		self.treFile = FileStructureTreeWidget()
+		# self.treFile.selectedModule = ""
 #		self.treFile.actionShowMemoryFrom.triggered.connect(self.handle_showMemoryFileStructureFrom)
 #		self.treFile.actionShowMemoryTo.triggered.connect(self.handle_showMemoryFileStructureTo)
 		self.cmbModules = QComboBox()
@@ -170,6 +183,7 @@ class FileStructureWidget(QWidget):
 
 
 	def addFileStructInfo(self, module):
+		self.treFile.selectedModule = module
 		for sec in module.section_iter():
 			sectionNode = QTreeWidgetItem(self.treFile, [sec.GetName(), str(hex(sec.GetLoadAddress(self.driver.getTarget()))), str(hex(sec.GetLoadAddress(self.driver.getTarget()) + sec.size)), str(hex(sec.GetFileAddress())), str(hex(sec.GetFileAddress() + sec.GetByteSize())), hex(sec.GetFileByteSize()), hex(sec.GetByteSize()), SectionTypeString(sec.GetSectionType()) + " (" + str(sec.GetSectionType()) + ")"])
 

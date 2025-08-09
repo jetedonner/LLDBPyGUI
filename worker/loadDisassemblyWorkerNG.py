@@ -9,6 +9,7 @@ from ui.helper.dbgOutputHelper import *
 class LoadDisassemblyWorkerNGSignals(BaseWorkerSignals):
 	loadInstruction = pyqtSignal(object)
 	loadSymbolCallback = pyqtSignal(str)
+	finishedLoadModuleCallback = pyqtSignal(object, str)
 	
 class LoadDisassemblyWorkerNG(BaseWorker):
 
@@ -71,8 +72,9 @@ class LoadDisassemblyWorkerNG(BaseWorker):
 						# print(f'sym.GetName() => {sym.GetName()} / instruction.GetAddress().GetFunction().GetName() => {inst.GetAddress().GetFunction().GetName()}')
 						# print(f'COMMENT => {inst.GetComment(self.target)}')
 						# self.signals.loadInstruction.emit(instruction)
+
+				self.signals.finishedLoadModuleCallback.emit([], module.GetFileSpec().GetFilename())
 				break
-		self.signals.finished.emit()
 		# return
 # 			idx = 0
 # 			for section in module.section_iter():

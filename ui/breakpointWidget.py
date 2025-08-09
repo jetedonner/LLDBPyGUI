@@ -21,6 +21,7 @@ from config import *
 from lib.utils import *
 from ui.dialogs.notification import Notification
 from ui.helper.dbgOutputHelper import logDbgC
+from ui.helper.lldbutil import get_module_from_breakpoint_location, get_module_from_bp_location
 
 
 class EditableTreeItem(QTreeWidgetItem):
@@ -279,6 +280,8 @@ class BreakpointTreeWidget(BaseTreeWidget):
 #				bp.SetScriptCallbackFunction("lldbpyGUIWindow.my_callback", extra_args)
 			
 			txtID = str(bp.GetID()) + "." + str(idx)
+
+			get_module_from_bp_location(bl)
 
 			sectionNode = EditableTreeItem(bpNode, [txtID, '', hex(bl.GetLoadAddress()), name, str(bl.GetHitCount()), bl.GetCondition(), '', 'Yes' if bp.IsOneShot() else 'No', bl.GetAddress().GetModule().GetFileSpec().GetFilename()])
 			loadAddr = hex(bl.GetLoadAddress())
