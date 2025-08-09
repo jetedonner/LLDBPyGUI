@@ -477,8 +477,9 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.tabWidgetDbg = QTabWidget()
 		self.tabWidgetDbg.setContentsMargins(0, 0, 0, 0)
 		self.splitter.addWidget(self.tabWidgetDbg)
-		self.splitter.setStretchFactor(0, 60)
-		self.splitter.setStretchFactor(1, 40)
+		self.splitter.setStretchFactor(0, 70)
+		self.splitter.setStretchFactor(1, 30)
+		self.splitter.setSizes([500, 200])
 
 		self.tabWidgetReg = QTabWidget()
 		self.tabWidgetReg.setContentsMargins(0, 0, 0, 0)
