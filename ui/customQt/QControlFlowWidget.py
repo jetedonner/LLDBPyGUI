@@ -535,7 +535,7 @@ class QControlFlowWidget(QWidget):
 
         self.scene.setSceneRect(35, 0, 79.5, tblDisassembly.get_total_table_height() - 2)
         rect = self.scene.sceneRect()
-        logDbgC(f"rect: {rect}, tblDisassembly.get_total_table_height(): {tblDisassembly.get_total_table_height()}")
+        # logDbgC(f"rect: {rect}, tblDisassembly.get_total_table_height(): {tblDisassembly.get_total_table_height()}")
         # rect.setHeight(tblDisassembly.get_total_table_height() - 2 + 250)
         # # self.scene.setSceneRect(rect)
         # self.scene.setMinimumRenderSize(QSize(75, tblDisassembly.get_total_table_height() - 2 + 250))
@@ -608,8 +608,8 @@ class QControlFlowWidget(QWidget):
             else:
                 con.switched = False
 
-            logDbgC(f"Connection ({idx}) => fromY: {y_position} / toY: {y_position2} / con.origRow: {con.origRow} / con.destRow: {con.destRow} ---->>>> CON-SWITCHED: {con.switched}")
-            logDbgC(f"- Addr from: {hex(con.origAddr)} to: {hex(con.destAddr)}")
+            # logDbgC(f"Connection ({idx}) => fromY: {y_position} / toY: {y_position2} / con.origRow: {con.origRow} / con.destRow: {con.destRow} ---->>>> CON-SWITCHED: {con.switched}")
+            # logDbgC(f"- Addr from: {hex(con.origAddr)} to: {hex(con.destAddr)}")
             nRowHeight = 21
             nOffsetAdd = 23
             xOffset = (controlFlowWidth / 2) + (((controlFlowWidth - radius) / 2))  # + (radius / 2)

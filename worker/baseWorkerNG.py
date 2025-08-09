@@ -179,11 +179,11 @@ class Worker(QObject):
 		self.finishedLoadControlFlow = True
 
 	def runLoadControlFlow(self):
-		self.logDbgC.emit(f"runLoadControlFlow ... ", DebugLevel.Info)
+		# self.logDbgC.emit(f"runLoadControlFlow ... ", DebugLevel.Info)
 		while not self.finishedLoadControlFlow:
 			# self.logDbg.emit(f"... ")
 			time.sleep(0.5)
-		self.logDbgC.emit(f"Finished loading control flow ... continuing ...", DebugLevel.Verbose)
+		# self.logDbgC.emit(f"Finished loading control flow ... continuing ...", DebugLevel.Verbose)
 
 		# if self.setHelper.getChecked(SettingsValues.BreakpointAtMainFunc):
 		# 	self.bpHelper.enableBP(hex(addrObj2), True, False)
@@ -203,7 +203,7 @@ class Worker(QObject):
 		self.isLoadSourceCodeActive = True
 
 		self.sourceFile = sourcefileToUse = filename if filename != "" else self.sourceFile
-		print(f"RUN LOAD SOURCECODE: {self.sourceFile} ...")
+		# print(f"RUN LOAD SOURCECODE: {self.sourceFile} ...")
 		context = self.frame.GetSymbolContext(lldb.eSymbolContextEverything)
 		self.lineNum = context.GetLineEntry().GetLine()
 		# Create the filespec for 'main.c'.
@@ -212,7 +212,7 @@ class Worker(QObject):
 		# Use a string stream as the destination.
 		linesOfFileContent = self.linesOfFileContent(sourcefileToUse)
 		linesOfCode = len(linesOfFileContent)
-		self.logDbgC.emit(f"linesOfCode: {linesOfCode} / {linesOfCode - self.lineNum}", DebugLevel.Verbose)
+		# self.logDbgC.emit(f"linesOfCode: {linesOfCode} / {linesOfCode - self.lineNum}", DebugLevel.Verbose)
 		stream = None
 		if linesOfCode > 0:
 			stream = lldb.SBStream()
@@ -226,7 +226,7 @@ class Worker(QObject):
 				self.finishedLoadingSourceCodeCallback.emit(fileContent)
 				QApplication.processEvents()
 
-		self.logDbgC.emit(f"BEFORE self.runLoadControlFlow() => runLoadSourceCode()", DebugLevel.Info)
+		# self.logDbgC.emit(f"BEFORE self.runLoadControlFlow() => runLoadSourceCode()", DebugLevel.Info)
 		if loadFlowControl:
 			self.runControlFlow_loadConnections.emit()
 			QApplication.processEvents()
@@ -474,8 +474,6 @@ class Worker(QObject):
 					else:
 						print("Failed to read memory:", error.GetCString())
 
-	# import lldb
-
 	def list_external_symbols(self, target):
 		main_exe = target.GetExecutable().GetFilename()
 
@@ -595,221 +593,6 @@ class Worker(QObject):
 			# 	break
 			idx += 1
 		self.logDbgC.emit(f"============ END DISASSEMBLER ===============", DebugLevel.Verbose)
-		# """Disassembles instructions for the entire target.
-		#
-		# Args:
-		# 	target: The SBTarget object representing the debugged process.
-		# """
-		#
-		# # self.thread = self.target.GetProcess().GetSelectedThread()
-		# self.logDbgC.emit(f"Starting to disassemble => continuing ...", DebugLevel.Verbose)
-		# # print(f"Starting to disassemble => continuing ...")
-		# idxOuter = 0
-		# for module in self.target.module_iter():
-		# 	if idxOuter != 0:
-		# 		idxOuter += 1
-		# 		# self.logDbg.emit(f"Starting to disassemble => idxOuter != 0 continuing ...")
-		# 		# print(f"Starting to disassemble => idxOuter != 0 continuing ...")
-		# 		continue
-		# 	idx = 0
-		#
-		# 	# for module in self.target.module_iter():
-		# 	# for compile_unit in module.compile_unit_iter():
-		# 	# 	for func in compile_unit:
-		# 	# 		if func.IsValid():
-		# 	# 			self.logDbgC.emit(f"Objective-C Function: {func.GetName()}")
-		#
-		# 	for section in module.section_iter():
-		# 		# Check if the section is readable
-		# 		#				if not section.IsReadable():
-		# 		#					continue
-		# 		self.logDbgC.emit(f"section.GetName(): {section.GetName()}", DebugLevel.Verbose)
-		# 		if section.GetName() == "__TEXT":  # or  section.GetName() == "__PAGEZERO":
-		# 			# if idx != 1:
-		# 			# 	idx += 1
-		# 			# 	continue
-		# 			idxInstructions = 0
-		# 			for subsec in section:
-		# 				self.logDbgC.emit(f"subsec.GetName(): {subsec.GetName()}", DebugLevel.Verbose)
-		# 				if subsec.GetName() == "__text" or subsec.GetName() == "__stubs":
-		#
-		# 					idxSym = 0
-		# 					lstSym = module.symbol_in_section_iter(subsec)
-		# 					for smbl in lstSym:
-		# 						self.logDbgC.emit(f"===========>>>>>>>>>>> symbl: {smbl}", DebugLevel.Verbose)
-		# 						self.loadSymbolCallback.emit(smbl.GetStartAddress().GetFunction().GetName())
-		# 						# if symFuncName == instruction.GetAddress().GetFunction().GetName():
-		# 						#										print(f"Address: {instruction.GetAddress()}")
-		# 						#										print(f"Instruction: {instruction}")
-		# 						#										print(f'sym.GetName() => {sym.GetName()} / instruction.GetAddress().GetFunction().GetName() => {instruction.GetAddress().GetFunction().GetName()}')
-		# 						#										print(f'COMMENT => {instruction.GetComment(self.target)}')
-		# 						instructions = smbl.GetStartAddress().GetFunction().GetInstructions(self.target)
-		# 						for instruction in instructions:
-		# 							self.loadInstructionCallback.emit(instruction)
-		# 						# if  instruction.GetMnemonic(self.target) is None:
-		# 						# 	continue
-		# 						idxInstructions += 1
-		# 						self.checkLoadConnection(instruction, idxInstructions + (idxSym + 1))
-		# 						break
-		# 					# idxInstructions = 0
-		# 					# {len(lstSym)}
-		# 					self.logDbgC.emit(f"lstSym: {lstSym} / subsec.GetName(): {subsec.GetName()}", DebugLevel.Verbose)
-		#
-		# 					if subsec.GetName() == "__stubs":
-		# 						start_addr = subsec.GetLoadAddress(self.target)
-		# 						size = subsec.GetByteSize()
-		# 						self.logDbgC.emit(f"size of __stubs: {hex(size)} / {hex(start_addr)}", DebugLevel.Verbose)
-		# 						# Disassemble instructions
-		# 						end_addr = start_addr + size
-		# 						# func_start = subsec.GetStartAddress()
-		# 						# func_end = subsec.GetEndAddress()
-		# 						logDbgC(f"__stubs: start_addr: {start_addr} / end_addr: {end_addr}")
-		# 						estimated_count = size // 6
-		# 						insts = self.target.ReadInstructions(lldb.SBAddress(start_addr, self.target),
-		# 														int(estimated_count))
-		# 						# insts = target.ReadInstructions(lldb.SBAddress(start_addr, target), lldb.SBAddress(end_addr, target))
-		# 						for inst in insts:
-		# 							# result.PutCString(str(inst))
-		# 							self.logDbgC.emit(str(inst), DebugLevel.Verbose)
-		# 							self.loadInstructionCallback.emit(inst)
-		# 							idxInstructions += 1
-		# 							self.checkLoadConnection(inst, idxInstructions + (idxSym + 1))
-		# 						continue
-		# 					# return
-		#
-		# 					secLen = module.num_symbols  # len(lstSym)
-		# 					for sym in lstSym:
-		# 						self.logDbgC.emit(f"sym: {sym}", DebugLevel.Verbose)
-		# 						# if sym.addr <=
-		# 						# if subsec.GetName() == "__text":
-		# 							# if sym.GetName() == "main":
-		# 							# 	self.logDbgC.emit(f"========>>>>>>>> main function hit ...", DebugLevel.Verbose)
-		# 							# 	for module in self.target.module_iter():
-		# 							# 		# 	for section in module.section_iter():
-		# 							# 		if hasattr(subsec, 'symbol_in_section_iter'):
-		# 							# 			for symbol in module.symbol_in_section_iter(section):
-		# 							# 				if symbol.IsValid():
-		# 							# 					name = symbol.GetName()
-		# 							# 					# start_addr = symbol.GetStartAddress().GetLoadAddress(self.target)
-		# 							# 					self.logDbgC(f"------->>>>>>>>> Symbol name: {name}")
-		# 							# 					self.loadInstructionCallback.emit(
-		# 							# 						sym.GetStartAddress().GetFunction().GetInstructions()[0])
-		# 							# 					return
-		# 							# if hasattr(subsec, 'symbol_in_section_iter'):
-		# 							# 	for symbol in module.symbol_in_section_iter(section):
-		# 							# 		if symbol.IsValid():
-		# 							# 			name = symbol.GetName()
-		# 							# 			# start_addr = symbol.GetStartAddress().GetLoadAddress(self.target)
-		# 							# 			self.logDbgC(f"------->>>>>>>>> Symbol name: {name}")
-		# 							# 			self.loadInstructionCallback.emit(sym.GetStartAddress().GetFunction().GetInstructions()[0])
-		# 						#								print(f'get_instructions_from_current_target => {sym.get_instructions_from_current_target()}')
-		# 						#								if idxSym != 0:
-		# 						#									idxSym += 1
-		# 						#									continue
-		# 						#								print(sym)
-		# 						#							continue
-		# 						#								start_address = sym.GetStartAddress().GetLoadAddress(self.target)
-		# 						#								end_address = sym.GetEndAddress().GetLoadAddress(self.target)
-		# 						#								size = end_address - start_address
-		# 						#								print(f'start_address => {start_address} / {hex(start_address)}, end_address => {end_address} / {hex(end_address)}  => SIZE: {size}')
-		# 						#								print(sym)
-		# 						symFuncName = sym.GetStartAddress().GetFunction().GetName()
-		# 						self.logDbgC.emit(f"symFuncName: {symFuncName}", DebugLevel.Verbose)
-		# 						# if symFuncName == "main":
-		# 						# 	# for module in self.target.module_iter():
-		# 						# 	# 	for section in module.section_iter():
-		# 						# 	# if module.
-		# 						# 	if hasattr(subsec, 'symbol_in_section_iter'):
-		# 						# 		for symbol in module.symbol_in_section_iter(subsec):
-		# 						# 			if symbol.IsValid():
-		# 						# 				name = symbol.GetName()
-		# 						# 				start_addr = symbol.GetStartAddress().GetLoadAddress(self.target)
-		# 						# 				self.logDbgC(f"------->>>>>>>>> Symbol name: {name}")
-		# 						# 				self.loadInstructionCallback.emit(sym.GetStartAddress().GetFunction().GetInstructions()[0])
-		# 						# 	# # for module in self.target.module_iter():
-		# 						# 	# for compile_unit in module.compile_unit_iter():
-		# 						# 	# 	for func in compile_unit:
-		# 						# 	# 		if func.IsValid():
-		# 						# 	# 			self.logDbgC.emit(f"Objective-C Function: {func.GetName()}")
-		# 						# 	pass
-		# 						#								print(f'sym.GetName() => {sym.GetName()} / sym.GetStartAddress().GetFunction().GetName() => {sym.GetStartAddress().GetFunction().GetName()}')
-		# 						###								start_address = subsec.GetLoadAddress(self.target)
-		# 						###								print(f'start_address => {start_address} / {hex(start_address)}')
-		# 						###								size = subsec.GetByteSize()
-		# 						##
-		# 						###								print(f'start_address => {start_address} / {hex(start_address)} => SIZE: {size}')
-		# 						##								# Disassemble instructions in chunks
-		# 						#								chunk_size = 1024
-		# 						#								remaining_bytes = size
-		# 						##								while remaining_bytes > 0:  and start_address <= end_address:
-		# 						#								while start_address < end_address:
-		# 						#									# Read a chunk of data
-		# 						#									data_size = min(remaining_bytes, chunk_size)
-		# 						#									print(f'sym.GetName() => {sym.GetName()} / SBAddress(start_address, self.target).GetFunction().GetName() => {SBAddress(start_address, self.target).GetFunction().GetName()}')
-		# 						#									instructions = self.target.ReadInstructions(SBAddress(start_address, self.target), data_size)
-		# 						#									print(f'instructions-Len {len(instructions)}')
-		# 						##									# Disassemble and handle instructions
-		# 						#									for instruction in instructions:
-		# 						#										if symFuncName == instruction.GetAddress().GetFunction().GetName():
-		# 						#											print(f"Address: {instruction.GetAddress()}")
-		# 						#											print(f"Instruction: {instruction}")
-		# 						#											print(f'sym.GetName() => {sym.GetName()} / instruction.GetAddress().GetFunction().GetName() => {instruction.GetAddress().GetFunction().GetName()}')
-		# 						#											self.signals.loadInstruction.emit(instruction)
-		# 						#
-		# 						#									# Update addresses and remaining bytes
-		# 						#									start_address += data_size
-		# 						#									remaining_bytes -= data_size
-		# 						#									print(f'start_address => {start_address} / remaining_bytes => {remaining_bytes} / data_size => {data_size}')
-		# 						##								(50*100)/200
-		# 						#								print(f'sym.GetStartAddress().GetFunction() => {sym.GetStartAddress().GetFunction()}')
-		# 						self.logDbgC.emit(
-		# 							f"Analyzing instructions: {len(sym.GetStartAddress().GetFunction().GetInstructions(self.target))}", DebugLevel.Verbose)
-		# 						if len(sym.GetStartAddress().GetFunction().GetInstructions(self.target)) <= 0:
-		# 							self.logDbgC.emit(f"{sym.GetStartAddress().GetFunction()}")
-		#
-		# 						# logDbg(f"Analyzing instructions: {len(sym.GetStartAddress().GetFunction().GetInstructions(self.target))}")
-		# 						self.allInstructions += sym.GetStartAddress().GetFunction().GetInstructions(self.target)
-		# 						for instruction in sym.GetStartAddress().GetFunction().GetInstructions(self.target):
-		#
-		# 							# print(f"{instruction}")
-		# 							#
-		# 							# if (hex(instruction.GetAddress().GetLoadAddress(target)) == "0x100000d39"):
-		# 							# 	print(f"IS ATTTT THHHHHEEEEEEE PPPPPOOOOOOIIIIINNNNTTTTTT  !!!!!!!!!!!!!")
-		#
-		# 							if symFuncName == instruction.GetAddress().GetFunction().GetName():
-		# 								#										print(f"Address: {instruction.GetAddress()}")
-		# 								#										print(f"Instruction: {instruction}")
-		# 								#										print(f'sym.GetName() => {sym.GetName()} / instruction.GetAddress().GetFunction().GetName() => {instruction.GetAddress().GetFunction().GetName()}')
-		# 								#										print(f'COMMENT => {instruction.GetComment(self.target)}')
-		# 								self.loadInstructionCallback.emit(instruction)
-		# 								# if  instruction.GetMnemonic(self.target) is None:
-		# 								# 	continue
-		# 								idxInstructions += 1
-		# 								self.checkLoadConnection(instruction, idxInstructions + (idxSym + 1))
-		#
-		# 								# doFlowControl
-		# 						# else:
-		# 						# 	print(f"symFuncName != instr....GetName()")
-		# 						idxSym += 1
-		# 						# self.sendProgressUpdate((idxSym * 100) / secLen, "Disassembling executable ...")
-		# 			# break
-		# 			break
-		# 		idx += 1
-		# 	idxOuter += 1
-		#
-		#
-		# idxInst = 0
-		# for inst in self.allInstructions:
-		# 	for con in self.connections:
-		# 		if con.destAddr == int(str(inst.GetAddress().GetLoadAddress(self.target)), 10):
-		# 			if (idxInst < con.origRow):
-		# 				con.destRow = con.origRow
-		# 				con.origRow = idxInst
-		# 				con.jumpDistInRows = abs(con.destRow - con.origRow) * -1
-		# 			else:
-		# 				con.destRow = idxInst
-		# 				con.jumpDistInRows = abs(con.destRow - con.origRow)
-		# 	idxInst += 1
 
 		# for inst in self.allInstructions:
 		self.checkLoadConnection(self.allInstructions)
@@ -841,7 +624,7 @@ class Worker(QObject):
 		if line_entry.IsValid():
 			file_spec = line_entry.GetFileSpec()
 			line = line_entry.GetLine()
-			print(f"📍 Address 0x{address_int:x} maps to {file_spec.GetFilename()}:{line}")
+			# print(f"📍 Address 0x{address_int:x} maps to {file_spec.GetFilename()}:{line}")
 			return line # file_spec.GetFilename(), 
 		else:
 			print("❌ No line info found for this address.")
@@ -858,7 +641,7 @@ class Worker(QObject):
 					self.startAddr = subSec.GetFileAddress()
 				elif subSec.GetName() == "__stubs":
 					self.endAddr = subSec.GetFileAddress() + subSec.GetByteSize()
-					logDbgC(f"self.endAddr: {hex(self.endAddr)} / {self.endAddr}")
+					# self.logDbgC.emit(f"self.endAddr: {hex(self.endAddr)} / {self.endAddr}", DebugLevel.Verbose)
 					found = True
 					break
 			if found:
@@ -884,23 +667,23 @@ class Worker(QObject):
 
 			if sMnemonic is not None and sMnemonic.startswith(JMP_MNEMONICS) and not sMnemonic.startswith(JMP_MNEMONICS_EXCLUDE):
 				sAddrJumpTo = instruction.GetOperands(self.target)
-				self.logDbgC.emit(f"checkLoadConnection()..... {instruction} ===>>> JumpTo: {sAddrJumpTo}", DebugLevel.Verbose)
+				# self.logDbgC.emit(f"checkLoadConnection()..... {instruction} ===>>> JumpTo: {sAddrJumpTo}", DebugLevel.Verbose)
 
 				if sAddrJumpTo is None or not is_hex_string(sAddrJumpTo):
-					self.logDbgC.emit(f"checkLoadConnection() RETURN OF ERROR ..... sAddrJumpTo: {sAddrJumpTo}", DebugLevel.Verbose)
+					# self.logDbgC.emit(f"checkLoadConnection() RETURN OF ERROR ..... sAddrJumpTo: {sAddrJumpTo}", DebugLevel.Verbose)
 					continue
 
-				self.logDbgC.emit(f"checkLoadConnection()..... sAddrJumpTo: {sAddrJumpTo} / end: {hex(self.endAddr)} / start: {hex(self.startAddr)}", DebugLevel.Verbose)
+				# self.logDbgC.emit(f"checkLoadConnection()..... sAddrJumpTo: {sAddrJumpTo} / end: {hex(self.endAddr)} / start: {hex(self.startAddr)}", DebugLevel.Verbose)
 
 				bOver = self.startAddr < int(sAddrJumpTo, 16) < self.endAddr
-				if bOver:
-					self.logDbgC.emit(
-						f"checkLoadConnection()..... sAddrJumpTo IS INSIDE ALTERNATIVE: {sAddrJumpTo} / end: {hex(self.endAddr)} / start: {hex(self.startAddr)}", DebugLevel.Verbose)
-					# pass
+				# if bOver:
+				# 	self.logDbgC.emit(
+				# 		f"checkLoadConnection()..... sAddrJumpTo IS INSIDE ALTERNATIVE: {sAddrJumpTo} / end: {hex(self.endAddr)} / start: {hex(self.startAddr)}", DebugLevel.Verbose)
+				# 	# pass
 
 				if self.isInsideTextSection(sAddrJumpTo) or bOver:
 					if self.isInsideTextSection(sAddrJumpTo):
-						self.logDbgC.emit(f"IS NOT OVER CONNECTION!!!!", DebugLevel.Verbose)
+						# self.logDbgC.emit(f"IS NOT OVER CONNECTION!!!!", DebugLevel.Verbose)
 						sAddrStartInt = int(str(instruction.GetAddress().GetLoadAddress(self.target)), 10)
 						sAddrJumpFrom = hex(sAddrStartInt)
 						rowStart = int(self.get_line_number(sAddrStartInt))# idxInstructions#int(self.get_line_number(int(sAddrJumpFrom, 16)))
@@ -913,13 +696,13 @@ class Worker(QObject):
 								break
 							idx += 1
 						if lineEnd is None:
-							self.logDbgC.emit(f"IS NOT OVER CONNECTION!!!! ==>> RETURN", DebugLevel.Verbose)
+							# self.logDbgC.emit(f"IS NOT OVER CONNECTION!!!! ==>> RETURN", DebugLevel.Verbose)
 							continue
 							# pass
 						rowEnd = int(lineEnd)
 						self.logDbgC.emit(f"Found connection from line: {rowStart} to: {rowEnd} ({sAddrJumpFrom} / {sAddrJumpTo})", DebugLevel.Verbose)
 					elif bOver:
-						self.logDbgC.emit(f"IS OVER CONNECTION!!!!", DebugLevel.Verbose)
+						# self.logDbgC.emit(f"IS OVER CONNECTION!!!!", DebugLevel.Verbose)
 						sAddrStartInt = int(str(instruction.GetAddress().GetLoadAddress(self.target)), 10)# int(str(instruction.GetAddress().GetLoadAddress(self.target)), 10)
 						sAddrJumpFrom = hex(sAddrStartInt)
 						rowStart = int(self.get_line_number(
@@ -927,31 +710,19 @@ class Worker(QObject):
 						# lineEnd = self.get_line_number(int(sAddrJumpTo, 16))
 						lineEnd = self.mainWin.txtMultiline.table.getLineNum(sAddrJumpTo)
 						if lineEnd is None:
-							self.logDbgC.emit(f"IS OVER CONNECTION!!!! ==>> RETURN", DebugLevel.Verbose)
+							# self.logDbgC.emit(f"IS OVER CONNECTION!!!! ==>> RETURN", DebugLevel.Verbose)
 							continue
 							# pass
 						rowEnd = int(lineEnd)
 						self.logDbgC.emit(f"Found connection from line: {rowStart} to: {rowEnd} ({sAddrJumpFrom} / {sAddrJumpTo})", DebugLevel.Verbose)
 
-
-			# pass
-			# 	sAddrJumpTo = tblDisassembly.item(row, 4).text()
-			#     if self.isInsideTextSection(sAddrJumpTo):
-			#         sAddrJumpFrom = tblDisassembly.item(row, 2).text()
-			#         # logDbg(f"Found instruction with jump @: {sAddrJumpFrom} / isInside: {sAddrJumpTo}!")
-			#         rowStart = int(tblDisassembly.getRowForAddress(sAddrJumpFrom))
-			#         rowEnd = int(tblDisassembly.getRowForAddress(sAddrJumpTo))
-			#		rad = self.radius
 					if (rowStart < rowEnd):
-						# QColor("lightblue")
 						newConObj = QControlFlowWidget.draw_flowConnectionNG(rowStart, rowEnd, int(sAddrJumpFrom, 16), int(sAddrJumpTo, 16), None, random_qcolor(), self.radius, 1, False) # self.window().txtMultiline.table
 					else:
-						# QColor("lightgreen")
 						newConObj = QControlFlowWidget.draw_flowConnectionNG(rowStart, rowEnd, int(sAddrJumpFrom, 16), int(sAddrJumpTo, 16), None, random_qcolor(), self.radius, 1, True)
-					# newConObj.parentControlFlow = self
-					# self.addConnection(newConObj)
+
 					newConObj.mnemonic = sMnemonic
-					self.logDbgC.emit(f"Connection (Branch) is a: {newConObj.mnemonic} / {sMnemonic})", DebugLevel.Verbose)
+					# self.logDbgC.emit(f"Connection (Branch) is a: {newConObj.mnemonic} / {sMnemonic})", DebugLevel.Verbose)
 					if abs(newConObj.jumpDist / 2) <= (newConObj.radius / 2):
 						newConObj.radius = newConObj.jumpDist / 2
 					self.connections.append(newConObj)
@@ -960,82 +731,6 @@ class Worker(QObject):
 				else:
 					self.logDbgC.emit(f"checkLoadConnection()..... sAddrJumpTo NOT IN TARGET", DebugLevel.Verbose)
 					# self.connections.sort(key=lambda x: abs(x.jumpDist), reverse=True)
-					#
-					# idx = 1
-					# radius = 10
-					# con = newConObj
-					# # for con in self.connections:
-					# y_position = self.mainWin.txtMultiline.table.rowViewportPosition(con.origRow)
-					# y_position2 = self.mainWin.txtMultiline.table.rowViewportPosition(con.destRow)
-					#
-					# nRowHeight = 21
-					# nOffsetAdd = 23
-					# xOffset = (controlFlowWidth / 2) + (((controlFlowWidth - radius) / 2)) # + (radius / 2)
-					#
-					# self.yPosStart = y_position + (nRowHeight / 2) + (radius / 2)
-					# self.yPosEnd = y_position2 + (nRowHeight / 2) - (radius / 2)
-					# line = HoverLineItem(xOffset, self.yPosStart, xOffset,
-					# 					 self.yPosEnd, con)  # 1260)
-					# line.setPen(QPen(con.color, con.lineWidth))
-					# self.scene.addItem(line)
-					#
-					# ellipse_rect = QRectF(xOffset, y_position + (nRowHeight / 2), radius, radius)
-					#
-					# # Create a painter path and draw a 90° arc
-					# path = QPainterPath()
-					# path.arcMoveTo(ellipse_rect, 90)  # Start at 0 degrees
-					# path.arcTo(ellipse_rect, 90, 90)  # Draw 90-degree arc clockwise
-					#
-					# # Add the path to the scene
-					# arc_item = HoverPathItem(path, con)
-					# arc_item.setPen(QPen(con.color, con.lineWidth))
-					# self.scene.addItem(arc_item)
-					# con.topArc = arc_item
-					#
-					# ellipse_rect2 = QRectF(xOffset, y_position2 + (nRowHeight / 2) - (radius), radius,
-					# 					   radius)
-					# # Create a painter path and draw a 90° arc
-					# path2 = QPainterPath()
-					# path2.arcMoveTo(ellipse_rect2, 180)  # Start at 0 degrees
-					# path2.arcTo(ellipse_rect2, 180, 90)  # Draw 90-degree arc clockwise
-					#
-					# # Add the path to the scene
-					# arc_item2 = HoverPathItem(path2, con)
-					# arc_item2.setPen(QPen(con.color, con.lineWidth))
-					# self.scene.addItem(arc_item2)
-					# con.bottomArc = arc_item2
-					#
-					# if con.switched:
-					# 	arrowStart = QPointF(xOffset + (radius / 2) - 6 + 2, y_position + (
-					# 			nRowHeight / 2))
-					# 	arrowEnd = QPointF(xOffset + (radius / 2) + 2, y_position + (nRowHeight / 2))
-					# 	con.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
-					# else:
-					# 	arrowEnd = QPointF(xOffset + (radius / 2) - 6 + 2, y_position + (
-					# 			nRowHeight / 2))
-					# 	arrowStart = QPointF(xOffset + (radius / 2) + 2,
-					# 						 y_position + (nRowHeight / 2))
-					# 	con.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
-					#
-					# if con.switched:
-					# 	arrowEnd = QPointF(xOffset + (radius / 2) - 6 + 2, y_position2 + (
-					# 			nRowHeight / 2))
-					# 	arrowStart = QPointF(xOffset + (radius / 2) + 2,
-					# 						 y_position2 + (nRowHeight / 2))
-					# 	con.endArrow = self.draw_arrowNG(arrowStart, arrowEnd)
-					# else:
-					# 	arrowStart = QPointF(xOffset + (radius / 2) - 6 + 2, y_position2 + (
-					# 			nRowHeight / 2))
-					# 	arrowEnd = QPointF(xOffset + (radius / 2) + 2,
-					# 					   y_position2 + (nRowHeight / 2))
-					# 	con.startArrow = self.draw_arrowNG(arrowStart, arrowEnd)
-					#
-					# con.setToolTip(f"Branch\n-from: {hex(con.origAddr)}\n-to: {hex(con.destAddr)}\n-distance: {hex(con.jumpDist)}")
-					# if radius <= 130:
-					# 	radius += 15
-					# idx += 1
-
-				
 
 	def disassembleTarget(self):
 		self.logDbg.emit(f"HELLO WORLD DISASSEBLE ;-=")
@@ -1045,12 +740,12 @@ class Worker(QObject):
 		pass
 
 	def loadTarget(self):
-		self.logDbgC.emit(f"HERE WE ARE !!!!!!", DebugLevel.Verbose)
+		# self.logDbgC.emit(f"HERE WE ARE !!!!!!", DebugLevel.Verbose)
 
-		self.logDbgC.emit(f"loadTarget() => Target: {self.target} ...", DebugLevel.Verbose)
+		# self.logDbgC.emit(f"loadTarget() => Target: {self.target} ...", DebugLevel.Verbose)
 		if self.target:
 			self.process = self.target.GetProcess()
-			self.logDbgC.emit(f"loadTarget() => Process: {self.process} ...", DebugLevel.Verbose)
+			# self.logDbgC.emit(f"loadTarget() => Process: {self.process} ...", DebugLevel.Verbose)
 
 			if self.process:
 				self.listener = LLDBListener(self.process, self.driver.debugger)
@@ -1067,11 +762,11 @@ class Worker(QObject):
 				# self.eventListener.startEventListener()
 
 				self.thread = self.process.GetThreadAtIndex(0)
-				self.logDbgC.emit(f"loadTarget() => Thread: {self.thread} ...", DebugLevel.Verbose)
+				# self.logDbgC.emit(f"loadTarget() => Thread: {self.thread} ...", DebugLevel.Verbose)
 
 				if self.thread:
 					self.isInsideTextSectionGetRangeVarsReady()
-					self.logDbgC.emit(f"loadTarget() => Thread.GetNumFrames(): {self.thread.GetNumFrames()} ...", DebugLevel.Verbose)
+					# self.logDbgC.emit(f"loadTarget() => Thread.GetNumFrames(): {self.thread.GetNumFrames()} ...", DebugLevel.Verbose)
 					for z in range(self.thread.GetNumFrames()):
 						frame = self.thread.GetFrameAtIndex(z)
 
@@ -1082,15 +777,15 @@ class Worker(QObject):
 						# self.tabWidgetStruct.cmbModules.addItem(
 						# 	frame.GetModule().GetFileSpec().GetFilename() + " (" + str(
 						# 		frame.GetFrameID()) + ")")
-						self.logDbgC.emit(f"loadTarget() => Frame: {frame} ...", DebugLevel.Verbose)
+						# self.logDbgC.emit(f"loadTarget() => Frame: {frame} ...", DebugLevel.Verbose)
 						if frame.GetModule().GetFileSpec().GetFilename() != self.target.GetExecutable().GetFilename():
-							self.logDbgC.emit(f"Module for FileStruct IS NOT equal executable => continuing ...", DebugLevel.Verbose)
+							# self.logDbgC.emit(f"Module for FileStruct IS NOT equal executable => continuing ...", DebugLevel.Verbose)
 							continue
-						else:
-							self.logDbgC.emit(f"Module for FileStruct IS equal executable => scanning ...", DebugLevel.Verbose)
+						# else:
+						# 	self.logDbgC.emit(f"Module for FileStruct IS equal executable => scanning ...", DebugLevel.Verbose)
 
 						if frame:
-							self.logDbgC.emit(f"BEFORE DISASSEMBLE!!!!", DebugLevel.Verbose)
+							# self.logDbgC.emit(f"BEFORE DISASSEMBLE!!!!", DebugLevel.Verbose)
 							# self.start_loadDisassemblyWorker(self.loadInstructionCallback, self.finishedLoadInstructionsCallback, True)
 							# self.disassembleTarget()
 							self.disassemble_entire_target()
@@ -1145,8 +840,8 @@ class Worker(QObject):
 				if main_oep != 0 and self.mainWin.setHelper.getValue(SettingsValues.BreakpointAtMainFunc):
 					# self.driver.debugger.HandleCommand(f'breakpoint set -a {hex(main_oep)} -N kimon')
 					bp = self.driver.getTarget().BreakpointCreateByAddress(main_oep) # .BreakpointCreateByName("main")
-					for bl in bp:
-						self.logDbgC.emit(f"bl.location: {bl}", DebugLevel.Verbose)
+					# for bl in bp:
+					# 	self.logDbgC.emit(f"bl.location: {bl}", DebugLevel.Verbose)
 					self.driver.mainID = bp.GetID()
 					self.driver.debugger.HandleCommand(f'br name add -N main {bp.GetID()}')
 					bp.SetScriptCallbackFunction("main_hit")
@@ -1156,8 +851,8 @@ class Worker(QObject):
 				# Set breakpoint on scanf
 				if	self.mainWin.setHelper.getValue(SettingsValues.AutoBreakpointForScanf):
 					bp = self.driver.getTarget().BreakpointCreateByName("scanf")
-					for bl in bp:
-						self.logDbgC.emit(f"bl.location: {bl}", DebugLevel.Verbose)
+					# for bl in bp:
+					# 	self.logDbgC.emit(f"bl.location: {bl}", DebugLevel.Verbose)
 
 					self.driver.scanfID = bp.GetID()
 					self.driver.debugger.HandleCommand(f'br name add -N scanf {bp.GetID()}')

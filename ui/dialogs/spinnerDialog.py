@@ -8,6 +8,8 @@ from PyQt6 import uic, QtWidgets
 
 from ui.customQt.QClickLabel import *
 import os
+from PyQt6.QtCore import QThread
+
 from config import *
 from ui.helper.dbgOutputHelper import logDbgC, DebugLevel
 
@@ -33,9 +35,9 @@ class SpinnerDialog(QDialog):
 		self.gif_label.setMovie(self.movie)
 		self.movie.start()
 
-		from PyQt6.QtCore import QThread
+		# from PyQt6.QtCore import QThread
 		print("Current thread isMainThread(): ", QThread.currentThread().isMainThread())
-		print(QThread.currentThread().currentThreadId())
+		# print(QThread.currentThread().currentThreadId())
 		
 		bg_color = QColor(220, 220, 220, 128)  # Adjust alpha value for desired transparency
 

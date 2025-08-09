@@ -218,33 +218,6 @@ class BreakpointTreeWidget(BaseTreeWidget):
 					subitem.setBackground(i, ConfigClass.colorTransparent)
 					
 	def setPC(self, address, setPC=True):
-		# for index in range(self.topLevelItemCount()):
-		# 	item = self.topLevelItem(index)
-		#
-		# 	# Example condition: if value == "2", highlight red when selected
-		# 	if item.isSelected() and item.text(0) == "2":
-		# 		brush = QBrush(QColor("red"))
-		# 		item.setForeground(0, brush)
-		# 		item.setForeground(1, brush)
-		# 		brushBG = QBrush(QColor("cyan"))
-		# 		item.setBackground(0, brushBG)
-		# 		item.setBackground(1, brushBG)
-		# 		item.setBackground(0, QColor("#ffd700"))  # Gold background
-		# 		item.setBackground(1, QColor("#ffd700"))  # Gold background
-		# 	elif item.isSelected():
-		# 		brush = QBrush(QColor("green"))
-		# 		item.setForeground(0, brush)
-		# 		item.setForeground(1, brush)
-		# 		brushBG = QBrush(QColor("orange"))
-		# 		item.setBackground(0, brushBG)
-		# 		item.setBackground(1, brushBG)
-		# 	else:
-		# 		# Reset to default color if not selected
-		# 		item.setForeground(0, QBrush())
-		# 		item.setForeground(1, QBrush())
-		# 		item.setBackground(0, QBrush())
-		# 		item.setBackground(1, QBrush())
-		# return
 		items = self.getAllItemsAndSubitems()
 		for item in items:
 			for subitem in item.subItems:
@@ -258,7 +231,7 @@ class BreakpointTreeWidget(BaseTreeWidget):
 
 							import platform
 							if platform.system() == "Darwin":
-								print("You're on macOS!")
+								# print("You're on macOS!")
 								import AppKit
 								AppKit.NSBeep()
 
@@ -301,7 +274,7 @@ class BreakpointTreeWidget(BaseTreeWidget):
 		daItem = self.currentItem()
 		if daItem.childCount() > 0:
 			daItem = daItem.child(0)
-		setStatusBar(f"Deleted breakpoint @: {daItem.text(2)}")
+		self.window().updateStatusBar(f"Deleted breakpoint @: {daItem.text(2)}")
 		self.bpHelper.deleteBP(daItem.text(2))
 	
 	def addBP(self, bp, enabled = True):
@@ -346,7 +319,7 @@ class BreakpointTreeWidget(BaseTreeWidget):
 			sectionNode.setTextAlignment(0, Qt.AlignmentFlag.AlignLeft)
 			idx += 1
 		bpNode.setExpanded(True)
-		setStatusBar(f"Added new breakpoint @: {loadAddr}")
+		self.window().updateStatusBar(f"Added new breakpoint @: {loadAddr}")
 			
 	def deleteBP(self, bpId):
 		rootItem = self.invisibleRootItem()
@@ -995,20 +968,20 @@ class BPsWPsWidget(QWidget):
 				# if bp.GetCondition() != None and str(bp.GetCondition()) != "":
 					if parentItem.text(4) != str(bpHit):
 						parentItem.setText(4, str(bpHit))
-						print("SETTING HITCOUNT TO VAL (bpHit)")
+						# print("SETTING HITCOUNT TO VAL (bpHit)")
 				else:
 					if parentItem.text(4) != "":
-						print("SETTING HITCOUNT TO EMPTY (bpHit)")
+						# print("SETTING HITCOUNT TO EMPTY (bpHit)")
 						parentItem.setText(4, "")
 
 				if bpCond is not None and bpCond != "":
 				# if bp.GetCondition() != None and str(bp.GetCondition()) != "":
 					if parentItem.text(5) != str(bpCond):
 						parentItem.setText(5, str(bpCond))
-						print("SETTING CONDITION TO VAL (BP)")
+						# print("SETTING CONDITION TO VAL (BP)")
 				else:
 					if parentItem.text(5) != "":
-						print("SETTING CONDITION TO EMPTY (BP)")
+						# print("SETTING CONDITION TO EMPTY (BP)")
 						parentItem.setText(5, "")
 						
 				idx = 0

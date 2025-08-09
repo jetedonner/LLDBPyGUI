@@ -61,7 +61,7 @@ class EventListenerController(QObject):
         logDbgC(f'Event data flavor: {event.GetDataFlavor()}')
 
         if event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
-            print("STD OUT EVENT LISTENER!!!")
+            print("STD OUT EVENT LISTENER!!! (3)")
             stdout = SBProcess.GetProcessFromEvent(event).GetSTDOUT(2048)
             print(SBProcess.GetProcessFromEvent(event))
             print(f"STDOUT IS: {stdout}")

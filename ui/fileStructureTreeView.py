@@ -127,7 +127,7 @@ class FileStructureWidget(QWidget):
 		
 	def cmbModules_changed(self, index):
 		if index >= 0:
-			logDbgC(f"cmbModules_changed => {index}")
+			# logDbgC(f"cmbModules_changed => {index}")
 			# self.loadFileStruct(index)
 
 			modules = self.driver.getTarget().modules
@@ -135,54 +135,23 @@ class FileStructureWidget(QWidget):
 				self.treFile.clear()
 				module = modules[index]
 				self.addFileStructInfo(module)
-				# INDENT = "    "
-				# INDENT2 = "        "
-				# logDbgC('Number of sections: %d' % module.GetNumSections())
-				# for sec in module.section_iter():
-				# 	logDbgC(sec)
-				# 	if sec.GetName() == "__TEXT":
-				# 		# Iterates the text section and prints each symbols within each sub-section.
-				# 		for subsec in sec:
-				# 			logDbgC(INDENT + repr(subsec))
-				# 			for sym in module.symbol_in_section_iter(subsec):
-				# 				logDbgC(INDENT2 + repr(sym))
-				# 				if sym.GetDisplayName():
-				# 					logDbgC(INDENT2 + sym.GetDisplayName())
-				#
-				# 				logDbgC(INDENT2 + 'symbol tqype: %s' % symbol_type_to_str(sym.GetType()))
-				# 				# address = sym.GetStartAddress()
-				# 				# if address.IsValid():
-				# 				# 	load_addr = address.GetLoadAddress(self.driver.getTarget())
-				# 				# 	logDbgC(INDENT2 + f"Symbol load address: 0x{load_addr:x}")
-				#
-				# 				logDbgC(INDENT2 + f"Symbol load address: 0x{getLoadAddress(sym.GetStartAddress(), self.driver.getTarget()):x}")
-				# 		break
-				# # for i in range(len(modules)):
-				# # 	# self.cmbModules.addItem(
-				# # 	# 	modules[i].GetFileSpec().GetFilename() + " (" + str(i) + ")")
-				# #
-				pass
 			else:
-				# self.tabWidgetStruct.cmbModules.addItem(
-				# 	frame.GetModule().GetFileSpec().GetFilename() + " (" + str(frame.GetFrameID()) + ")")
 				self.loadFileStruct(index)
 		
 	def loadFileStruct(self, index = 0):
 		# self.thread.GetFrameAtIndex(1)
 		target = self.driver.getTarget()
-		logDbgC(f"loadFileStruct => target: {target}", DebugLevel.Verbose)
+		# logDbgC(f"loadFileStruct => target: {target}", DebugLevel.Verbose)
 		process = target.GetProcess()
-		logDbgC(f"loadFileStruct => process: {process}", DebugLevel.Verbose)
-		logDbgC(f"loadFileStruct => process.num_threads: {process.num_threads}", DebugLevel.Verbose)
+		# logDbgC(f"loadFileStruct => process: {process}", DebugLevel.Verbose)
+		# logDbgC(f"loadFileStruct => process.num_threads: {process.num_threads}", DebugLevel.Verbose)
 		self.thread = process.GetThreadAtIndex(index)
 		self.treFile.clear()
-		logDbgC(f"loadFileStruct => thread: {self.thread}", DebugLevel.Verbose)
-		logDbgC(f"loadFileStruct => thread.num_frames: {self.thread.num_frames}", DebugLevel.Verbose)
-
+		# logDbgC(f"loadFileStruct => thread: {self.thread}", DebugLevel.Verbose)
+		# logDbgC(f"loadFileStruct => thread.num_frames: {self.thread.num_frames}", DebugLevel.Verbose)
 		for i in range(self.thread.num_frames):
 			module = self.thread.GetFrameAtIndex(i).GetModule()
 			self.addFileStructInfo(module)
-
 
 	def addFileStructInfo(self, module):
 		self.treFile.selectedModule = module

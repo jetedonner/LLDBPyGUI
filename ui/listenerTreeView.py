@@ -370,10 +370,10 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 					bp_loc_id = thread.GetStopReasonDataAtIndex(1)
 					self.bp_loc = breakpoint.FindLocationByID(bp_loc_id)
 
-				print(f"bp_id: {bp_id} / bp_loc.GetID() => {self.bp_loc.GetID()}")
+				# print(f"bp_id: {bp_id} / bp_loc.GetID() => {self.bp_loc.GetID()}")
 				# if(breakpoint.GetCondition() != ""):
-				print(arrBPConditions)
-				print(arrBPHits)
+				# print(arrBPConditions)
+				# print(arrBPHits)
 				bpCond = arrBPConditions.get(str(breakpoint.GetID()) + "." + str(self.bp_loc.GetID()))
 				if bpCond is not None and bpCond != "":
 				# if (dbg.breakpointHelper.arrBPConditions[str(breakpoint.GetID())] != None and dbg.breakpointHelper.arrBPConditions[str(breakpoint.GetID())] != ""):
@@ -408,7 +408,7 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 				file_spec = line_entry.GetFileSpec()
 				filename = file_spec.fullpath
 				line_no = line_entry.GetLine()
-				print(f'stopped for BP {bp_id}: {filename}:{line_no}')
+				# print(f'stopped for BP {bp_id}: {filename}:{line_no}')
 				subSectionNode = QTreeWidgetItem(sectionNode, ["Breakpoint ID: ", str(bp_id)])
 				subSectionNode = QTreeWidgetItem(sectionNode, ["Filename: ", str(filename)])
 				subSectionNode = QTreeWidgetItem(sectionNode, ["Line no.: ", str(line_no)])

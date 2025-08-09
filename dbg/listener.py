@@ -29,7 +29,7 @@ class LLDBListener(QtCore.QObject, Thread):
 	def __init__(self, process, debugger):
 		super(LLDBListener, self).__init__()
 		Thread.__init__(self)
-		print('INITING LISTENER!!!!')
+		# print('INITING LISTENER!!!!')
 		self.listener = lldb.SBListener('LLDBPyGUI event listener')
 		self.process = process
 		self.debugger = debugger
@@ -165,12 +165,14 @@ class LLDBListener(QtCore.QObject, Thread):
 				print(f"self.worker.listener.should_quit = True (4)")
 				self.should_quit = True
 			elif process.state == eStateStopped:
-				print(f"IS WAITING FOR INPUT: {self.is_waiting_for_input(process)}")
+				isWaiting4Input = self.is_waiting_for_input(process)
+				if isWaiting4Input:
+					print(f"IS WAITING FOR INPUT: {isWaiting4Input} !!!")
 				pass
 			thread = process.selected_thread
 			# print('Process event: %s, reason: %d' % (state, thread.GetStopReason()))
 			if thread.GetStopReason() == lldb.eStopReasonBreakpoint:
-				print(f'REASON BP RFEACHED (listener) Event: {event} => Continuing...')
+				# print(f'REASON BP RFEACHED (listener) Event: {event} => Continuing...')
 				self.suspended = True
 			elif thread.GetStopReason() == lldb.eStopReasonWatchpoint:
 				# print(f'REASON WATCHPOINT RFEACHED (listener) Event: {event} => Continuing...')
@@ -264,7 +266,7 @@ class LLDBListener(QtCore.QObject, Thread):
 				if event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
 					# continue
 					# p (event)
-					print("STD OUT EVENT LISTENER!!!")
+					print("STD OUT EVENT LISTENER!!! (1)")
 					sys.stdout.flush()
 					stdoutNG = lldb.SBProcess.GetProcessFromEvent(event).GetSTDOUT(2048)
 					# print(SBProcess.GetProcessFromEvent(event))
@@ -284,7 +286,7 @@ class LLDBListener(QtCore.QObject, Thread):
 					print('Module load: %s' % str(event))
 				elif event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
 					# continue
-					print("STD OUT EVENT LISTENER!!!")
+					print("STD OUT EVENT LISTENER!!! (2)")
 					# sys.stdout.flush()
 					stdout = SBProcess.GetProcessFromEvent(event).GetSTDOUT(2048)
 					print(SBProcess.GetProcessFromEvent(event))

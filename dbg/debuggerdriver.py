@@ -143,12 +143,12 @@ class DebuggerDriver(Thread):
       #		print(f"Removed Listener with {success} / self.broadcasterTarget => {self.broadcasterTarget} / self.listenerTarget  => {self.listenerTarget} / self.maskTarget => {self.maskTarget}")
 
     def createTarget(self, target_image, arch="x86_64-apple-macosx15.1.1", args=None):
-        print(f"createTarget({target_image}). / args: {args}...")
+        # print(f"createTarget({target_image}). / args: {args}...")
         self.target = self.debugger.CreateTargetWithFileAndArch(target_image, arch)# , lldb.LLDB_ARCH_DEFAULT)
         self.target.getLoadAddress = getLoadAddress
         # assert self.target
-        print(f"New TARGET IS: {self.target}")
-        print(f"FINISHED: createTarget({target_image}). / args: {args}...")
+        # print(f"New TARGET IS: {self.target}")
+        # print(f"FINISHED: createTarget({target_image}). / args: {args}...")
         # self.handleCommand("target create %s" % target_image)
         # if args is not None:
         #     self.handleCommand("settings set target.run-args %s" % args)

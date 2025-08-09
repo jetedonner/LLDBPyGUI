@@ -1568,8 +1568,8 @@ class LLDBPyGUIWindow(QMainWindow):
 #				print(f"frame.GetModule() => {frame.GetModule().GetFileSpec().GetFilename()}")
 #							frame = self.thread.GetFrameAtIndex(z)
 			if frame:
-				logDbgC(
-					f"====>>>> Module: {frame.GetModule().GetFileSpec().GetFilename()}")
+				# logDbgC(
+				# 	f"====>>>> Module: {frame.GetModule().GetFileSpec().GetFilename()}")
 				# print(frame)
 				if not self.inited:
 					return
@@ -1719,7 +1719,7 @@ class LLDBPyGUIWindow(QMainWindow):
 
 
 	def handle_debugStepCompleted(self, kind, success, rip, frm):
-		logDbgC(f"handle_debugStepCompleted({kind}, {success}, {rip}, {frm}) ====>>>> Module: {frm.GetModule().GetFileSpec().GetFilename()}")
+		# logDbgC(f"handle_debugStepCompleted({kind}, {success}, {rip}, {frm}) ====>>>> Module: {frm.GetModule().GetFileSpec().GetFilename()}")
 		if success:
 			self.rip = rip
 			if self.rip != "":
@@ -1751,7 +1751,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		# self.symFuncName = ""
 		# import pdb; pdb.set_trace()
 		# print(f'start_loadDisassemblyWorker')
-		logDbgC(f"start_loadDisassemblyWorkerNG({modulePath}, {initTable})")
+		# logDbgC(f"start_loadDisassemblyWorkerNG({modulePath}, {initTable})")
 		if initTable:
 			self.txtMultiline.resetContent()
 			self.wdtControlFlow.resetContent()
@@ -1932,8 +1932,8 @@ class LLDBPyGUIWindow(QMainWindow):
 		if(len(connections) > 0):
 			self.wdtControlFlow.draw_instructions()
 			self.wdtControlFlow.loadConnectionsFromWorker(connections)
-		logDbgC(f"self.driver.getPC(): {hex(self.driver.getPC())} / {self.driver.getPC()}", DebugLevel.Verbose)
-		logDbgC(f"Loaded module: {self.driver.getTarget().module[0].GetFileSpec().GetFilename()} ...")
+		# logDbgC(f"self.driver.getPC(): {hex(self.driver.getPC())} / {self.driver.getPC()}", DebugLevel.Verbose)
+		# logDbgC(f"Loaded module: {self.driver.getTarget().module[0].GetFileSpec().GetFilename()} ...")
 		self.setDbgTabLbl(f"{moduleName}")
 		self.dialog.close()
 
@@ -1948,7 +1948,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			self.wdtControlFlow.draw_instructions()
 			self.wdtControlFlow.loadConnectionsFromWorker(connections)
 		# logDbgC(f"self.driver.getPC(): {hex(self.driver.getPC())} / {self.driver.getPC()}", DebugLevel.Verbose)
-		logDbgC(f"Loaded module: {self.driver.getTarget().module[0].GetFileSpec().GetFilename()} ...")
+		# logDbgC(f"Loaded module: {self.driver.getTarget().module[0].GetFileSpec().GetFilename()} ...")
 		self.setDbgTabLbl(f"{moduleName}")
 		self.dialog.close()
 
@@ -2126,7 +2126,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.worker.endLoadControlFlowCallback.emit(True)
 		oepMain, symbol = find_main(self.driver.debugger)
 		# symbol
-		logDbgC(f"OEP: {getAddrStr(oepMain)} / Symbol: {symbol}", DebugLevel.Verbose)
+		# logDbgC(f"OEP: {getAddrStr(oepMain)} / Symbol: {symbol}", DebugLevel.Verbose)
 		self.txtMultiline.viewAddress(hex(oepMain))
 		self.wdtControlFlow.view.verticalScrollBar().setValue(self.txtMultiline.table.verticalScrollBar().value())
 		QApplication.processEvents()
@@ -2153,7 +2153,7 @@ class LLDBPyGUIWindow(QMainWindow):
 				self.setProgressValue(idx2 / numFrames)
 				frame = self.thread.GetFrameAtIndex(idx2)
 				# logDbgC(f"frame.GetFunction(): {frame.GetFunction()}")
-				frameNode = QTreeWidgetItem(self.threadNode, ["#" + str(frame.GetFrameID()), "", str(frame.GetPCAddress()), str(hex(frame.GetPC())), self.GuessLanguage(frame)])
+				frameNode = QTreeWidgetItem(self.threadNode, ["#" + str(frame.GetFrameID()), "", str(frame.GetPCAddress()), str(hex(frame.GetPC())), GuessLanguage(frame)])
 				idx += 1
 
 			self.processNode.setExpanded(True)
@@ -2161,5 +2161,5 @@ class LLDBPyGUIWindow(QMainWindow):
 #			self.devHelper.setDevWatchpoints()
 		QApplication.processEvents()
 
-	def GuessLanguage(self, frame):
-		return lldb.SBLanguageRuntime.GetNameForLanguageType(frame.GuessLanguage())
+	# def GuessLanguage(self, frame):
+	# 	return lldb.SBLanguageRuntime.GetNameForLanguageType(frame.GuessLanguage())

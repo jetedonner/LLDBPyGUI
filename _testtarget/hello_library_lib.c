@@ -23,3 +23,8 @@ void callExternalFunc() {
     printf("HELLO From Library!!!\n");
     fflush(stdout);
 }
+
+void callExternalFuncWithParam(int param) {
+    printf("HELLO From Library WITH PARAM: %d!!!\n", param);
+    fflush(stdout);
+}
