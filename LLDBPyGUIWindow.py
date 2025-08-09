@@ -1565,7 +1565,10 @@ class LLDBPyGUIWindow(QMainWindow):
 				# print(frame)
 				if not self.inited:
 					return
-				self.handle_debugStepCompleted(StepKind.Continue, True, thread.GetFrameAtIndex(0).register["rip"].value, frame)
+				if thread.GetFrameAtIndex(0).register["rip"] is not None:
+					self.handle_debugStepCompleted(StepKind.Continue, True, thread.GetFrameAtIndex(0).register["rip"].value, frame)
+				else:
+					self.handle_debugStepCompleted(StepKind.Continue, True, "", frame)
 #								self.rip = lldbHelper.convert_address(frame.register["rip"].value)
 #					self.rip = ""
 #					self.start_loadDisassemblyWorker(True)
@@ -1732,6 +1735,19 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.isProcessRunning = False
 		pass
 
+
+	def start_loadDisassemblyWorkerNG(self, modulePath, initTable = True):
+		self.instCnt = 0
+		self.start_operation()
+		# self.symFuncName = ""
+		# import pdb; pdb.set_trace()
+		# print(f'start_loadDisassemblyWorker')
+		logDbgC(f"start_loadDisassemblyWorkerNG({modulePath}, {initTable})")
+		if initTable:
+			self.txtMultiline.resetContent()
+			self.wdtControlFlow.resetContent()
+		self.workerManager.start_loadDisassemblyWorkerNG(self.handle_loadSymbol, self.handle_loadInstruction, self.handle_workerFinished, modulePath, initTable)
+
 	def start_loadDisassemblyWorker(self, initTable = True):
 		self.symFuncName = ""
 		# import pdb; pdb.set_trace()
@@ -1753,7 +1769,8 @@ class LLDBPyGUIWindow(QMainWindow):
 	def handle_loadInstruction(self, instruction):
 		self.instCnt += 1
 		target = self.driver.getTarget()
-
+		print(instruction)
+		# logDbgC(f"handle_loadInstruction({instruction}) ... => {self.symFuncName} / {instruction.GetAddress().GetFunction().GetName()}")
 		stubsFunctName = None
 		if self.symFuncName != instruction.GetAddress().GetFunction().GetName():
 			self.symFuncName = instruction.GetAddress().GetFunction().GetName()
@@ -1806,7 +1823,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		# logDbgC(f"!!!!!!!!!!!!!!!!¨ALREADY HERE !!!!!!!!!!!!!!!!!!")
 		comment = stubsFunctName or instruction.GetComment(target)
 		self.txtMultiline.appendAsmText(hex(int(str(instruction.GetAddress().GetLoadAddress(target)), 10)), instruction.GetMnemonic(target),  instruction.GetOperands(target), comment, daHex, "".join(str(daDataNg).split()), True, "", self.instCnt - 1)
-		QApplication.processEvents()
+		# QApplication.processEvents()
 		# pass
 
 	def handle_workerFinished(self, connections = []):
@@ -1818,6 +1835,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		logDbgC(f"self.driver.getPC(): {hex(self.driver.getPC())} / {self.driver.getPC()}", DebugLevel.Verbose)
 		logDbgC(f"Loaded module: {self.driver.getTarget().module[0].GetFileSpec().GetFilename()} ...")
 		self.setDbgTabLbl(f"{self.driver.getTarget().module[0].GetFileSpec().GetFilename()}")
+		self.dialog.close()
 
 		return
 		self.start_loadRegisterWorker()

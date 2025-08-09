@@ -280,11 +280,11 @@ class BreakpointTreeWidget(BaseTreeWidget):
 			
 			txtID = str(bp.GetID()) + "." + str(idx)
 
-			sectionNode = EditableTreeItem(bpNode, [txtID, '', hex(bl.GetLoadAddress()), name, str(bl.GetHitCount()), bl.GetCondition(), '', 'Yes' if bp.IsOneShot() else 'No', bl.GetAddress().module.GetFileSpec().GetFilename()])
+			sectionNode = EditableTreeItem(bpNode, [txtID, '', hex(bl.GetLoadAddress()), name, str(bl.GetHitCount()), bl.GetCondition(), '', 'Yes' if bp.IsOneShot() else 'No', bl.GetAddress().GetModule().GetFileSpec().GetFilename()])
 			loadAddr = hex(bl.GetLoadAddress())
 			sectionNode.enableBP(bl.IsEnabled())
 			sectionNode.setToolTip(1, f"Enabled: {bl.IsEnabled()}")
-			sectionNode.setToolTip(8, f"File: {bl.GetAddress().module.GetFileSpec().fullpath}")
+			sectionNode.setToolTip(8, str(bl.GetAddress().GetModule().GetFileSpec().fullpath))
 			sectionNode.setTextAlignment(0, Qt.AlignmentFlag.AlignLeft)
 			idx += 1
 		bpNode.setExpanded(True)
@@ -654,28 +654,68 @@ class BreakpointTreeWidget(BaseTreeWidget):
 						break
 		pass
 		
-	def mouseDoubleClickEvent(self, event):
+	def mouseDoubleClickEvent(self, event) -> None:
 		daItem = self.itemAt(event.pos().x(), event.pos().y())
-		if daItem == None:
-			return
-		col = self.columnAt(event.pos().x())
-		if daItem.childCount() > 0:
-			super().mouseDoubleClickEvent(event)
-		elif col == 1:
-			self.bpHelper.enableBP(daItem.text(2), not daItem.isBPEnabled, False)
-			self.toggleBP(daItem.text(2))
-			self.window().txtMultiline.table.toggleBP(daItem.text(2))
-		elif col == 2:
-			self.window().txtMultiline.viewAddress(daItem.text(2))
-			pass
-		elif col == 7:
-			# self.window().txtMultiline.viewAddress(daItem.text(2))
-			logDbgC(f"Toggle one shot ....")
-			pass
-		else:
-			if col == 3 or col == 5 or col == 6:
-				self.openPersistentEditor(daItem, col)
-				self.editItem(daItem, col)
+		if daItem is not None:
+			col = self.columnAt(event.pos().x())
+			if daItem.childCount() > 0:
+				# super().mouseDoubleClickEvent(event)
+				pass
+			elif col == 1:
+				self.bpHelper.enableBP(daItem.text(2), not daItem.isBPEnabled, False)
+				self.toggleBP(daItem.text(2))
+				self.window().txtMultiline.table.toggleBP(daItem.text(2))
+			elif col == 2:
+				self.window().txtMultiline.viewAddress(daItem.text(2))
+				pass
+			elif col == 7:
+				# self.window().txtMultiline.viewAddress(daItem.text(2))
+				logDbgC(f"Toggle one shot ....")
+				pass
+			elif col == 8:
+				# self.window().txtMultiline.viewAddress(daItem.text(2))
+				logDbgC(f"Disassemble module: {daItem.text(8)} / {daItem.toolTip(8)}....")
+				self.disassemble_dylib(self.driver.debugger, daItem.toolTip(8))
+				pass
+			else:
+				if col == 3 or col == 5 or col == 6:
+					self.openPersistentEditor(daItem, col)
+					self.editItem(daItem, col)
+		super().mouseDoubleClickEvent(event)
+
+	# def disassemble_dylib(debugger, command, result, internal_dict):
+	def disassemble_dylib(self, debugger, dylib_path="/usr/lib/system/libsystem_c.dylib"):
+		# Load the dylib as a target
+		# dylib_path = "/usr/lib/system/libsystem_c.dylib"
+		self.window().start_loadDisassemblyWorkerNG(dylib_path, True)
+		# target = debugger.GetTargetAtIndex(0) # .CreateTarget(dylib_path)
+		# if not target.IsValid():
+		# 	# result.PutCString("❌ Failed to create target for dylib.")
+		# 	logDbgC(f"❌ Failed to create target for dylib.")
+		# 	return
+		#
+		# # Iterate over all modules (should be just one here)
+		# for module in target.module_iter():
+		# 	if module.GetFileSpec().fullpath != dylib_path:
+		# 		continue
+		#
+		# 	logDbgC(f"📦 Module: {module.GetFileSpec().GetFilename()}")
+		#
+		# 	# Iterate over all functions in the module
+		# 	for sym in module:
+		# 		if not sym.IsValid():
+		# 			continue
+		# 		instructions = sym.GetInstructions(target)
+		# 		if instructions.GetSize() == 0:
+		# 			continue
+		#
+		# 		logDbgC(f"\n🔧 Function: {sym.GetName()}")
+		# 		for inst in instructions:
+		# 			addr = inst.GetAddress().GetLoadAddress(target)
+		# 			mnemonic = inst.GetMnemonic(target)
+		# 			operands = inst.GetOperands(target)
+		# 			comment = inst.GetComment(target)
+		# 			logDbgC(f"0x{addr:x}: {mnemonic} {operands} ; {comment}")
 
 	def handle_tableView_changed(self, index):
 		print(f'handle_tableView_changed => {index}')

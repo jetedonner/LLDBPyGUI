@@ -26,13 +26,15 @@ def get_main_window():
                     mainWindowNG = widget
     return mainWindowNG
 
+settingHelper = SettingsHelper()
+
 def logDbg(logMsg="", alsoPrintToConsole = False, dbgLevel = DebugLevel.Info):
 
     if currentDebugLevel.value < dbgLevel.value:
         return
 
     sDateTimeFormat = "%H:%M:%S"
-    if SettingsHelper().getValue(SettingsValues.ShowDateInLogView):
+    if settingHelper.getValue(SettingsValues.ShowDateInLogView):
         sDateTimeFormat = "%Y-%m-%d %H:%M:%S"
     now = datetime.now()
     timestamp = now.strftime(sDateTimeFormat)  # Format as 'YYYY-MM-DD HH:MM:SS'

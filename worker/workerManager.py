@@ -5,6 +5,7 @@ from PyQt6.QtCore import *
 from PyQt6 import uic, QtWidgets, QtCore
 
 from worker.loadDisassemblyWorker import *
+from worker.loadDisassemblyWorkerNG import LoadDisassemblyWorkerNG
 from worker.loadRegisterWorker import *
 from worker.loadBreakpointsWorker import *
 from worker.loadWatchpointsWorker import *
@@ -44,6 +45,16 @@ class WorkerManager(QObject):
 #		self.loadDisassemblyWorker.signals.sendProgressUpdate.connect(self.handle_progressUpdate)
 		self.loadDisassemblyWorker.signals.loadInstruction.connect(handle_loadInstruction)
 		self.threadpool.start(self.loadDisassemblyWorker)
+
+	def start_loadDisassemblyWorkerNG(self, handle_loadSymbol, handle_loadInstruction, handle_workerFinished, modulePath, initTable=True):
+		self.loadDisassemblyWorkerNG = LoadDisassemblyWorkerNG(self.driver, modulePath, initTable)
+		self.loadDisassemblyWorkerNG.signals.finished.connect(handle_workerFinished)
+		#		self.loadDisassemblyWorker.signals.sendStatusBarUpdate.connect(self.handle_statusBarUpdate)
+		#		self.loadDisassemblyWorker.signals.sendProgressUpdate.connect(self.handle_progressUpdate)
+		self.loadDisassemblyWorkerNG.signals.loadInstruction.connect(handle_loadInstruction)
+		self.loadDisassemblyWorkerNG.signals.loadSymbolCallback.connect(handle_loadSymbol)
+		self.threadpool.start(self.loadDisassemblyWorkerNG)
+		logDbgC(f"self.threadpool.start(self.loadDisassemblyWorkerNG)")
 		
 	def start_loadRegisterWorker(self, handle_loadRegister, handle_loadRegisterValue, handle_updateRegisterValue, handle_loadVariableValue, handle_updateVariableValue, handle_workerFinished, initTabs = True):
 		self.loadRegisterWorker = LoadRegisterWorker(self.driver, initTabs)

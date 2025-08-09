@@ -175,10 +175,10 @@ class ConfigClass():
 #	testTargetSource = "/Volumes/Data/dev/_reversing/disassembler/LLDBPyGUI/pyLLDBGUI/LLDBPyGUI/testtarget/hello_world_test.c"
 
 	# # SIMPLE
-	testTarget =  "./_testtarget/a_hello_world_test" #amicable_numbers" #a_hello_world_test" #amicable_numbers" #cocoa_windowed_objc2" #amicable_numbers" #a_hello_world_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
-	testTargetSource = "./_testtarget/a_hello_world_test.c" #amicable_numbers.c" #a_hello_world_test.c" #amicable_numbers.c" #cocoa_windowed_objc2.m" #amicable_numbers.c" #a_hello_world_test.c"
-	testTargetArch = "x86_64-apple-macosx15.1.1"
-	testTargetArgs = ""
+	# testTarget =  "./_testtarget/a_hello_world_test" #amicable_numbers" #a_hello_world_test" #amicable_numbers" #cocoa_windowed_objc2" #amicable_numbers" #a_hello_world_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
+	# testTargetSource = "./_testtarget/a_hello_world_test.c" #amicable_numbers.c" #a_hello_world_test.c" #amicable_numbers.c" #cocoa_windowed_objc2.m" #amicable_numbers.c" #a_hello_world_test.c"
+	# testTargetArch = "x86_64-apple-macosx15.1.1"
+	# testTargetArgs = ""
 
 	#
 	# testTarget2 =  "./_testtarget/a_hello_world_test" #amicable_numbers" #a_hello_world_test" #amicable_numbers" #cocoa_windowed_objc2" #amicable_numbers" #a_hello_world_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
@@ -189,10 +189,10 @@ class ConfigClass():
 	# testTargetSource = "./_testtarget/a_hello_world_test_ext.c"  # amicable_numbers.c" #a_hello_world_test.c" #amicable_numbers.c" #cocoa_windowed_objc2.m" #amicable_numbers.c" #a_hello_world_test.c"
 
 	# # SIMPLE WITH LIB / DYLIB
-	# testTarget = "hello_library_exec"  # amicable_numbers" #a_hello_world_test" #amicable_numbers" #cocoa_windowed_objc2" #amicable_numbers" #a_hello_world_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
-	# testTargetSource = "hello_library_exec.c"  # amicable_numbers.c" #a_hello_world_test.c" #amicable_numbers.c" #cocoa_windowed_objc2.m" #amicable_numbers.c" #a_hello_world_test.c"
-	# testTargetArch = "arm64-apple-macosx15.1.0"
-	# testTargetArgs = ""
+	testTarget = "hello_library_exec"  # amicable_numbers" #a_hello_world_test" #amicable_numbers" #cocoa_windowed_objc2" #amicable_numbers" #a_hello_world_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
+	testTargetSource = "hello_library_exec.c"  # amicable_numbers.c" #a_hello_world_test.c" #amicable_numbers.c" #cocoa_windowed_objc2.m" #amicable_numbers.c" #a_hello_world_test.c"
+	testTargetArch = "arm64-apple-macosx15.1.0"
+	testTargetArgs = ""
 
 	testTarget2 = "./_testtarget/a_hello_world_test"  # amicable_numbers" #a_hello_world_test" #amicable_numbers" #cocoa_windowed_objc2" #amicable_numbers" #a_hello_world_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
 	testTargetSource2 = "./_testtarget/a_hello_world_test.c"  # amicable_numbers.c" #a_hello_world_test.c" #amicable_numbers.c" #cocoa_windowed_objc2.m" #amicable_numbers.c" #a_hello_world_test.c"
