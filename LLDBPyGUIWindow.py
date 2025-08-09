@@ -235,7 +235,7 @@ class LLDBPyGUIWindow(QMainWindow):
 
 		self.threadLoad = QThread()
 		if not loadExec2:
-			self.worker = Worker(self, ConfigClass.testTarget, True, ConfigClass.testTargetSource)
+			self.worker = Worker(self, ConfigClass.testTarget, True, ConfigClass.testTargetSource, ConfigClass.testTargetArch) #, ConfigClass.testTargetArgs)
 		else:
 			self.worker = Worker(self, ConfigClass.testTarget2, True, ConfigClass.testTargetSource2)
 		self.worker.arch = ConfigClass.testTargetArch
@@ -1081,6 +1081,7 @@ class LLDBPyGUIWindow(QMainWindow):
 				# lldb.debugger.Terminate()
 				# if self.listener is not None:
 				# 	self.listener.should_quit = True
+				print(f"self.worker.listener.should_quit = True (1)")
 				self.worker.listener.should_quit = True
 				errKill = process.Kill()
 				if not errKill.Success():
@@ -1222,6 +1223,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		if process:
 			self.driver.setDone()
 			if hasattr(self, "listener"):
+				print(f"self.worker.listener.should_quit = True (2)")
 				self.listener.should_quit = True
 
 			# # Now that we are done dump the stdout and stderr
@@ -1402,18 +1404,18 @@ class LLDBPyGUIWindow(QMainWindow):
 	# 	print(f"Breakpoint set at main's first instruction: 0x{load_addr:x}")
 
 	def handle_event_queued(self, event):
-		# print(f"EVENT-QUEUED: {event}")
-		# print(f'GUI-GOT-EVENT: {event} / {event.GetType()} ====>>> THATS DA ONE')
-		# desc = get_description(event)
-		# print('GUI-Event description:', desc)
-		# print('GUI-Event data flavor:', event.GetDataFlavor())
-		return
+		print(f"EVENT-QUEUED: {event}")
+		print(f'GUI-GOT-EVENT: {event} / {event.GetType()} ====>>> THATS DA ONE')
+		desc = get_description(event)
+		print('GUI-Event description:', desc)
+		print('GUI-Event data flavor:', event.GetDataFlavor())
+		# return
 		if str(event.GetDataFlavor()) == "ProgressEventData": # and not self.should_quit:
 			self.treListener.handle_gotNewEvent(event)
 			pass
 
 	def handle_breakpointEvent(self, event):
-		# print(f"handle_breakpointEvent: {event}")
+		print(f"handle_breakpointEvent: {event}")
 		pass
 
 	#################################### START NEW CALLBACKS ########################################
@@ -1543,6 +1545,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			self.setWinTitleWithState("Exited")
 			self.resetGUI()
 			state = 'exited'
+			print(f"self.worker.listener.should_quit = True (3)")
 			self.should_quit = True
 			self.worker.listener.should_quit = True
 			return

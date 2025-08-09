@@ -197,7 +197,7 @@ class BreakpointTreeWidget(BaseTreeWidget):
 					if setPC:
 						for i in range(subitem.columnCount()):
 							subitem.setBackground(i, ConfigClass.colorGreen)
-						self.driver.GetTarget().GetCu
+						# self.driver.GetTarget().GetCu
 						if subitem.text(3) == f"scanf":
 
 							import platform
@@ -861,6 +861,7 @@ class BPsWPsWidget(QWidget):
 			
 	def cmdAddBPByName_clicked(self):
 		logDbgC(f"Set BP by Name ....")
+		InputDialog("Add breakpoint by nama", "Please enter the name of the function for which you want to set a breakpoint", "", "Enter function name for breakpoint .")
 		pass
 
 	def reloadBreakpoints(self, initTable = True):
@@ -872,6 +873,7 @@ class BPsWPsWidget(QWidget):
 			self.window().txtMultiline.enableBP(hex(bl.GetLoadAddress()), bl.IsEnabled())
 
 	def handle_updateBreakpointValue(self, bp):
+		logDbgC(f"handle_updateBreakpointValue({bp}) ...")
 		rootItem = self.treBPs.invisibleRootItem()
 		for childPar in range(rootItem.childCount()):
 			parentItem = rootItem.child(childPar)
@@ -918,7 +920,8 @@ class BPsWPsWidget(QWidget):
 						if childItem != None:
 							if childItem.text(0) == str(bp.GetID()) + "." + str(bl.GetID()):
 								if arrBPHits.get(str(bp.GetID()) + "." + str(bl.GetID())) is not None and childItem.text(4) != str(arrBPHits.get(str(bp.GetID()) + "." + str(bl.GetID()))):
-									childItem.setText(4, str(arrBPHits.get(str(bp.GetID()) + "." + str(bl.GetID()))))
+									# childItem.setText(4, str(arrBPHits.get(str(bp.GetID()) + "." + str(bl.GetID()))))
+									childItem.setText(4, str(bl.GetHitCount()))
 								else:
 									childItem.setText(4, str(bl.GetHitCount()))
 								bpCondBL = arrBPConditions.get(str(bp.GetID()) + "." + str(bl.GetID()))

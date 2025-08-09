@@ -137,6 +137,7 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 			print(f"stdout IS NONE or LEN == 0")
 			
 	def addNewEvent(self, event, extObj):
+		logDbgC(f"listenerTreeView.addNewEvent(...) ...")
 		sectionNode = QTreeWidgetItem(self, [BroadcastBitString(str(event.GetBroadcasterClass()), event.GetType()), self.getTimestamp()])
 		
 		subSectionNode = QTreeWidgetItem(sectionNode, ["Type: ", BroadcastBitString(str(event.GetBroadcasterClass()), event.GetType()) + " (" + str(event.GetType()) + ")"])
@@ -526,6 +527,7 @@ class ListenerWidget(QWidget):
 	
 	def handle_gotNewEvent(self, event, extObj=None):
 		# if not self.should_quit
+		logDbgC(f"listenerTreeView.handle_gotNewEvent(...) ...")
 		print(f"Got new event: {event} => {get_description(event)}")
 		if extObj == None:
 			extObj = self.driver.getTarget().GetProcess()

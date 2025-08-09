@@ -162,6 +162,7 @@ class LLDBListener(QtCore.QObject, Thread):
 				state = 'running'
 			elif process.state == eStateExited:
 				state = 'exited'
+				print(f"self.worker.listener.should_quit = True (4)")
 				self.should_quit = True
 			thread = process.selected_thread
 			# print('Process event: %s, reason: %d' % (state, thread.GetStopReason()))
@@ -222,68 +223,69 @@ class LLDBListener(QtCore.QObject, Thread):
 			event = lldb.SBEvent()
 			# print("GOING to WAIT 4 EVENT...")
 			logDbgC(f"################# ====>>>>> WaitForEvent (1)")
-			if self.listener.WaitForEvent(lldb.UINT32_MAX, event):
-				if not self.should_quit and event is not None:
-					desc = get_description(event)
-					logDbgC(f'GOT-NEW-EVENT: {event}\nEvent data flavor: {event.GetDataFlavor()}\nEvent description: {desc}\n- {event.GetType()} / {lldb.SBProcess.eBroadcastBitSTDOUT} ====>>> OLD LISTENER')
+			result = self.listener.WaitForEvent(lldb.UINT32_MAX, event)
+			logDbgC(f"self.should_quit: {self.should_quit} => result: {result} event: {event}")
+			if not self.should_quit and event is not None:
+				desc = get_description(event)
+				logDbgC(f'GOT-NEW-EVENT: {event}\nEvent data flavor: {event.GetDataFlavor()}\nEvent description: {desc}\n- {event.GetType()} / {lldb.SBProcess.eBroadcastBitSTDOUT} ====>>> OLD LISTENER')
 
-					# logDbgC(f'Event description: {desc}')
-					# logDbgC(f'Event data flavor: {event.GetDataFlavor()}')
+				# logDbgC(f'Event description: {desc}')
+				# logDbgC(f'Event data flavor: {event.GetDataFlavor()}')
 
-					# logDbgC(f"self.gotEvent.emit(event)!!!")
-					self.gotEvent.emit(event)
-					# print("GOT NEW EVENT LISTENER!!")
-					if event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
-						# continue
-						# p (event)
-						print("STD OUT EVENT LISTENER!!!")
-						sys.stdout.flush()
-						stdoutNG = lldb.SBProcess.GetProcessFromEvent(event).GetSTDOUT(2048)
-						# print(SBProcess.GetProcessFromEvent(event))
-						print(f"############# ===========>>>>>>>>>>>>> stdoutNG IS: {stdoutNG}")
+				# logDbgC(f"self.gotEvent.emit(event)!!!")
+				self.gotEvent.emit(event)
+				# print("GOT NEW EVENT LISTENER!!")
+				if event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
+					# continue
+					# p (event)
+					print("STD OUT EVENT LISTENER!!!")
+					sys.stdout.flush()
+					stdoutNG = lldb.SBProcess.GetProcessFromEvent(event).GetSTDOUT(2048)
+					# print(SBProcess.GetProcessFromEvent(event))
+					print(f"############# ===========>>>>>>>>>>>>> stdoutNG IS: {stdoutNG}")
 
-						continue
-					elif SBCommandInterpreter.EventIsCommandInterpreterEvent(event):
-						print("GOT COMMANDLINE EVENT!!!")
-					elif event.GetType() == SBThread.eBroadcastBitThreadSuspended:
-						print('THREAD SUSPENDED: %s' % str(event))
-					elif event.GetType() == SBThread.eBroadcastBitThreadResumed:
-						# print("RESUMED!!")
-						if self.suspended:
-							# print("RESUMED AFTER BP!!")
-							self.suspended = False
-					elif event.GetType() == SBTarget.eBroadcastBitModulesLoaded:
-						print('Module load: %s' % str(event))
-					elif event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
-						# continue
-						print("STD OUT EVENT LISTENER!!!")
-						# sys.stdout.flush()
-						stdout = SBProcess.GetProcessFromEvent(event).GetSTDOUT(2048)
-						print(SBProcess.GetProcessFromEvent(event))
-						print(f"STDOUT IS: {stdout}")
-	#					if stdout is not None and len(stdout) > 0:
-	#						message = {"status":"event", "type":"stdout", "output": "".join(["%02x" % ord(i) for i in stdout])}
-	#						print(message)
-	#						print("".join(["%02x" % ord(i) for i in stdout]))
-	#						self.stdoutEvent.emit("".join(["%02x" % ord(i) for i in stdout]))
-	##             self.signals.event_output.emit("".join(["%02x" % ord(i) for i in stdout]))
-	#						QCoreApplication.processEvents()
-					elif SBProcess.EventIsProcessEvent(event):
-						if event is None:
-							print(f"EVEWNT ISSSSSSSSSS NOOOOOOONNNNNNNNEEEEEEE!!!!!!")
-						else:
-							print((f"EVENT IOS OK!!!!!!!"))
-						self._broadcast_process_state(SBProcess.GetProcessFromEvent(event), event)
-	#					self.processEvent.emit(SBProcess.GetProcessFromEvent(event))
-	#					QCoreApplication.processEvents()
-						# print("STD OUT EVENT ALT!!!")
-						# pass
-					elif SBBreakpoint.EventIsBreakpointEvent(event):
-						print("GOT BREAKPOINT EVENT YESSSSS!!!")
-						self._breakpoint_event(event)
-					elif event.GetType() == lldb.SBTarget.eBroadcastBitWatchpointChanged:
-						wp = lldb.SBWatchpoint.GetWatchpointFromEvent(event)
+					continue
+				elif SBCommandInterpreter.EventIsCommandInterpreterEvent(event):
+					print("GOT COMMANDLINE EVENT!!!")
+				elif event.GetType() == SBThread.eBroadcastBitThreadSuspended:
+					print('THREAD SUSPENDED: %s' % str(event))
+				elif event.GetType() == SBThread.eBroadcastBitThreadResumed:
+					# print("RESUMED!!")
+					if self.suspended:
+						# print("RESUMED AFTER BP!!")
+						self.suspended = False
+				elif event.GetType() == SBTarget.eBroadcastBitModulesLoaded:
+					print('Module load: %s' % str(event))
+				elif event.GetType() == lldb.SBProcess.eBroadcastBitSTDOUT:
+					# continue
+					print("STD OUT EVENT LISTENER!!!")
+					# sys.stdout.flush()
+					stdout = SBProcess.GetProcessFromEvent(event).GetSTDOUT(2048)
+					print(SBProcess.GetProcessFromEvent(event))
+					print(f"STDOUT IS: {stdout}")
+#					if stdout is not None and len(stdout) > 0:
+#						message = {"status":"event", "type":"stdout", "output": "".join(["%02x" % ord(i) for i in stdout])}
+#						print(message)
+#						print("".join(["%02x" % ord(i) for i in stdout]))
+#						self.stdoutEvent.emit("".join(["%02x" % ord(i) for i in stdout]))
+##             self.signals.event_output.emit("".join(["%02x" % ord(i) for i in stdout]))
+#						QCoreApplication.processEvents()
+				elif SBProcess.EventIsProcessEvent(event):
+					if event is None:
+						print(f"EVEWNT ISSSSSSSSSS NOOOOOOONNNNNNNNEEEEEEE!!!!!!")
 					else:
-						pass
+						print((f"EVENT IOS OK!!!!!!!"))
+					self._broadcast_process_state(SBProcess.GetProcessFromEvent(event), event)
+#					self.processEvent.emit(SBProcess.GetProcessFromEvent(event))
+#					QCoreApplication.processEvents()
+					# print("STD OUT EVENT ALT!!!")
+					# pass
+				elif SBBreakpoint.EventIsBreakpointEvent(event):
+					print("GOT BREAKPOINT EVENT YESSSSS!!!")
+					self._breakpoint_event(event)
+				elif event.GetType() == lldb.SBTarget.eBroadcastBitWatchpointChanged:
+					wp = lldb.SBWatchpoint.GetWatchpointFromEvent(event)
 				else:
-					break
+					pass
+			else:
+				break

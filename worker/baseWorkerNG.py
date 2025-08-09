@@ -73,7 +73,7 @@ class Worker(QObject):
 	endAddr = 0x0
 
 
-	def __init__(self, mainWinToUse, filename, initTable=True, sourceFile=""):
+	def __init__(self, mainWinToUse, filename, initTable=True, sourceFile="", arch="", args=""):
 		super().__init__()
 
 		# self.threadpool = QThreadPool(self)
@@ -82,8 +82,8 @@ class Worker(QObject):
 		self.mainWin = mainWinToUse
 		self.fileToLoad = filename
 		self.loader = ""
-		self.arch = ""
-		self.args = ""
+		self.arch = arch
+		self.args = args
 		self.loadSourceCode = True
 		self.driver = None
 		self.target = None
@@ -164,7 +164,9 @@ class Worker(QObject):
 	def stop(self):
 		self._should_stop = True
 		if self.listener is not None:
-			self.listener.should_quit = True
+			# print(f"self.worker.listener.should_quit = True (5)")
+			# self.listener.should_quit = True
+			pass
 
 	def handle_endLoadControlFlowCallback(self, success):
 		# self.logDbg.emit(f"Result load control flow: {success}")

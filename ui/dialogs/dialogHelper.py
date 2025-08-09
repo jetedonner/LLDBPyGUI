@@ -158,7 +158,7 @@ class ConfirmDialog(QDialog):
 		super().reject()  # Call parent reject method
 
 class InputDialog(QDialog):
-	def __init__(self, title = "", prompt = "", preset = ""):
+	def __init__(self, title = "", prompt = "", preset = "", placeholder=""):
 		super().__init__()
 
 		self.setWindowTitle(title)
@@ -170,14 +170,24 @@ class InputDialog(QDialog):
 		self.buttonBox.rejected.connect(self.reject)
 
 		self.layout = QVBoxLayout()
+		self.layout.setContentsMargins(15, 15, 15, 15)
 		self.message = QLabel(prompt)
 		self.txtInput = QLineEdit()
-		self.txtInput.setText(preset)
+		if preset != "":
+			self.txtInput.setText(preset)
+
+		if placeholder != "":
+			self.txtInput.setPlaceholderText(placeholder)
+
 		self.layout.addWidget(self.message)
 		self.layout.addWidget(self.txtInput)
 		self.layout.addWidget(self.buttonBox)
 		self.setLayout(self.layout)
 		self.txtInput.setFocus()
+
+class BPNameDialog(InputDialog):
+	def __init__(self, presetAddress="0x"):
+		super().__init__("Address to goto", "Enter an address to goto:", presetAddress)
 
 class GotoAddressDialog(InputDialog):
 	def __init__(self, presetAddress="0x"):

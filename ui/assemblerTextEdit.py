@@ -500,6 +500,8 @@ class DisassemblyTableWidget(BaseTableWidget):
 		elif event.key() == Qt.Key.Key_Right:
 			# self.label.setText("Left arrow pressed!")
 			self.handle_right_arrow()
+		else:
+			super().keyPressEvent(event)
 
 	def handle_left_arrow(self):
 		# 🔧 Insert your LLDB Python API logic here
