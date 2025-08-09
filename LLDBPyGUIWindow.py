@@ -1737,7 +1737,7 @@ class LLDBPyGUIWindow(QMainWindow):
 
 
 	def start_loadDisassemblyWorkerNG(self, modulePath, initTable = True):
-		self.instCnt = 0
+		self.instCnt = 1
 		self.start_operation()
 		# self.symFuncName = ""
 		# import pdb; pdb.set_trace()
