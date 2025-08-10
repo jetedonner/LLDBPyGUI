@@ -117,6 +117,7 @@ class DbgOutputTextEdit(QTextEdit):
 
     def scrollToEnd(self):
         cursor = self.textCursor()
+        # , QTextCursor.MoveMode.MoveAnchor
         cursor.movePosition(QTextCursor.MoveOperation.End)
         self.setTextCursor(cursor)
         self.ensureCursorVisible()

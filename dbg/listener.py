@@ -246,16 +246,16 @@ class LLDBListener(QtCore.QObject, Thread):
 	suspended = False
 	def run(self):
 		# return
-		logDbgC(f'STARTING LISTENER!!!! ======>>>>>> Is it only ONE TIME?')
+		# self.logDbgC.emit(f'STARTING LISTENER!!!! ======>>>>>> Is it only ONE TIME?', DebugLevel.Verbose)
 		while not self.should_quit:
 			event = lldb.SBEvent()
 			# print("GOING to WAIT 4 EVENT...")
-			logDbgC(f"################# ====>>>>> WaitForEvent (1)")
+			# self.logDbgC.emit(f"################# ====>>>>> WaitForEvent (1)", DebugLevel.Verbose)
 			result = self.listener.WaitForEvent(lldb.UINT32_MAX, event)
-			logDbgC(f"self.should_quit: {self.should_quit} => result: {result} event: {event}")
+			# self.logDbgC.emit(f"self.should_quit: {self.should_quit} => result: {result} event: {event}", DebugLevel.Verbose)
 			if not self.should_quit and event is not None:
 				desc = get_description(event)
-				logDbgC(f'GOT-NEW-EVENT: {event}\nEvent data flavor: {event.GetDataFlavor()}\nEvent description: {desc}\n- {event.GetType()} / {lldb.SBProcess.eBroadcastBitSTDOUT} ====>>> OLD LISTENER')
+				# self.logDbgC.emit(f'GOT-NEW-EVENT: {event}\nEvent data flavor: {event.GetDataFlavor()}\nEvent description: {desc}\n- {event.GetType()} / {lldb.SBProcess.eBroadcastBitSTDOUT} ====>>> OLD LISTENER', DebugLevel.Verbose)
 
 				# logDbgC(f'Event description: {desc}')
 				# logDbgC(f'Event data flavor: {event.GetDataFlavor()}')
