@@ -242,7 +242,27 @@ class ListenerLogTreeWidget(BaseTreeWidget):
 						if breakpoint is not None: # and breakpoint.GetID() == self.driver.mainID:
 							addr = breakpoint.location[0].GetLoadAddress()
 							self.window().txtMultiline.setPC(addr)
-							self.window().wdtBPsWPs.treBPs.setPC(hex(addr))
+
+							self.bp_loc = 0
+							if breakpoint.GetNumLocations() == 1:
+								self.bp_loc = breakpoint.GetLocationAtIndex(0)
+							else:
+								bp_loc_id = thread.GetStopReasonDataAtIndex(1)
+								self.bp_loc = breakpoint.FindLocationByID(bp_loc_id)
+
+							setBPPC = True
+							bpCond = arrBPConditions.get(str(breakpoint.GetID()) + "." + str(self.bp_loc.GetID()))
+							if bpCond is not None and bpCond != "":
+								# if (dbg.breakpointHelper.arrBPConditions[str(breakpoint.GetID())] != None and dbg.breakpointHelper.arrBPConditions[str(breakpoint.GetID())] != ""):
+								frame = thread.GetFrameAtIndex(0)
+								# Evaluate the condition
+								value = frame.EvaluateExpression(bpCond)
+								if value.GetError().Success():
+									result = value.GetValueAsUnsigned()
+									setBPPC = result
+									# if result:
+
+							self.window().wdtBPsWPs.treBPs.setPC(hex(addr), setBPPC)
 							pass
 				pass
 				
