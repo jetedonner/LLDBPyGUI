@@ -105,6 +105,8 @@ class ProcessesDialog(QDialog):
 #		self.process_info.sort(key=lambda item: item[0])  # Sort by the second element (process name)
 		
 		# Populate the combobox with sorted items
+		# if settingHelper.GetValue(SettingsValues.OrderPIDsByName):
+		self.process_info.sort(key=lambda item: item[1 if settingHelper.GetValue(SettingsValues.OrderPIDsByName) else 0])
 		for pid, name in self.process_info:
 			self.cmbPID.addItem(str(name + " (" + str(pid) + ")"), pid)
 				
