@@ -222,6 +222,12 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.finish_startup()
 		pass
 
+	def stopWorkerAndQuitThreadAttach(self):
+		# self.attachWorker.stop()
+		self.threadAttach.quit()
+		self.finish_startup()
+		pass
+
 	def stopWorkerAndQuitThreadNG(self):
 		# self.workerDecomp.stop()
 		self.threadDecompMod.quit()
@@ -262,6 +268,13 @@ class LLDBPyGUIWindow(QMainWindow):
 			self.attachWorker.moveToThread(self.threadAttach)
 			self.threadAttach.started.connect(self.attachWorker.run)
 			self.attachWorker.show_dialog.connect(self.start_operation)
+
+			self.attachWorker.loadInstructionCallback.connect(self.handle_loadInstruction)
+			self.attachWorker.loadStringCallback.connect(self.handle_loadString)
+			self.attachWorker.loadSymbolCallback.connect(self.handle_loadSymbol)
+			self.attachWorker.loadCurrentPC.connect(self.handle_loadCurrentPC)
+			self.attachWorker.finished.connect(self.stopWorkerAndQuitThreadAttach)
+
 			# self.attachWorker.finished.connect(self.stopWorkerAndQuitThread)
 
 		self.worker.logDbg.connect(logDbg)
@@ -710,6 +723,12 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.worker.finishedLoadingSourceCodeCallback.connect(self.handle_loadSourceFinished)
 		self.worker.loadStacktraceCallback.connect(self.handle_loadStacktrace)
 		self.worker.runControlFlow_loadConnections.connect(self.runControlFlow_loadConnections)
+
+		self.attachWorker.handle_breakpointEvent = self.handle_breakpointEvent
+		self.attachWorker.handle_processEvent = self.handle_processEvent
+		self.attachWorker.handle_gotNewEvent = self.treListener.handle_gotNewEvent
+		self.attachWorker.loadJSONCallback.connect(self.treStats.loadJSONCallback)
+		self.attachWorker.loadFileInfosCallback.connect(self.loadFileInfosCallback)
 
 		# loadBreakpointsValueCallback = pyqtSignal(object, bool)
 		# updateBreakpointsValueCallback = pyqtSignal(object)
@@ -1812,6 +1831,10 @@ class LLDBPyGUIWindow(QMainWindow):
 	def handle_loadString(self, addr, idx, string):
 		self.txtMultiline.appendString(addr, idx, string)
 		# QApplication.processEvents()
+		pass
+
+	def handle_loadCurrentPC(self, pc):
+		self.txtMultiline.setPC(pc, True)
 		pass
 
 	instCnt = 0

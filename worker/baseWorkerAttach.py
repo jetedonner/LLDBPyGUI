@@ -1,13 +1,32 @@
 import lldb
 from PyQt6.QtCore import QObject, pyqtSignal
+from PyQt6.QtWidgets import QApplication
+
+from dbg.fileInfos import is_objc_app, detect_language_by_symbols, detect_objc, GetFileHeader
+from dbg.listener import LLDBListener
+from lib.settings import SettingsHelper
+from ui.helper.dbgOutputHelper import DebugLevel
 
 
 class AttachWorker(QObject):
 
     show_dialog = pyqtSignal()
+    finished = pyqtSignal()
     logDbg = pyqtSignal(str)
     logDbgC = pyqtSignal(str, object)
     loadModulesCallback = pyqtSignal(object, object)
+    loadInstructionCallback = pyqtSignal(object)
+    loadStringCallback = pyqtSignal(str, int, str)
+    loadSymbolCallback = pyqtSignal(str)
+    loadCurrentPC = pyqtSignal(str)
+    loadJSONCallback = pyqtSignal(str)
+    loadFileInfosCallback = pyqtSignal(object, object)
+
+
+    # Load Listener
+    handle_breakpointEvent = None
+    handle_processEvent = None
+    handle_gotNewEvent = None
 
     attachThread = None
     _should_stop = False
@@ -20,6 +39,7 @@ class AttachWorker(QObject):
     thread = None
     frame = None
 
+    allInstructions = []
 
     def __init__(self, debugger, pid=None, name=None):
         super().__init__()
@@ -33,15 +53,45 @@ class AttachWorker(QObject):
         self.thread = None
         self.frame = None
 
+        self.allInstructions = []
+
     def run(self):
-        self._should_stop = False  # Reset before starting
+        self._should_stop = False
+        self.show_dialog.emit()
+        # Reset before starting
         self.attach_to_process()
         if self.process:
+
+            # if self.process:
+            self.listener = LLDBListener(self.process, self.debugger)
+            self.listener.setHelper = SettingsHelper()# self.mainWin.setHelper
+            self.listener.breakpointEvent.connect(self.handle_breakpointEvent)
+            self.listener.processEvent.connect(self.handle_processEvent)
+            self.listener.gotEvent.connect(self.handle_gotNewEvent)
+            self.listener.addListenerCalls()
+            self.listener.start()
+
+
             self.thread = self.process.GetThreadAtIndex(0)
             if self.thread:
                 # for z in range(self.thread.GetNumFrames()):
                 self.frame = self.thread.GetFrameAtIndex(0)
                 self.loadModulesCallback.emit(self.frame, self.target.modules)
+
+                self.disassemble_entire_target()
+
+                self.logDbgC.emit(f"self.target.GetExecutable().GetFilename(): {self.target.GetExecutable().GetDirectory()}/{self.target.GetExecutable().GetFilename()}", DebugLevel.Verbose)
+                exe = self.target.GetExecutable().GetDirectory() + "/" + self.target.GetExecutable().GetFilename()
+                # self.targetBasename = os.path.basename(exe)
+                mach_header = GetFileHeader(exe)
+                self.logDbgC.emit(f"mach_header = GetFileHeader(exe): {mach_header}", DebugLevel.Verbose)
+                self.loadFileInfosCallback.emit(mach_header, self.target)
+                self.logDbgC.emit(f"after self.loadFileInfosCallback.emit(...)", DebugLevel.Verbose)
+                QApplication.processEvents()
+
+                self.loadFileStats()
+
+                self.finished.emit()
 
     def startWithPID(self, pid=-1, attachThread=None):
         self.pid = pid
@@ -78,6 +128,7 @@ class AttachWorker(QObject):
         else:
             print(f"❌ Failed to attach: {error.GetCString()}")
             return None
+
 
     def disassemble_entire_target(self):
         # self.list_external_symbols(self.target)
@@ -185,4 +236,18 @@ class AttachWorker(QObject):
             # else:
             # 	break
             idx += 1
+        self.loadCurrentPC.emit(hex(self.frame.GetPC()))
         self.logDbgC.emit(f"============ END DISASSEMBLER ===============", DebugLevel.Verbose)
+
+    def loadFileStats(self):
+        self.logDbgC.emit(f"def loadFileStats(...)", DebugLevel.Verbose)
+        statistics = self.target.GetStatistics()
+        self.logDbgC.emit(f"def loadFileStats(...) => after statistics = self.driver.getTarget().GetStatistics()", DebugLevel.Verbose)
+        stream = lldb.SBStream()
+        success = statistics.GetAsJSON(stream)
+        self.logDbgC.emit(f"def loadFileStats(...) => after success = statistics.GetAsJSON(stream)", DebugLevel.Verbose)
+
+        if success:
+            self.loadJSONCallback.emit(str(stream.GetData()))
+            self.logDbgC.emit(f"def loadFileStats(...) => after self.loadJSONCallback.emit(str(stream.GetData()))", DebugLevel.Verbose)
+            QApplication.processEvents()
