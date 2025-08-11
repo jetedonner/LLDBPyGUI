@@ -1755,6 +1755,8 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.wdtBPsWPs.treBPs.clearPC()
 		self.txtMultiline.clearPC()
 		# logDbgC(f"start_debugWorker (TESET 2) self.isProcessRunning: {self.isProcessRunning} .....")
+		if True:
+			driver.target = self.attachWorker.target
 		if self.workerManager.start_debugWorker(driver, kind, self.handle_debugStepCompleted):
 			# logDbgC(f"start_debugWorker (TESET 3) self.isProcessRunning: {self.isProcessRunning} .....")
 			self.setWinTitleWithState("Running")
@@ -1767,7 +1769,7 @@ class LLDBPyGUIWindow(QMainWindow):
 
 
 	def handle_debugStepCompleted(self, kind, success, rip, frm):
-		logDbgC(f"handle_debugStepCompleted ....")
+		logDbgC(f"handle_debugStepCompleted => success: {success}, rip: {rip} ....")
 		self.isProcessRunning = False
 		# logDbgC(f"handle_debugStepCompleted({kind}, {success}, {rip}, {frm}) ====>>>> Module: {frm.GetModule().GetFileSpec().GetFilename()}")
 		if success:
