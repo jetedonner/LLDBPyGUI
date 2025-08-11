@@ -29,6 +29,7 @@ class SettingsValues(Enum):
 	ShowLineNumInDisassembly = ("Show line number in disassembly", True, bool)
 	ASMMaxLines = ("Disassembly flow max lines", 5, int)
 	MaxCommandHistoryCharCount = ("How many chars should the command history remember", 5000, int)
+	OrderPIDsByName = ("Load selection 'attach to processes' by name", True, bool)
 
 	# Developer Settings
 	LoadTestTarget = ("Load test target", True, bool)
@@ -82,7 +83,7 @@ class SettingsHelper(QObject):
 		self.settings.setValue(SettingsValues.ShowLineNumInDisassembly.value[0], True)
 		self.settings.setValue(SettingsValues.ASMMaxLines.value[0], 5)
 		self.settings.setValue(SettingsValues.MaxCommandHistoryCharCount.value[0], 5000)
-
+		self.settings.setValue(SettingsValues.OrderPIDsByName.value[0], True)
 
 		self.settings.setValue(SettingsValues.LoadTestTarget.value[0], True)
 		self.settings.setValue(SettingsValues.LoadTestBPs.value[0], True)

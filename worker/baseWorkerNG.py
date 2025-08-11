@@ -73,7 +73,7 @@ class Worker(QObject):
 	endAddr = 0x0
 
 
-	def __init__(self, mainWinToUse, filename, initTable=True, sourceFile="", arch="", args=""):
+	def __init__(self, mainWinToUse, filename="", initTable=True, sourceFile="", arch="", args=""):
 		super().__init__()
 
 		# self.threadpool = QThreadPool(self)

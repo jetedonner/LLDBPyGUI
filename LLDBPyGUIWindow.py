@@ -15,6 +15,7 @@ from ui.hexToStringWidget import HexToStringWidget
 from ui.rememberLocationsTableWidget import RememberLocationsTableWidget
 from ui.rflagTableWidget import RFlagTableWidget, RFlagWidget
 from ui.stopHookWidget import StopHookWidget
+from worker.baseWorkerAttach import AttachWorker
 from worker.decompileModuleWorker import DecompileModuleWorker
 
 try:
@@ -241,12 +242,27 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.symFuncName = ""
 
 		self.threadLoad = QThread()
-		if not loadExec2:
-			self.worker = Worker(self, ConfigClass.testTarget, True, ConfigClass.testTargetSource, ConfigClass.testTargetArch) #, ConfigClass.testTargetArgs)
+		self.threadAttach = QThread()
+
+		if ConfigClass.startTestTarget:
+			if not loadExec2:
+				self.worker = Worker(self, ConfigClass.testTarget, True, ConfigClass.testTargetSource, ConfigClass.testTargetArch) #, ConfigClass.testTargetArgs)
+			else:
+				self.worker = Worker(self, ConfigClass.testTarget2, True, ConfigClass.testTargetSource2)
+
+			self.worker.arch = ConfigClass.testTargetArch
+			self.worker.args = ConfigClass.testTargetArgs
+
 		else:
-			self.worker = Worker(self, ConfigClass.testTarget2, True, ConfigClass.testTargetSource2)
-		self.worker.arch = ConfigClass.testTargetArch
-		self.worker.args = ConfigClass.testTargetArgs
+			self.worker = Worker(self)
+			self.attachWorker = AttachWorker(self.debugger)
+			self.attachWorker.loadModulesCallback.connect(self.loadModulesCallback)
+			self.attachWorker.logDbg.connect(logDbg)
+			self.attachWorker.logDbgC.connect(logDbgC)
+			self.attachWorker.moveToThread(self.threadAttach)
+			self.threadAttach.started.connect(self.attachWorker.run)
+			self.attachWorker.show_dialog.connect(self.start_operation)
+			# self.attachWorker.finished.connect(self.stopWorkerAndQuitThread)
 
 		self.worker.logDbg.connect(logDbg)
 		self.worker.logDbgC.connect(logDbgC)
@@ -1034,8 +1050,10 @@ class LLDBPyGUIWindow(QMainWindow):
 					# print(proc)
 					# print(f"Process Idx: '{pd.cmbPID.currentIndex()}' / PID: '{proc.pid}' / Name: '{proc.name()}' selected")
 					self.setWinTitleWithState(f"PID: {proc.pid} ({proc.name()})")
-					self.driver.attachProcess(proc.pid)
-					self.loadTarget()
+					self.attachWorker.startWithPID(int(proc.pid), self.threadAttach)
+					# self.threadAttach.start()
+					# self.driver.attachProcess(proc.pid)
+					# self.loadTarget()
 					self.attach_action.setIcon(ConfigClass.iconGearsGrey)
 					self.attach_action.setToolTip("Detach from process: {proc.pid} ({proc.name()})")
 					self.setHelper.setValue(SettingsValues.TestAttachPID, int(proc.pid))
@@ -1272,7 +1290,7 @@ class LLDBPyGUIWindow(QMainWindow):
 #		self.dialog.show()
 
 
-		if self.setHelper.getValue(SettingsValues.LoadTestTarget):
+		if self.setHelper.getValue(SettingsValues.LoadTestTarget) and ConfigClass.startTestTarget:
 			# print(f"Loading target: {ConfigClass.testTarget}")
 			# self.loadNewExecutableFile(ConfigClass.testTarget)
 			# self.loadNewExecutableFile(ConfigClass.testTarget)

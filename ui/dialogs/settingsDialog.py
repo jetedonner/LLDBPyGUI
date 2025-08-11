@@ -63,7 +63,7 @@ class SettingsDialog(QDialog):
 		self.settings.setValue(SettingsValues.ShowLineNumInDisassembly.value[0], True)
 		self.settings.setValue(SettingsValues.ASMMaxLines.value[0], 5)
 		self.settings.setValue(SettingsValues.MaxCommandHistoryCharCount.value[0], 5000)
-
+		self.settings.setValue(SettingsValues.OrderPIDsByName.value[0], True)
 
 		self.settings.setValue(SettingsValues.LoadTestTarget.value[0], True)
 		self.settings.setValue(SettingsValues.LoadTestBPs.value[0], True)
@@ -118,6 +118,7 @@ class SettingsDialog(QDialog):
 			self.tblGeneral.item(15, i).setCheckState(self.setHelper.getChecked(SettingsValues.AutoBreakpointForScanf))
 			self.tblGeneral.item(16, i).setCheckState(self.setHelper.getChecked(SettingsValues.AutoScrollDbgOutput))
 			self.tblGeneral.item(17, i).setCheckState(self.setHelper.getChecked(SettingsValues.ShowLineNumInDisassembly))
+			self.tblGeneral.item(20, i).setCheckState(self.setHelper.getChecked(SettingsValues.OrderPIDsByName))
 
 
 			if i == 0:
@@ -208,6 +209,7 @@ class SettingsDialog(QDialog):
 		self.setHelper.setChecked(SettingsValues.ShowLineNumInDisassembly, self.tblGeneral.item(17, colCheckBox))
 		self.setHelper.setValue(SettingsValues.ASMMaxLines, int(self.tblGeneral.item(18, 1).text()))
 		self.setHelper.setValue(SettingsValues.MaxCommandHistoryCharCount, int(self.tblGeneral.item(19, 1).text()))
+		self.setHelper.setChecked(SettingsValues.OrderPIDsByName, self.tblGeneral.item(20, colCheckBox))
 
 		self.setHelper.setChecked(SettingsValues.LoadTestTarget, self.tblDeveloper.item(0, 0))
 		self.setHelper.setChecked(SettingsValues.LoadTestBPs, self.tblDeveloper.item(1, 1))

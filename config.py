@@ -211,6 +211,8 @@ class ConfigClass():
 
 	# testTargetArch = "x86_64-apple-macosx15.1.1"
 	# testTargetArgs = ""
+
+	startTestTarget = False
 	settingsFilename = "./LLDBPyGUI_Settings.ini"
 	
 	toolbarIconSize = 24
