@@ -226,9 +226,14 @@ def disassemble_current_function(debugger, command, result, internal_dict):
 
 	print(f"Swift result: {result}")
 
-def cmd_banner(debugger,command,result,dict): 
+def cmd_banner(debugger,command,result,dict):
+	from datetime import datetime
+
+	current_year = str(datetime.now().year)
+	# print(current_year
+
 	print(f"" + BOLD + "" + RED + "#=================================================================================#")
-	print(f"| Starting TEST ENVIRONMENT for {APP_NAME} (ver. {APP_VERSION})            |")
+	print(f"| Starting TEST ENVIRONMENT for {APP_NAME} (ver. {APP_VERSION})                            |")
 	print(f"|                                                                                 |")
 	print(f"| Desc:                                                                           |")
 	print(f"| This python script is for development and testing while development             |")
@@ -240,7 +245,7 @@ def cmd_banner(debugger,command,result,dict):
 	print(f"| - lui.py                                                                        |")
 	print(f"|                                                                                 |")
 	print(f"| Author / Copyright:                                                             |")
-	print(f"| Kim David Hauser (JeTeDonner), (C.) by kimhauser.ch 1991-2024                   |")
+	print(f"| Kim David Hauser (JeTeDonner), (C.) by kimhauser.ch 1991-{current_year}                   |")
 	print(f"#=================================================================================#" + RESET)
 #   return(sys.stdout)
 
