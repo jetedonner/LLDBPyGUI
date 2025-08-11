@@ -3,10 +3,12 @@ from PyQt6.QtGui import QTextCursor, QKeyEvent
 from PyQt6.QtCore import Qt
 
 from config import *
+from ui.customQt.QConsoleTextEdit import QConsoleTextEdit
+from ui.dbgOutputTextEdit import OutputStream
 from ui.helper.dbgOutputHelper import logDbgC
 
 
-class ConsoleWidget(QTextEdit):
+class ConsoleWidget(QConsoleTextEdit):
     def __init__(self):
         super().__init__()
         # self.setFontFamily("Courier")
@@ -27,6 +29,24 @@ class ConsoleWidget(QTextEdit):
             }
         """)
         # self.setFontFamily("Courier New")
+
+        self.output_stream = OutputStream()
+        # debug_console = DebugConsole()
+
+
+        self.output_stream.text_written.connect(self.append_text)
+
+        # Redirect Python stdout
+        import sys
+        sys.stdout = self.output_stream
+
+    def append_text(self, text):
+        # logDbgC(f"append_text called .... {text}")
+        self.moveCursor(self.textCursor().MoveOperation.EndOfLine)
+        # self.append(text)
+        # self.textCursor().insertText(text)
+        self.appendEscapedText(text, False)
+        self.ensureCursorVisible()
 
     def keyPressEvent(self, event):
         logDbgC(f"ConsoleWidget => keyPressEvent: {event}...")

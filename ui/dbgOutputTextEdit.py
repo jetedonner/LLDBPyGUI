@@ -7,6 +7,18 @@ from config import *
 from lib.settings import *
 from ui.customQt.QSwitch import QSwitch
 
+import io
+from PyQt6.QtCore import pyqtSignal, QObject
+
+class OutputStream(QObject):
+    text_written = pyqtSignal(str)
+
+    def write(self, text):
+        self.text_written.emit(str(text))
+
+    def flush(self):
+        pass  # Required for compatibility
+
 
 class DbgOutputWidget(QWidget):
 
@@ -57,6 +69,20 @@ class DbgOutputWidget(QWidget):
         self.layHMain.addWidget(self.txtDbg)
         self.layHMain.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.layHMain)
+
+    #     output_stream = OutputStream()
+    #     # debug_console = DebugConsole()
+    #
+    #     output_stream.text_written.connect(self.append_text)
+    #
+    #     # Redirect Python stdout
+    #     import sys
+    #     sys.stdout = output_stream
+    #
+    # def append_text(self, text):
+    #     self.txtDbg.moveCursor(self.txtDbg.textCursor().MoveOperation.End)
+    #     self.txtDbg.insertPlainText(text)
+    #     self.txtDbg.ensureCursorVisible()
 
     def logDbg(self, logMsg):
         self.txtDbg.logDbg(logMsg)

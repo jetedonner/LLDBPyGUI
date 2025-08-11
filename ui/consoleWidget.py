@@ -23,6 +23,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, QObject, pyqtSignal
 
+from ui.dbgOutputTextEdit import OutputStream
 from ui.helper.dbgOutputHelper import logDbgC
 
 
@@ -94,23 +95,23 @@ class PyQtInteractiveConsole(code.InteractiveConsole):
             self.history_index = len(self.history)
 
         # Temporarily redirect stdout and stderr to our custom stream
-        old_stdout = sys.stdout
-        old_stderr = sys.stderr
-        sys.stdout = self.output_stream
-        sys.stderr = self.output_stream
-        logDbgC(f"ConsoleWidget => CHANGING STDOUT!!!!")
-        try:
-            # Use 'push' for multi-line input handling, though for single-line
-            # QLineEdit, it behaves like 'runsource'.
-            self.output_stream.write(f">>> {command}\n")  # Echo command
-            self.push(command)
-        except Exception as e:
-            # Catch any unexpected errors from the interpreter itself
-            sys.stderr.write(f"Internal interpreter error: {e}\n")
-        finally:
-            # Restore original stdout and stderr
-            sys.stdout = old_stdout
-            sys.stderr = old_stderr
+        # old_stdout = sys.stdout
+        # old_stderr = sys.stderr
+        # sys.stdout = self.output_stream
+        # sys.stderr = self.output_stream
+        # logDbgC(f"ConsoleWidget => CHANGING STDOUT!!!!")
+        # try:
+        #     # Use 'push' for multi-line input handling, though for single-line
+        #     # QLineEdit, it behaves like 'runsource'.
+        #     self.output_stream.write(f">>> {command}\n")  # Echo command
+        #     self.push(command)
+        # except Exception as e:
+        #     # Catch any unexpected errors from the interpreter itself
+        #     sys.stderr.write(f"Internal interpreter error: {e}\n")
+        # finally:
+        #     # Restore original stdout and stderr
+        #     sys.stdout = old_stdout
+        #     sys.stderr = old_stderr
 
     def get_history_command(self, direction):
         """
@@ -274,6 +275,21 @@ class ConsoleWidget(QWidget):
         self.txtConsole.setText("dave@Mia testtarget %")
         self.layCmdParent.addWidget(self.txtConsole)
         # self.txtConsole.keyPressEvent()
+
+    #     output_stream = OutputStream()
+    #     # debug_console = DebugConsole()
+    #
+    #     output_stream.text_written.connect(self.append_text)
+    #
+    #     # Redirect Python stdout
+    #     import sys
+    #     sys.stdout = output_stream
+    #
+    # def append_text(self, text):
+    #     logDbgC(f"append_text called .... {text}")
+    #     self.txtConsole.moveCursor(self.txtConsole.textCursor().MoveOperation.End)
+    #     self.txtConsole.append(text)
+    #     self.txtConsole.ensureCursorVisible()
 
     def gotSTDOUT(self, stdout):
         logDbgC(f"STDOUT (IN CONSOLE WIDGET) {stdout}")

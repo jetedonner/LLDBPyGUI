@@ -20,6 +20,7 @@ from PyQt6.QtWidgets import *
 from PyQt6 import uic, QtWidgets
 
 from config import ConfigClass
+from ui.dbgOutputTextEdit import OutputStream
 from ui.helper.dbgOutputHelper import logDbgC
 
 APP_NAME = "ConsoleTextEditWindow-TEST"
@@ -52,12 +53,26 @@ class QConsoleTextEdit(QTextEdit):
 		self.installEventFilter(self)
 		# self.keyPressEvent = self._custom_key_press_event
 
-	# def __init__(self):
-	# 	QtGui.QWidget.__init__(self)
-	# 	self.edit = QtGui.QTextEdit(self)
-	# 	self.edit.installEventFilter(self)
-	# 	layout = QtGui.QVBoxLayout(self)
-	# 	layout.addWidget(self.edit)
+		# self.output_stream = OutputStream()
+		# # debug_console = DebugConsole()
+		#
+		# self.output_stream.text_written.connect(self.append)
+		#
+		# # Redirect Python stdout
+		# import sys
+		# sys.stdout = self.output_stream
+
+	# def append_text(self, text):
+	# 	logDbgC(f"append_text called .... {text}")
+	# 	self.moveCursor(self.textCursor().MoveOperation.End)
+	# 	self.append(text)
+	# 	self.ensureCursorVisible()
+	# # def __init__(self):
+	# # 	QtGui.QWidget.__init__(self)
+	# # 	self.edit = QtGui.QTextEdit(self)
+	# # 	self.edit.installEventFilter(self)
+	# # 	layout = QtGui.QVBoxLayout(self)
+	# # 	layout.addWidget(self.edit)
 
 	def eventFilter(self, widget, event):
 		# logDbgC(f"IN EVENTFILTER")
