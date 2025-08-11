@@ -134,7 +134,7 @@ class DebugWorker(BaseWorker):
 							if reg.name == "pc":
 								print(f'GetPCAddress => {reg.value}')
 								rip = reg.value
-								break
+								# break
 
 						# print(f"frame.register['rip']: {frame.registers['rip']}")
 						print(f"frame.register['pc']: {rip}")

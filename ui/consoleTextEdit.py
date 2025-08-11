@@ -35,20 +35,15 @@ class ConsoleWidget(QConsoleTextEdit):
 
         self.output_stream = OutputStream()
         # debug_console = DebugConsole()
-
-
         self.output_stream.text_written.connect(self.append_text)
-
-
         # Redirect Python stdout
         import sys
-
         self.orig_stdout = sys.stdout
         sys.stdout = self.output_stream
 
     def append_text(self, text):
         # logDbgC(f"append_text called .... {text}")
-        self.moveCursor(self.textCursor().MoveOperation.EndOfLine)
+        # self.moveCursor(self.textCursor().MoveOperation.EndOfLine)
         # self.append(text)
         # self.textCursor().insertText(text)
         self.appendEscapedText(text, False)

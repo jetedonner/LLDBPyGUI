@@ -158,24 +158,48 @@ class RFlagTableWidget(BaseTableWidget):
 		# 	return
 
 		rflags_reg = frame.FindRegister("rflags")
+		self.rflags_value = rflags_reg.GetValueAsUnsigned()
+		print(f"rflags_reg: {rflags_reg} / {self.rflags_value} (1)")
+		if rflags_reg is None:
+			rflags_reg = frame.FindRegister("cpsr")
+
+
+
+		rip = ''
+		GPRs = frame.registers[0]
+		# print('%s (number of children = %d):' % (GPRs.name, GPRs.num_children))
+		for reg in GPRs:
+			# print('Name: ', reg.name, ' Value: ', reg.value)
+			if reg.name == "cpsr":
+				print(f'FLAGS REGISTER => {reg.value}')
+				# rip = reg.value
+				self.rflags_value = reg.value
+				print(f"rflags_reg: {self.rflags_value} (2)")
 		# if not rflags_reg:
 		# 	result.AppendError("Could not find rflags register.")
 		# 	return
 
-		self.rflags_value = rflags_reg.GetValueAsUnsigned()
+		self.decode_cpsr(int(self.rflags_value, 16))
 		# rflags_value = self.rflags_value
 		# logDbgC(f"rflags_value: {hex(self.rflags_value)}", DebugLevel.Verbose)
 
 		# flags = []
 
 		res = 0
+		# self.addRow("FLAG OVERVIEW:", "", "")
+		# self.addRow("--- DATA TYPE ---", "--- VALUE ---", "--- INFOS ---")
+		# self.addRow("int", str(self.rflags_value), "Complete Flag with all bits as INT")
+		# self.addRow("hex", hex(self.rflags_value), "Complete Flag with all bits as HEX")
+		# self.addRow("binary", format(self.rflags_value, 'b'), "Complete Flag with all bits as BINARY")
+		# self.addRow("quick", pfl_cmd(get_main_window().driver.debugger, "", res, []), "Quickview all flags")
+
 		# self.wdtLabel.setText(
 		# 	"rFlags / eFlags: ")  # + hex(self.tblRFlag.rflags_value) + " / " + format(self.tblRFlag.rflags_value, 'b') + " / " + pfl_cmd(get_main_window().driver.debugger, "", res, []))
 		self.addRow("FLAG OVERVIEW:", "", "")
 		self.addRow("--- DATA TYPE ---", "--- VALUE ---", "--- INFOS ---")
-		self.addRow("int", str(self.rflags_value), "Complete Flag with all bits as INT")
-		self.addRow("hex", hex(self.rflags_value), "Complete Flag with all bits as HEX")
-		self.addRow("binary", format(self.rflags_value, 'b'), "Complete Flag with all bits as BINARY")
+		self.addRow("int", str(int(self.rflags_value, 16)), "Complete Flag with all bits as INT")
+		self.addRow("hex", self.rflags_value, "Complete Flag with all bits as HEX")
+		self.addRow("binary", format(int(self.rflags_value, 16), 'b'), "Complete Flag with all bits as BINARY")
 		self.addRow("quick", pfl_cmd(get_main_window().driver.debugger, "", res, []), "Quickview all flags")
 		# logDbgC(
 		# 	f"rFlags / eFlags:\n- Unsigned: {hex(self.rflags_value)} / {self.rflags_value}\n- Binary: " + format(
@@ -188,7 +212,7 @@ class RFlagTableWidget(BaseTableWidget):
 		self.addRow("--- FLAG NAME ---", "--- OPTION ---", "--- DESCRIPTION ---")
 		# Define the flags and their bit positions
 		# (Bit 0 to 21 are the most common ones to check)
-		if (self.rflags_value >> 0) & 1:
+		if (int(self.rflags_value, 16) >> 0) & 1:
 			# flags.append("CF (Carry)")
 			self.addRow("CF", "Carry", "=1 > CY (Carry) / =0 > NC (No Carry) - Mask: 0x0001")
 		else:
@@ -198,7 +222,7 @@ class RFlagTableWidget(BaseTableWidget):
 		# Bit 1 is reserved and always 1
 		# if (rflags_value >> 1) & 1: flags.append("1 (Reserved)")
 
-		if (self.rflags_value >> 2) & 1:
+		if (int(self.rflags_value, 16) >> 2) & 1:
 			# flags.append("PF (Parity Even)")
 			self.addRow("PF", "Parity Even", "=1 > PE (Parity Even) / =0 > PO (Parity Odd) - Mask: 0x0004")
 		else:
@@ -207,7 +231,7 @@ class RFlagTableWidget(BaseTableWidget):
 
 		# Bit 3 is reserved and always 0
 
-		if (self.rflags_value >> 4) & 1:
+		if (int(self.rflags_value, 16) >> 4) & 1:
 			# flags.append("AF/NA (Auxiliary Carry)")
 			self.addRow("AF", "Auxiliary Carry", "=1 > AC (Auxiliary Carry) / =0 > NA (No Auxiliary Carry) - Mask: 0x0010")
 		else:
@@ -216,53 +240,53 @@ class RFlagTableWidget(BaseTableWidget):
 
 		# Bit 5 is reserved and always 0
 
-		if (self.rflags_value >> 6) & 1:
+		if (int(self.rflags_value, 16) >> 6) & 1:
 			# flags.append("ZF/NZ (Zero)")
 			self.addRow("ZF", "Zero Flag", "=1 > ZR (Zero) / =0 > NZ (Not Zero) - Mask: 0x0040")
 		else:
 			# flags.append("NZ/ZF (Not Zero)")
 			self.addRow("NZ", "Not Zero", "=1 > ZR (Zero) / =0 > NZ (Not Zero) - Mask: 0x0040")
 
-		if (self.rflags_value >> 7) & 1:
+		if (int(self.rflags_value, 16) >> 7) & 1:
 			# flags.append("SF/PL (Sign Negative)")
 			self.addRow("SF", "Sign Negative", "=1 > NG (Negative) / =0 > PL (Positive) - Mask: 0x0080")
 		else:
 			# flags.append("PL/FL (Sign Positive)")
 			self.addRow("PL", "Sign Positive", "=1 > NG (Negative) / =0 > PL (Positive) - Mask: 0x0080")
 
-		if (self.rflags_value >> 8) & 1:
+		if (int(self.rflags_value, 16) >> 8) & 1:
 			# flags.append("TF/NTF (Trap/Single Step)")
 			self.addRow("TF", "Trap/Single Step", "Trap flag (single step) - Mask: 0x0100")
 		else:
 			# flags.append("NTF/TF (No Trap/Single Step)")
 			self.addRow("NTF", "No Trap/Single Step", "Trap flag (single step) - Mask: 0x0100")
 
-		if (self.rflags_value >> 9) & 1:
+		if (int(self.rflags_value, 16) >> 9) & 1:
 			# flags.append("IF/ID (Interrupt Enable)")
 			self.addRow("IF", "Interrupt Enable", "=1 > EI (Enable Interrupt) / =0 > DI (Disable Interrupt) - Mask: 0x0200")
 		else:
 			# flags.append("ID/IF (Interrupt Disable)")
 			self.addRow("ID", "Interrupt Disable", "=1 > EI (Enable Interrupt) / =0 > DI (Disable Interrupt) - Mask: 0x0200")
 
-		if (self.rflags_value >> 10) & 1:
+		if (int(self.rflags_value, 16) >> 10) & 1:
 			# flags.append("DF/DU (Direction Down)")
 			self.addRow("DF", "Direction Down", "=1 > DN (Down) / =0 > UP (Up) - Mask: 0x0400")
 		else:
 			# flags.append("DU/DF (Direction Up)")
 			self.addRow("DU", "Direction Up", "=1 > DN (Down) / =0 > UP (Up) - Mask: 0x0400")
 
-		if (self.rflags_value >> 11) & 1:
+		if (int(self.rflags_value, 16) >> 11) & 1:
 			# flags.append("OF/NO (Overflow)")
 			self.addRow("OF", "Overflow", "=1 > OV (Overflow) / =0 > NV (Not Overflow) - Mask: 0x0800")
 		else:
 			# flags.append("NO/OF (No Overflow)")
 			self.addRow("NO", "No Overflow", "=1 > OV (Overflow) / =0 > NV (Not Overflow) - Mask: 0x0800")
 
-		iopl = (self.rflags_value >> 12) & 0x3  # 2 bits
+		iopl = (int(self.rflags_value, 16) >> 12) & 0x3  # 2 bits
 		# flags.append(f"IOPL={iopl}")
 		self.addRow("IOPL", f"{iopl}", "Mask: 0x3000")
 
-		if (self.rflags_value >> 14) & 1:
+		if (int(self.rflags_value, 16) >> 14) & 1:
 			# flags.append("NT/NNT (Nested Task)")
 			self.addRow("NT", "Nested Task", "Mask: 0x4000")
 		else:
@@ -271,19 +295,65 @@ class RFlagTableWidget(BaseTableWidget):
 
 		# Bit 15 is reserved and always 0
 
-		if (self.rflags_value >> 16) & 1: self.addRow("RF", "Resume Flag", "Resume flag (386+ only) - Mask: 0x0001 0000") #flags.append("RF (Resume Flag)")
+		if (int(self.rflags_value, 16) >> 16) & 1: self.addRow("RF", "Resume Flag", "Resume flag (386+ only) - Mask: 0x0001 0000") #flags.append("RF (Resume Flag)")
 
-		if (self.rflags_value >> 17) & 1: self.addRow("VM", "Virtual-8086 Mode", "Virtual 8086 mode flag (386+ only) - Mask: 0x0002 0000") # flags.append("VM (Virtual-8086 Mode)")
+		if (int(self.rflags_value, 16) >> 17) & 1: self.addRow("VM", "Virtual-8086 Mode", "Virtual 8086 mode flag (386+ only) - Mask: 0x0002 0000") # flags.append("VM (Virtual-8086 Mode)")
 
-		if (self.rflags_value >> 18) & 1: self.addRow("AC", "Alignment Check", "Alignment Check (486+, ring 3) SMAP Access Check (Broadwell+, ring 0-2) - Mask: 0x0004 0000") # flags.append("AC (Alignment Check)")
+		if (int(self.rflags_value, 16) >> 18) & 1: self.addRow("AC", "Alignment Check", "Alignment Check (486+, ring 3) SMAP Access Check (Broadwell+, ring 0-2) - Mask: 0x0004 0000") # flags.append("AC (Alignment Check)")
 
-		if (self.rflags_value >> 19) & 1: self.addRow("VIF", "Virtual Interrupt", "Virtual interrupt flag (Pentium+) - Mask: 0x0008 0000") # flags.append("VIF (Virtual Interrupt)")
+		if (int(self.rflags_value, 16) >> 19) & 1: self.addRow("VIF", "Virtual Interrupt", "Virtual interrupt flag (Pentium+) - Mask: 0x0008 0000") # flags.append("VIF (Virtual Interrupt)")
 
-		if (self.rflags_value >> 20) & 1: self.addRow("VIP", "Virtual Interrupt Pending", "Virtual interrupt pending (Pentium+) - Mask: 0x0010 0000") # flags.append("VIP (Virtual Interrupt Pending)")
+		if (int(self.rflags_value, 16) >> 20) & 1: self.addRow("VIP", "Virtual Interrupt Pending", "Virtual interrupt pending (Pentium+) - Mask: 0x0010 0000") # flags.append("VIP (Virtual Interrupt Pending)")
 
-		if (self.rflags_value >> 21) & 1: self.addRow("ID", "ID Flag", "Able to use CPUID instruction (Pentium+) - Mask: 0x0020 0000") # flags.append("ID (ID Flag)")
+		if (int(self.rflags_value, 16) >> 21) & 1: self.addRow("ID", "ID Flag", "Able to use CPUID instruction (Pentium+) - Mask: 0x0020 0000") # flags.append("ID (ID Flag)")
 
+	def decode_cpsr(self, cpsr_value):
+		flags = {
+			31: ("N", "Negative"),
+			30: ("Z", "Zero"),
+			29: ("C", "Carry"),
+			28: ("V", "Overflow"),
+			27: ("Q", "Saturation"),
+			24: ("J", "Jazelle"),
+			7: ("E", "Endianness (1 = Big-endian)"),
+			6: ("A", "Async abort mask"),
+			5: ("I", "IRQ mask"),
+			4: ("F", "FIQ mask"),
+		}
 
+		print(f"🔍 CPSR Value: 0x{cpsr_value:08X}")
+		for bit, (name, meaning) in flags.items():
+			if cpsr_value & (1 << bit):
+				print(f"✅ {name} bit set ({meaning})")
+			else:
+				print(f"❌ {name} bit not set ({meaning})")
 
-		# result.AppendMessage(f"RFLAGS: 0x{rflags_value:016x} [{', '.join(flags)}]")
+		# GE bits (bits 8 and 9)
+		ge_mask = 0x00000300
+		ge_bits = (cpsr_value & ge_mask) >> 8
+		print(f"\n🧮 GE bits (bits 9–8): {ge_bits:02b}")
+		if ge_bits == 0:
+			print("❌ GE flags not set (no SIMD greater-than-or-equal results)")
+		else:
+			print("✅ GE flags set:")
+			if ge_bits & 0b01:
+				print("   - GE[0] (bit 8): SIMD result 0 ≥ comparison value")
+			if ge_bits & 0b10:
+				print("   - GE[1] (bit 9): SIMD result 1 ≥ comparison value")
+
+		# Mode bits (bits 0–4)
+		mode = cpsr_value & 0x1F
+		mode_map = {
+			0b10000: "User",
+			0b10001: "FIQ",
+			0b10010: "IRQ",
+			0b10011: "Supervisor",
+			0b10111: "Abort",
+			0b11011: "Undefined",
+			0b11111: "System",
+		}
+		mode_str = mode_map.get(mode, "Unknown")
+		print(f"\n🧭 Processor Mode: {mode_str} (0x{mode:02X})")
+
+	# result.AppendMessage(f"RFLAGS: 0x{rflags_value:016x} [{', '.join(flags)}]")
 		# logDbgC(f"flags: {flags}")
