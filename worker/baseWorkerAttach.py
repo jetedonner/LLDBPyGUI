@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import QApplication
 
 from dbg.fileInfos import is_objc_app, detect_language_by_symbols, detect_objc, GetFileHeader
 from dbg.listener import LLDBListener
+from dbg.memoryHelper import getMemoryValueAtAddress
 from lib.settings import SettingsHelper
 from ui.helper.dbgOutputHelper import DebugLevel
 
@@ -21,6 +22,9 @@ class AttachWorker(QObject):
     loadCurrentPC = pyqtSignal(str)
     loadJSONCallback = pyqtSignal(str)
     loadFileInfosCallback = pyqtSignal(object, object)
+    loadRegisterCallback = pyqtSignal(str)
+    loadRegisterValueCallback = pyqtSignal(int, str, str, str)
+    loadVariableValueCallback = pyqtSignal(str, str, str, str, str)
 
 
     # Load Listener
@@ -40,6 +44,7 @@ class AttachWorker(QObject):
     frame = None
 
     allInstructions = []
+    initTable = True
 
     def __init__(self, debugger, pid=None, name=None):
         super().__init__()
@@ -54,6 +59,7 @@ class AttachWorker(QObject):
         self.frame = None
 
         self.allInstructions = []
+        self.initTable = True
 
     def run(self):
         self._should_stop = False
@@ -88,6 +94,8 @@ class AttachWorker(QObject):
                 self.loadFileInfosCallback.emit(mach_header, self.target)
                 self.logDbgC.emit(f"after self.loadFileInfosCallback.emit(...)", DebugLevel.Verbose)
                 QApplication.processEvents()
+
+                self.loadRegisters()
 
                 self.loadFileStats()
 
@@ -251,3 +259,139 @@ class AttachWorker(QObject):
             self.loadJSONCallback.emit(str(stream.GetData()))
             self.logDbgC.emit(f"def loadFileStats(...) => after self.loadJSONCallback.emit(str(stream.GetData()))", DebugLevel.Verbose)
             QApplication.processEvents()
+
+    def loadRegisters(self):
+        # super(LoadRegisterWorker, self).workerFunc()
+
+        # self.sendStatusBarUpdate("Reloading registers ...")
+        # target = self.driver.getTarget()
+        # process = target.GetProcess()
+        if self.process:
+            # thread = process.GetThreadAtIndex(0)
+            if self.thread:
+                # self.frame = self.frame
+                #				frame = thread.GetFrameAtIndex(0)
+                if self.frame:
+                    registerList = self.thread.GetFrameAtIndex(0).GetRegisters()
+                    numRegisters = registerList.GetSize()
+                    numRegSeg = 100 / numRegisters
+                    currReg = 0
+                    for value in registerList:
+                        currReg += 1
+                        currRegSeg = 100 / numRegisters * currReg
+                        # self.sendProgressUpdate(100 / numRegisters * currReg,
+                        # 						f'Loading registers for {value.GetName()} ...')
+                        if self.initTable:
+                            self.loadRegisterCallback.emit(value.GetName())
+                            QApplication.processEvents()
+
+                        numChilds = len(value)
+                        idx = 0
+                        for child in value:
+                            idx += 1
+                            # self.sendProgressUpdate((100 / numRegisters * currReg) + (numRegSeg / numChilds * idx),
+                            # 						f'Loading registers value {child.GetName()} ...')
+                            if self.initTable:
+                                # print(f"self.loadRegisterValueCallback.emit({currReg - 1}, {child.GetName()}, {child.GetValue()}, ...)")
+                                self.loadRegisterValueCallback.emit(currReg - 1, child.GetName(), child.GetValue(),
+                                                                    getMemoryValueAtAddress(self.target, self.process, child.GetValue()))
+                                QApplication.processEvents()
+                            # self.loadRegisterValue.emit(currReg - 1, child.GetName(), child.GetValue(),
+                            # 									getMemoryValueAtAddress(target, process,
+                            # 															child.GetValue()))
+                        # else:
+                        # 	self.signals.updateRegisterValue.emit(currReg - 1, child.GetName(),
+                        # 										  child.GetValue(),
+                        # 										  getMemoryValueAtAddress(target, process,
+                        # 																  child.GetValue()))
+                    # continue
+                    # QCoreApplication.processEvents()
+
+                    # Load VARIABLES
+                    idx = 0
+                    vars = self.frame.GetVariables(True, True, True, False)  # type of SBValueList
+                    #					print(f"GETTING VARIABLES: vars => {vars}")
+                    for var in vars:
+                        #						hexVal = ""
+                        #						print(dir(var))
+                        #						print(var)
+                        #						print(hex(var.GetLoadAddress()))
+                        #						if not var.IsValid():
+                        #							print(f'{var.GetName()} var.IsValid() ==> FALSE!!!!')
+
+                        data = ""
+                        #						if var.GetValue() == None:
+                        #							print(f'{var.GetName()} var.GetValue() ==> NONE!!!!')
+                        #							string_value = "<Not initialized>"
+                        #						else:
+                        string_value = var.GetValue()
+                        if var.GetTypeName() == "int":
+                            if (var.GetValue() == None):
+                                continue
+                            string_value = str(string_value)
+                            # print(dir(var))
+                            # print(var)
+                            # print(var.GetValue())
+                            data = hex(int(var.GetValue()))
+                        #							hexVal = " (" + hex(int(var.GetValue())) + ")"
+                        if var.GetTypeName().startswith("char"):
+                            string_value = self.char_array_to_string(var)
+                            data = var.GetPointeeData(0, var.GetByteSize())
+
+                        if self.initTable:
+                            #							if idx == 2:
+                            #								error = lldb.SBError()
+                            #								wp = var.Watch(False, True, False, error)
+                            #								print(f'wp({idx}) => {wp}')
+
+                            self.loadVariableValueCallback.emit(str(var.GetName()), str(string_value), str(data),
+                                                                str(var.GetTypeName()), hex(var.GetLoadAddress()))
+                            QApplication.processEvents()
+                        # else:
+                        # 	self.signals.updateVariableValue.emit(str(var.GetName()), str(string_value), str(data),
+                        # 										  str(var.GetTypeName()), hex(var.GetLoadAddress()))
+                        idx += 1
+
+                # QCoreApplication.processEvents()
+
+    def char_array_to_string(self, char_array_value):
+        byte_array = char_array_value.GetPointeeData(0, char_array_value.GetByteSize())
+        error = lldb.SBError()
+        sRet = byte_array.GetString(error, 0)
+        return "" if sRet == 0 else sRet
+
+    # def loadStacktrace(self):
+    #     # self.process = self.driver.getTarget().GetProcess()
+    #     # self.thread = self.process.GetThreadAtIndex(0)
+    #     #		from lldbutil import print_stacktrace
+    #     #		st = get_stacktrace(self.thread)
+    #     ##			print(f'{st}')
+    #     #		self.txtOutput.setText(st)
+    #
+    #     idx = 0
+    #     if self.thread:
+    #         #			self.treThreads.doubleClicked.connect()
+    #         self.treThreads.clear()
+    #         self.processNode = QTreeWidgetItem(self.treThreads, ["#0 " + str(self.process.GetProcessID()),
+    #                                                              hex(self.process.GetProcessID()) + "",
+    #                                                              self.process.GetTarget().GetExecutable().GetFilename(),
+    #                                                              '', ''])
+    #
+    #         self.threadNode = QTreeWidgetItem(self.processNode,
+    #                                           ["#" + str(idx) + " " + str(self.thread.GetThreadID()),
+    #                                            hex(self.thread.GetThreadID()) + "", self.thread.GetQueueName(), '',
+    #                                            ''])
+    #
+    #         numFrames = self.thread.GetNumFrames()
+    #
+    #         for idx2 in range(numFrames):
+    #             self.setProgressValue(idx2 / numFrames)
+    #             frame = self.thread.GetFrameAtIndex(idx2)
+    #             # logDbgC(f"frame.GetFunction(): {frame.GetFunction()}")
+    #             frameNode = QTreeWidgetItem(self.threadNode,
+    #                                         ["#" + str(frame.GetFrameID()), "", str(frame.GetPCAddress()),
+    #                                          str(hex(frame.GetPC())), self.GuessLanguage(frame)])
+    #             idx += 1
+    #
+    #         self.processNode.setExpanded(True)
+    #         self.threadNode.setExpanded(True)

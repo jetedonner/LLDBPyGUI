@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import psutil
 import os
 
 from PyQt6.QtGui import *
@@ -8,6 +9,10 @@ from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 from PyQt6 import uic, QtWidgets
 from config import *
+from lib.settings import SettingsValues
+from ui.helper.dbgOutputHelper import settingHelper
+
+
 #from ui.settingsDialog import *
 
 class ProcessesDialog(QDialog):
@@ -55,6 +60,7 @@ class ProcessesDialog(QDialog):
 		self.layoutManual.addWidget(self.txtPID)
 		self.wdtManual.setLayout(self.layoutManual)
 		self.chkOrderByName = QCheckBox("Order processes by name")
+		self.chkOrderByName.setChecked(settingHelper.GetValue(SettingsValues.OrderPIDsByName))
 		self.chkOrderByName.clicked.connect(self.chkOrderByName_clicked)
 		self.layout.addWidget(self.chkOrderByName)
 		self.layout.addWidget(self.wdtManual)
@@ -68,6 +74,7 @@ class ProcessesDialog(QDialog):
 		self.txtPID.setText(str(self.process_info[index][0]))
 		
 	def chkOrderByName_clicked(self, checked):
+		settingHelper.setValue(SettingsValues.OrderPIDsByName, checked)
 		self.process_info.sort(key=lambda item: item[1 if checked else 0])
 		self.cmbPID.clear()
 		for pid, name in self.process_info:
@@ -79,7 +86,7 @@ class ProcessesDialog(QDialog):
 		self.txtPID.selectAll()
 		
 	def loadPIDs(self):
-		import psutil
+		# import psutil
 		
 		# Get list of all processes
 		self.processes = list(psutil.process_iter())

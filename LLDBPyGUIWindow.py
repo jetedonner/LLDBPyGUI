@@ -729,6 +729,9 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.attachWorker.handle_gotNewEvent = self.treListener.handle_gotNewEvent
 		self.attachWorker.loadJSONCallback.connect(self.treStats.loadJSONCallback)
 		self.attachWorker.loadFileInfosCallback.connect(self.loadFileInfosCallback)
+		self.attachWorker.loadRegisterCallback.connect(self.handle_loadRegister)
+		self.attachWorker.loadRegisterValueCallback.connect(self.handle_loadRegisterValue)
+		self.attachWorker.loadVariableValueCallback.connect(self.handle_loadVariableValue)
 
 		# loadBreakpointsValueCallback = pyqtSignal(object, bool)
 		# updateBreakpointsValueCallback = pyqtSignal(object)
@@ -1153,6 +1156,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		# 	thread = self.driver.getThread()
 
 	def resume_clicked(self):
+		logDbgC(f"resume_clicked() => self.isProcessRunning: {self.isProcessRunning}")
 		if self.isProcessRunning:
 			self.isProcessRunning = False
 			print(f"self.isProcessRunning => Trying to Suspend()")
@@ -1461,6 +1465,8 @@ class LLDBPyGUIWindow(QMainWindow):
 
 	def handle_breakpointEvent(self, event):
 		print(f"handle_breakpointEvent: {event}")
+		# if self.isProcessRunning:
+		self.isProcessRunning = False
 		pass
 
 	#################################### START NEW CALLBACKS ########################################
@@ -1582,6 +1588,7 @@ class LLDBPyGUIWindow(QMainWindow):
 
 	inited = False
 	def handle_processEvent(self, process):
+		# logDbgC(f"handle_processEvent ...")
 		state = 'stopped'
 		if process.state == eStateStepping or process.state == eStateRunning:
 			state = 'running'
@@ -1597,6 +1604,8 @@ class LLDBPyGUIWindow(QMainWindow):
 		thread = process.selected_thread
 		# print('Process event: %s, reason: %d' % (state, thread.GetStopReason()))
 		if thread.GetStopReason() == lldb.eStopReasonBreakpoint:
+			# logDbgC(f"handle_processEvent ...")
+			self.isProcessRunning = False
 #			for z in range(thread.GetNumFrames()):
 			frame = thread.GetFrameAtIndex(0)
 #				if frame.GetModule().GetFileSpec().GetFilename() != self.driver.getTarget().GetExecutable().GetFilename():
@@ -1741,21 +1750,25 @@ class LLDBPyGUIWindow(QMainWindow):
 
 	isProcessRunning = False
 	def start_debugWorker(self, driver, kind):
-		logDbgC(f"start_debugWorker .....")
+		# logDbgC(f"start_debugWorker (TESET) self.isProcessRunning: {self.isProcessRunning } .....")
+		self.isProcessRunning = True
 		self.wdtBPsWPs.treBPs.clearPC()
 		self.txtMultiline.clearPC()
+		# logDbgC(f"start_debugWorker (TESET 2) self.isProcessRunning: {self.isProcessRunning} .....")
 		if self.workerManager.start_debugWorker(driver, kind, self.handle_debugStepCompleted):
+			# logDbgC(f"start_debugWorker (TESET 3) self.isProcessRunning: {self.isProcessRunning} .....")
 			self.setWinTitleWithState("Running")
 			self.setResumeActionIcon(False)
-			self.isProcessRunning = True
 		else:
 			self.setResumeActionIcon()
 			self.isProcessRunning = False
-
+		# logDbgC(f"start_debugWorker (TESET 4) self.isProcessRunning: {self.isProcessRunning} .....")
 	rip = ""
 
 
 	def handle_debugStepCompleted(self, kind, success, rip, frm):
+		logDbgC(f"handle_debugStepCompleted ....")
+		self.isProcessRunning = False
 		# logDbgC(f"handle_debugStepCompleted({kind}, {success}, {rip}, {frm}) ====>>>> Module: {frm.GetModule().GetFileSpec().GetFilename()}")
 		if success:
 			self.rip = rip
@@ -1774,6 +1787,7 @@ class LLDBPyGUIWindow(QMainWindow):
 #			self.setResumeActionIcon()
 			self.setWinTitleWithState("Interrupted")
 			self.setResumeActionIcon()
+			self.isProcessRunning = False
 		else:
 			# print(f"Debug STEP ({kind}) FAILED!!!")
 			self.setResumeActionIcon()
