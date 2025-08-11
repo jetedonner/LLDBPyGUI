@@ -11,10 +11,10 @@ import io
 from PyQt6.QtCore import pyqtSignal, QObject
 
 class OutputStream(QObject):
-    text_written = pyqtSignal(str)
+    text_written = pyqtSignal(object)
 
     def write(self, text):
-        self.text_written.emit(str(text))
+        self.text_written.emit(text)
 
     def flush(self):
         pass  # Required for compatibility

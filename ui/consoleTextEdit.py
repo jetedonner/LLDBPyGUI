@@ -9,6 +9,9 @@ from ui.helper.dbgOutputHelper import logDbgC
 
 
 class ConsoleWidget(QConsoleTextEdit):
+
+    orig_stdout = None
+
     def __init__(self):
         super().__init__()
         # self.setFontFamily("Courier")
@@ -36,8 +39,11 @@ class ConsoleWidget(QConsoleTextEdit):
 
         self.output_stream.text_written.connect(self.append_text)
 
+
         # Redirect Python stdout
         import sys
+
+        self.orig_stdout = sys.stdout
         sys.stdout = self.output_stream
 
     def append_text(self, text):
@@ -47,6 +53,7 @@ class ConsoleWidget(QConsoleTextEdit):
         # self.textCursor().insertText(text)
         self.appendEscapedText(text, False)
         self.ensureCursorVisible()
+        self.orig_stdout.write(text)
 
     def keyPressEvent(self, event):
         logDbgC(f"ConsoleWidget => keyPressEvent: {event}...")
