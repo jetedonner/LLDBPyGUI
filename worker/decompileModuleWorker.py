@@ -16,12 +16,14 @@ class DecompileModuleWorker(QObject):
     # loadStringCallback = pyqtSignal(str, int, str)
     loadSymbolCallback = pyqtSignal(str)
 
-    finishedLoadInstructionsCallback = pyqtSignal(object, str)
+    finishedLoadInstructionsCallback = pyqtSignal(object, str, object)
 
     driver = None
     target = None
     modulePath = ""
     initTable = True
+
+    allModsAndInstructions = {}
 
     def __init__(self,  driver, modulePath, initTable):
         super().__init__()
@@ -90,9 +92,13 @@ class DecompileModuleWorker(QObject):
                             # if isObjC and not subsec.GetName() == "__stubs":
 
                             self.loadSymbolCallback.emit(smbl.GetName())
+                            symName = smbl.GetName()
                             instructions = smbl.GetStartAddress().GetFunction().GetInstructions(target)
+                            # self.allModsAndInstructions[symName] = instructions
+                            # self.allModsAndInstructions[symName] = instructions
                             print(f"len(instructions): {len(instructions)} ...")
                             if len(instructions) > 0:
+                                self.allModsAndInstructions[symName] = instructions
                                 self.allInstructions += instructions
                                 for instruction in instructions:
                                     # self.logDbgC.emit(f"----------->>>>>>>>>>> INSTRUCTION: {instruction.GetMnemonic(self.target)} ... ", DebugLevel.Verbose)
@@ -105,6 +111,7 @@ class DecompileModuleWorker(QObject):
                                 if instructions.GetSize() == 0:
                                     continue
 
+                                self.allModsAndInstructions[symName] = instructions
                                 self.allInstructions += instructions
                                 for inst in instructions:
                                     self.loadInstructionCallback.emit(inst)
@@ -137,7 +144,8 @@ class DecompileModuleWorker(QObject):
                 #     # print(f'COMMENT => {inst.GetComment(self.target)}')
                 #     # self.signals.loadInstruction.emit(instruction)
 
-                self.finishedLoadInstructionsCallback.emit([], module.GetFileSpec().GetFilename())
+                # self.allInstructions
+                self.finishedLoadInstructionsCallback.emit([], module.GetFileSpec().GetFilename(), self.allModsAndInstructions)
                 QApplication.processEvents()
                 break
     pass

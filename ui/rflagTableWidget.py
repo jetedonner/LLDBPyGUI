@@ -56,7 +56,7 @@ class RFlagTableWidget(BaseTableWidget):
 		self.rflags_value = 0x0
 
 		self.setColumnCount(3)
-		self.setColumnWidth(0, 128)
+		self.setColumnWidth(0, 198)
 		self.setColumnWidth(1, 296)
 		self.setColumnWidth(2, 768)
 		self.verticalHeader().hide()
@@ -123,6 +123,8 @@ class RFlagTableWidget(BaseTableWidget):
 		self.addItem(currRowCount, 0, str(flag))
 		self.addItem(currRowCount, 1, str(value))
 		self.addItem(currRowCount, 2, str(desc))
+		if self.cellWidget(currRowCount, 0) != None:
+			self.cellWidget(currRowCount, 0).setToolTip(desc)
 		self.setRowHeight(currRowCount, 18)
 		
 		
@@ -179,7 +181,84 @@ class RFlagTableWidget(BaseTableWidget):
 		# 	result.AppendError("Could not find rflags register.")
 		# 	return
 
-		self.decode_cpsr(int(self.rflags_value, 16))
+		if True:
+			cpsr_value = int(self.rflags_value, 16)
+			# self.decode_cpsr(int(self.rflags_value, 16))
+			quick_decoded = ''
+			flags = {
+				31: ("N", "Negative"),
+				30: ("Z", "Zero"),
+				29: ("C", "Carry"),
+				28: ("V", "Overflow"),
+				27: ("Q", "Saturation"),
+				24: ("J", "Jazelle"),
+				7: ("E", "Endianness (1 = Big-endian)"),
+				6: ("A", "Async abort mask"),
+				5: ("I", "IRQ mask"),
+				4: ("F", "FIQ mask"),
+			}
+
+			print(f"🔍 CPSR Value: 0x{cpsr_value:08X}")
+			for bit, (name, meaning) in flags.items():
+				if cpsr_value & (1 << bit):
+					print(f"✅ {name} bit set ({meaning})")
+					quick_decoded += (', ' if quick_decoded != '' else '') + f'{name}'
+				else:
+					print(f"❌ {name} bit not set ({meaning})")
+
+			# GE bits (bits 8 and 9)
+			ge_mask = 0x00000300
+			ge_bits = (cpsr_value & ge_mask) >> 8
+			print(f"\n🧮 GE bits (bits 9–8): {ge_bits:02b}")
+			if ge_bits == 0:
+				print("❌ GE flags not set (no SIMD greater-than-or-equal results)")
+			else:
+				print("✅ GE flags set:")
+				if ge_bits & 0b01:
+					print("   - GE[0] (bit 8): SIMD result 0 ≥ comparison value")
+					quick_decoded += (', ' if quick_decoded != '' else '') + f'GE[0] (SIMD) result 0 ≥ comparison'
+				if ge_bits & 0b10:
+					print("   - GE[1] (bit 9): SIMD result 1 ≥ comparison value")
+					quick_decoded += (', ' if quick_decoded != '' else '') + f'GE[1] (SIMD) result 1 ≥ comparison'
+
+			# Mode bits (bits 0–4)
+			mode = cpsr_value & 0x1F
+			mode_map = {
+				0b10000: "User",
+				0b10001: "FIQ",
+				0b10010: "IRQ",
+				0b10011: "Supervisor",
+				0b10111: "Abort",
+				0b11011: "Undefined",
+				0b11111: "System",
+			}
+			mode_str = mode_map.get(mode, "Unknown")
+			print(f"\n🧭 Processor Mode: {mode_str} (0x{mode:02X})")
+
+			print(f"QUICK-FLAGS: {quick_decoded}")
+			self.addRow("FLAG OVERVIEW:", "", "")
+			self.addRow("--- DATA TYPE ---", "--- VALUE ---", "--- INFOS ---")
+			self.addRow("int", str(cpsr_value), "Complete Flag with all bits as INT")
+			self.addRow("hex", hex(cpsr_value), "Complete Flag with all bits as HEX")
+			self.addRow("binary", format(cpsr_value, 'b'), "Complete Flag with all bits as BINARY")
+			self.addRow("quick", str(quick_decoded), "Quickview all flags")
+			self.addRow("CPU mode", mode_str, "Processor mode")
+
+			self.addRow("FLAG OVERVIEW:", "", "")
+			self.addRow("--- DATA TYPE ---", "--- VALUE ---", "--- INFOS ---")
+			for bit, (name, meaning) in flags.items():
+				if cpsr_value & (1 << bit):
+					# print(f"✅ {name} bit set ({meaning})")
+					self.addRow(f"✅ {name} ({str(bit)} / {hex(bit)})", "set", f"{meaning}")
+					# quick_decoded += (', ' if quick_decoded != '' else '') + f'{name}'
+				else:
+					# print(f"❌ {name} bit not set ({meaning})")
+					self.addRow(f"❌ {name} ({str(bit)} / {hex(bit)})", "not set", f"{meaning}")
+			self.addRow(f"CPU Mode", f"{mode_str}", f"0x{mode:08X}")
+			return
+		# else:
+		# 	pass
+
 		# rflags_value = self.rflags_value
 		# logDbgC(f"rflags_value: {hex(self.rflags_value)}", DebugLevel.Verbose)
 
@@ -308,6 +387,7 @@ class RFlagTableWidget(BaseTableWidget):
 		if (int(self.rflags_value, 16) >> 21) & 1: self.addRow("ID", "ID Flag", "Able to use CPUID instruction (Pentium+) - Mask: 0x0020 0000") # flags.append("ID (ID Flag)")
 
 	def decode_cpsr(self, cpsr_value):
+		quick_decoded = ''
 		flags = {
 			31: ("N", "Negative"),
 			30: ("Z", "Zero"),
@@ -325,6 +405,7 @@ class RFlagTableWidget(BaseTableWidget):
 		for bit, (name, meaning) in flags.items():
 			if cpsr_value & (1 << bit):
 				print(f"✅ {name} bit set ({meaning})")
+				quick_decoded += (', ' if quick_decoded != '' else '') + f'{name}'
 			else:
 				print(f"❌ {name} bit not set ({meaning})")
 
@@ -338,8 +419,10 @@ class RFlagTableWidget(BaseTableWidget):
 			print("✅ GE flags set:")
 			if ge_bits & 0b01:
 				print("   - GE[0] (bit 8): SIMD result 0 ≥ comparison value")
+				quick_decoded += (', ' if quick_decoded != '' else '') + f'GE[0] (SIMD) result 0 ≥ comparison'
 			if ge_bits & 0b10:
 				print("   - GE[1] (bit 9): SIMD result 1 ≥ comparison value")
+				quick_decoded += (', ' if quick_decoded != '' else '') + f'GE[1] (SIMD) result 1 ≥ comparison'
 
 		# Mode bits (bits 0–4)
 		mode = cpsr_value & 0x1F
@@ -355,5 +438,6 @@ class RFlagTableWidget(BaseTableWidget):
 		mode_str = mode_map.get(mode, "Unknown")
 		print(f"\n🧭 Processor Mode: {mode_str} (0x{mode:02X})")
 
+		print(f"QUICK-FLAGS: {quick_decoded}")
 	# result.AppendMessage(f"RFLAGS: 0x{rflags_value:016x} [{', '.join(flags)}]")
 		# logDbgC(f"flags: {flags}")

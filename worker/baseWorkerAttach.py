@@ -17,6 +17,7 @@ class AttachWorker(QObject):
     logDbgC = pyqtSignal(str, object)
     loadModulesCallback = pyqtSignal(object, object)
     loadInstructionCallback = pyqtSignal(object)
+    loadInstructionsCallback = pyqtSignal(object, object)
     loadStringCallback = pyqtSignal(str, int, str)
     loadSymbolCallback = pyqtSignal(str)
     loadCurrentPC = pyqtSignal(str)
@@ -44,6 +45,7 @@ class AttachWorker(QObject):
     frame = None
 
     allInstructions = []
+    allModsAndInstructions = {}
     initTable = True
 
     def __init__(self, debugger, pid=None, name=None):
@@ -59,6 +61,7 @@ class AttachWorker(QObject):
         self.frame = None
 
         self.allInstructions = []
+        self.allModsAndInstructions = {}
         self.initTable = True
 
     def run(self):
@@ -174,15 +177,19 @@ class AttachWorker(QObject):
                             if subsec.GetName() == "__text" or subsec.GetName() == "__stubs":
                                 idxSym = 0
                                 lstSym = module.symbol_in_section_iter(subsec)
+                                symName = subsec.GetName()
                                 if isObjC and subsec.GetName() == "__stubs":
                                     self.loadSymbolCallback.emit(subsec.GetName())
+                                    # symName = subsec.GetName()
 
                                 for smbl in lstSym:
                                     # self.logDbgC.emit(f"===========>>>>>>>>>>> symbl: {smbl}", DebugLevel.Verbose)
                                     # .GetStartAddress().GetFunction()
                                     if isObjC and not subsec.GetName() == "__stubs":
                                         self.loadSymbolCallback.emit(smbl.GetName())
+                                        symName = subsec.GetName()
                                     instructions = smbl.GetStartAddress().GetFunction().GetInstructions(self.target)
+                                    self.allModsAndInstructions[symName] = instructions
                                     self.allInstructions += instructions
                                     for instruction in instructions:
                                         # self.logDbgC.emit(f"----------->>>>>>>>>>> INSTRUCTION: {instruction.GetMnemonic(self.target)} ... ", DebugLevel.Verbose)
@@ -204,6 +211,7 @@ class AttachWorker(QObject):
                                     estimated_count = size // 4
                                     instructions = self.target.ReadInstructions(lldb.SBAddress(start_addr, self.target),
                                                                                 int(estimated_count))
+                                    # self.allModsAndInstructions[subsec.GetName()] = [instructions]
                                     # instructions = subsec.addr.GetFunction().GetInstructions(self.target)
                                     # insts = target.ReadInstructions(lldb.SBAddress(start_addr, target), lldb.SBAddress(end_addr, target))
                                     for instruction in instructions:
@@ -244,6 +252,12 @@ class AttachWorker(QObject):
             # else:
             # 	break
             idx += 1
+        print(f"self.loadInstructionsCallback() => {self.allModsAndInstructions} ...")
+        # for key, value in self.allModsAndInstructions:
+        #     print(f"key: {key} => value: {value}")
+        #
+        # print("Callback returned:", repr(self.allModsAndInstructions))
+        # self.loadInstructionsCallback.emit(None, self.allModsAndInstructions)
         self.loadCurrentPC.emit(hex(self.frame.GetPC()))
         self.logDbgC.emit(f"============ END DISASSEMBLER ===============", DebugLevel.Verbose)
 

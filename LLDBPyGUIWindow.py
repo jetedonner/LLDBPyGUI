@@ -144,6 +144,7 @@ class LLDBPyGUIWindow(QMainWindow):
 
 	isAttached = False
 	isProcessRunning = False
+	modulesAndInstructions = {}
 
 	# def wpcallbackng(self):
 	# 	print(f"================>>>>>>>>>>>>> YES WATCHPOINT CALLBACK NG <<<<<<<<<<<=================")
@@ -266,6 +267,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			self.attachWorker.show_dialog.connect(self.start_operation)
 
 			self.attachWorker.loadInstructionCallback.connect(self.handle_loadInstruction)
+			self.attachWorker.loadInstructionsCallback.connect(self.handle_loadInstructions)
 			self.attachWorker.loadStringCallback.connect(self.handle_loadString)
 			self.attachWorker.loadSymbolCallback.connect(self.handle_loadSymbol)
 			self.attachWorker.loadCurrentPC.connect(self.handle_loadCurrentPC)
@@ -667,7 +669,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.splitterDbgMain.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 		self.splitterDbgMain.setOrientation(Qt.Orientation.Vertical)
 		self.cmbFiles = QComboBox()
-		# self.cmbFiles.addItems([])
+		self.cmbFiles.currentIndexChanged.connect(self.handle_modules_changed)
 		self.splitterDbgMain.addWidget(self.cmbFiles)
 		# self.cmbFiles.setVisible(False)
 		self.splitterDbgMain.addWidget(self.tabWidgetMain)
@@ -716,20 +718,20 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.attachWorker.loadRegisterValueCallback.connect(self.handle_loadRegisterValue)
 		self.attachWorker.loadVariableValueCallback.connect(self.handle_loadVariableValue)
 
-		# loadBreakpointsValueCallback = pyqtSignal(object, bool)
-		# updateBreakpointsValueCallback = pyqtSignal(object)
-		# loadWatchpointsValueCallback = pyqtSignal(object)
-		# updateWatchpointsValueCallback = pyqtSignal(object)
-
-
-
-
 		# ======== DEV CMDs ##########
 		self.tabWidgetDbg.setCurrentIndex(2)
 
 		self.updateStatusBar(f"{APP_NAME} loaded successfully!")
 
 		self._restore_size()
+
+	def handle_modules_changed(self, idx):
+		logDbgC(f"handle_modules_changed({idx})")
+		if len(self.modulesAndInstructions.keys()) > 0 and self.modulesAndInstructions.keys().__contains__(self.cmbFiles.currentText()) and self.modulesAndInstructions[self.cmbFiles.currentText()] is not None:
+			self.txtMultiline.resetContent()
+			self.handle_loadInstruction(self.modulesAndInstructions[self.cmbFiles.currentText()])
+			self.setDbgTabLbl(self.cmbFiles.currentText())
+
 
 	def setDbgTabLbl(self, moduleName=""):
 		self.tabWidgetMain.setTabText(self.idxDbgTab, f"Debugger{' - ' + moduleName if moduleName != '' else '' }")
@@ -758,7 +760,7 @@ class LLDBPyGUIWindow(QMainWindow):
 	def closeEvent(self, event):
 		if self.isAttached:
 			dlg = ConfirmDialog("Attached to Process - QUIT?",
-								f"{APP_NAME} is still attached to a process. If you quit now, the attached process will quit as well. Do you really want to quit {APP_NAME} now?")
+								f"{APP_NAME} is still attached to a process. If you quit now, the attached process will aborted as well. Do you really want to quit {APP_NAME} and target now?")
 			if dlg.exec() and dlg.button_clicked == QDialogButtonBox.StandardButton.Ok:
 				print(f"Quitting {APP_NAME} (attached) now YESSS ...")
 				self.driver.setDone()
@@ -766,7 +768,14 @@ class LLDBPyGUIWindow(QMainWindow):
 				event.accept()
 			# self.driver.terminate()
 			else:
-				event.ignore()
+				print(f"if dlg.exec() and dlg.button_clicked == QDialogButtonBox.StandardButton.Ok: ELSE ...")
+				if dlg.button_clicked == QDialogButtonBox.StandardButton.Abort:
+					print(f"if dlg.button_clicked == QDialogButtonBox.StandardButton.Abort: ...")
+					self.detachFromTarget()
+					event.accept()
+				else:
+					print(f"if dlg.button_clicked == QDialogButtonBox.StandardButton.Abort: ELSE ...")
+					event.ignore()
 		else:
 			if self.setHelper.getValue(SettingsValues.ConfirmQuitApp):
 				dlg = ConfirmDialog(f"Quit {APP_NAME}?", f"Do you really want to quit {APP_NAME} and discard all unsaved changes?")
@@ -976,13 +985,22 @@ class LLDBPyGUIWindow(QMainWindow):
 					self.updateStatusBar(sError)
 					print(sError)
 		else:
-			error = self.driver.getTarget().GetProcess().Detach()
-			if error.Success():
-				self.resetGUI()
-				self.attach_action.setIcon(ConfigClass.iconGears)
-				self.attach_action.setToolTip("Attach to process")
-				self.isAttached = False
+			self.detachFromTarget()
+			# error = self.driver.getTarget().GetProcess().Detach()
+			# if error.Success():
+			# 	self.resetGUI()
+			# 	self.attach_action.setIcon(ConfigClass.iconGears)
+			# 	self.attach_action.setToolTip("Attach to process")
+			# 	self.isAttached = False
 
+
+	def detachFromTarget(self):
+		error = self.driver.getTarget().GetProcess().Detach()
+		if error.Success():
+			self.resetGUI()
+			self.attach_action.setIcon(ConfigClass.iconGears)
+			self.attach_action.setToolTip("Attach to process")
+			self.isAttached = False
 
 	def execCommand_clicked(self):
 		pass
@@ -1527,6 +1545,17 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.txtMultiline.setPC(pc, True)
 		pass
 
+	def handle_loadInstructions(self, instructions):
+		self.txtMultiline.resetContent()
+		# if sym in instructions:
+		# 	self.txtMultiline.appendAsmSymbol(0x0, sym)
+
+		for key, value in instructions:
+			print(f"🔑 Key: {key}, 📦 Value: {value}")
+			# self.txtMultiline.appendAsmSymbol(0x0, key)
+			# for inst in value:
+			# 	self.handle_loadInstruction(inst)
+
 	instCnt = 0
 	stubsLoading = False
 	def handle_loadInstruction(self, instruction):
@@ -1646,22 +1675,24 @@ class LLDBPyGUIWindow(QMainWindow):
 										instruction.GetMnemonic(target), instruction.GetOperands(target), comment,
 										daHex, "".join(str(daDataNg).split()), True, "", self.instCnt - 1)
 
-
-	def handle_workerFinished(self, connections = [], moduleName="<no name>"):
+	def handle_workerFinished(self, connections = [], moduleName="<no name>", instructions={}):
+		self.modulesAndInstructions = instructions
 		QApplication.processEvents()
 		self.txtMultiline.setPC(self.driver.getPC(), True)
-		if(len(connections) > 0):
+		# if(len(connections) > 0):
+		if connections != [] and (len(connections) > 0):
 			self.wdtControlFlow.draw_instructions()
 			self.wdtControlFlow.loadConnectionsFromWorker(connections)
 		self.setDbgTabLbl(f"{moduleName}")
 		self.dialog.close()
 
-	def handle_workerFinishedNG(self, connections = [], moduleName="<no name>"):
+	def handle_workerFinishedNG(self, connections = [], moduleName="<no name>", instructions={}):
+		self.modulesAndInstructions = instructions
 		QApplication.processEvents()
 		self.threadDecompMod.quit()
 
 		self.txtMultiline.setPC(self.driver.getPC(), True)
-		if(len(connections) > 0):
+		if connections != [] and (len(connections) > 0):
 			self.wdtControlFlow.draw_instructions()
 			self.wdtControlFlow.loadConnectionsFromWorker(connections)
 		self.setDbgTabLbl(f"{moduleName}")

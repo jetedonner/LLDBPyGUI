@@ -39,7 +39,7 @@ class Worker(QObject):
 	loadInstructionCallback = pyqtSignal(object)
 	loadStringCallback = pyqtSignal(str, int, str)
 	loadSymbolCallback = pyqtSignal(str)
-	finishedLoadInstructionsCallback = pyqtSignal(object, str)
+	finishedLoadInstructionsCallback = pyqtSignal(object, str, object)
 	loadRegisterCallback = pyqtSignal(str)
 	loadRegisterValueCallback = pyqtSignal(int, str, str, str)
 	loadVariableValueCallback = pyqtSignal(str, str, str, str, str)
@@ -555,6 +555,7 @@ class Worker(QObject):
 																	int(estimated_count))
 									# instructions = subsec.addr.GetFunction().GetInstructions(self.target)
 									# insts = target.ReadInstructions(lldb.SBAddress(start_addr, target), lldb.SBAddress(end_addr, target))
+									self.allInstructions += instructions
 									for instruction in instructions:
 										# result.PutCString(str(inst))
 										# self.logDbgC.emit(str(instruction), DebugLevel.Verbose)

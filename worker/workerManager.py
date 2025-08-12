@@ -40,10 +40,11 @@ class WorkerManager(QObject):
 			
 	def start_loadDisassemblyWorker(self, handle_loadInstruction, handle_workerFinished, initTable = True):
 		self.loadDisassemblyWorker = LoadDisassemblyWorker(self.driver, initTable)
-		self.loadDisassemblyWorker.signals.finished.connect(handle_workerFinished)
+		# self.loadDisassemblyWorker.signals.finished.connect(handle_workerFinished)
 #		self.loadDisassemblyWorker.signals.sendStatusBarUpdate.connect(self.handle_statusBarUpdate)
 #		self.loadDisassemblyWorker.signals.sendProgressUpdate.connect(self.handle_progressUpdate)
 		self.loadDisassemblyWorker.signals.loadInstruction.connect(handle_loadInstruction)
+		self.loadDisassemblyWorker.signals.loadInstructions.connect(handle_workerFinished)
 		self.threadpool.start(self.loadDisassemblyWorker)
 
 	def start_loadDisassemblyWorkerNG(self, show_dialog,  handle_loadSymbol, handle_loadInstruction, handle_workerFinished, modulePath, initTable=True):
@@ -53,6 +54,7 @@ class WorkerManager(QObject):
 		#		self.loadDisassemblyWorker.signals.sendStatusBarUpdate.connect(self.handle_statusBarUpdate)
 		#		self.loadDisassemblyWorker.signals.sendProgressUpdate.connect(self.handle_progressUpdate)
 		self.loadDisassemblyWorkerNG.signals.loadInstruction.connect(handle_loadInstruction)
+		self.loadDisassemblyWorker.signals.loadInstructions.connect(handle_workerFinished)
 		self.loadDisassemblyWorkerNG.signals.loadSymbolCallback.connect(handle_loadSymbol)
 		self.threadpool.start(self.loadDisassemblyWorkerNG)
 		logDbgC(f"self.threadpool.start(self.loadDisassemblyWorkerNG)")

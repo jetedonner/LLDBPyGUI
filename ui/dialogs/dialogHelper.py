@@ -127,10 +127,17 @@ class ConfirmDialog(QDialog):
 		
 		self.setWindowTitle(title)
 		
-		QBtn = QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+		QBtn = QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel # | QDialogButtonBox.StandardButton.Close
 		
 		self.buttonBox = QDialogButtonBox(QBtn)
+		self.btnAbort = self.buttonBox.addButton(QDialogButtonBox.StandardButton.Abort)
+
+		self.btnAbort.clicked.connect(self.handle_detached)
+		# self.actDetach = self.btnAbort.addAction("Detach")
+		# self.actDetach.triggered.connect(self.handle_detached)
 		self.buttonBox.accepted.connect(self.accept)
+		# self.buttonBox.clo.connect(self.accept)
+
 		self.buttonBox.rejected.connect(self.reject)
 		self.layout = QVBoxLayout()
 		message = QLabel(question)
@@ -148,10 +155,14 @@ class ConfirmDialog(QDialog):
 		self.layoutIco.addWidget(message)
 		self.layout.addWidget(self.buttonBox)
 		self.setLayout(self.layout)
+
+	def handle_detached(self):
+		self.button_clicked = QDialogButtonBox.StandardButton.Abort
+		super().close()  # Call parent accept method
 	
 	def accept(self):
-			self.button_clicked = QDialogButtonBox.StandardButton.Ok
-			super().accept()  # Call parent accept method
+		self.button_clicked = QDialogButtonBox.StandardButton.Ok
+		super().accept()  # Call parent accept method
 		
 	def reject(self):
 		self.button_clicked = QDialogButtonBox.StandardButton.Cancel

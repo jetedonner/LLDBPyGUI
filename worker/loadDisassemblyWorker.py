@@ -11,6 +11,7 @@ from ui.helper.dbgOutputHelper import *
 	
 class LoadDisassemblyWorkerSignals(BaseWorkerSignals):
 	loadInstruction = pyqtSignal(object)
+	loadInstructions = pyqtSignal(object)
 	
 class LoadDisassemblyWorker(BaseWorker):
 	
