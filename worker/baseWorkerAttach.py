@@ -59,6 +59,7 @@ class AttachWorker(QObject):
         self.target = None
         self.thread = None
         self.frame = None
+        self.exe = ""
 
         self.allInstructions = []
         self.allModsAndInstructions = {}
@@ -90,9 +91,9 @@ class AttachWorker(QObject):
                 self.disassemble_entire_target()
 
                 self.logDbgC.emit(f"self.target.GetExecutable().GetFilename(): {self.target.GetExecutable().GetDirectory()}/{self.target.GetExecutable().GetFilename()}", DebugLevel.Verbose)
-                exe = self.target.GetExecutable().GetDirectory() + "/" + self.target.GetExecutable().GetFilename()
+                self.exe = self.target.GetExecutable().GetDirectory() + "/" + self.target.GetExecutable().GetFilename()
                 # self.targetBasename = os.path.basename(exe)
-                mach_header = GetFileHeader(exe)
+                mach_header = GetFileHeader(self.exe)
                 self.logDbgC.emit(f"mach_header = GetFileHeader(exe): {mach_header}", DebugLevel.Verbose)
                 self.loadFileInfosCallback.emit(mach_header, self.target)
                 self.logDbgC.emit(f"after self.loadFileInfosCallback.emit(...)", DebugLevel.Verbose)
@@ -189,7 +190,7 @@ class AttachWorker(QObject):
                                         self.loadSymbolCallback.emit(smbl.GetName())
                                         symName = subsec.GetName()
                                     instructions = smbl.GetStartAddress().GetFunction().GetInstructions(self.target)
-                                    self.allModsAndInstructions[symName] = instructions
+                                    self.allModsAndInstructions[smbl.GetStartAddress().GetFunction().GetName()] = instructions
                                     self.allInstructions += instructions
                                     for instruction in instructions:
                                         # self.logDbgC.emit(f"----------->>>>>>>>>>> INSTRUCTION: {instruction.GetMnemonic(self.target)} ... ", DebugLevel.Verbose)
@@ -257,7 +258,7 @@ class AttachWorker(QObject):
         #     print(f"key: {key} => value: {value}")
         #
         # print("Callback returned:", repr(self.allModsAndInstructions))
-        # self.loadInstructionsCallback.emit(None, self.allModsAndInstructions)
+        self.loadInstructionsCallback.emit(None, self.allModsAndInstructions)
         self.loadCurrentPC.emit(hex(self.frame.GetPC()))
         self.logDbgC.emit(f"============ END DISASSEMBLER ===============", DebugLevel.Verbose)
 

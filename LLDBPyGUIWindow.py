@@ -195,7 +195,9 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.finish_startup()
 		self.isAttached = True
 
+	cmbFilesChangedEventDisable = False
 	def addToFiles(self, filename, selectItem=True):
+		self.cmbFilesChangedEventDisable = True
 		if self.cmbFiles.findText(filename) == -1:
 			self.cmbFiles.addItem(filename)
 
@@ -203,6 +205,18 @@ class LLDBPyGUIWindow(QMainWindow):
 			idxFile = self.cmbFiles.findText(filename)
 			if idxFile != -1:
 				self.cmbFiles.setCurrentIndex(idxFile)
+
+				self.modBPs = []
+				for m in self.driver.getTarget().module_iter():
+					print(f"{m}: {m.GetFileSpec().basename} ")
+					if m.GetFileSpec().basename == filename:
+						self.modBPs = self.get_breakpoints_for_module(self.driver.getTarget(), m)
+
+						for bp in self.modBPs:
+							for bl in bp:
+								self.txtMultiline.enableBP(hex(bl.GetLoadAddress()), bl.IsEnabled())
+						break
+		self.cmbFilesChangedEventDisable = False
 
 	def get_main_module_filename(self, process):
 		if not process.IsValid():
@@ -726,12 +740,67 @@ class LLDBPyGUIWindow(QMainWindow):
 		self._restore_size()
 
 	def handle_modules_changed(self, idx):
-		logDbgC(f"handle_modules_changed({idx})")
-		if len(self.modulesAndInstructions.keys()) > 0 and self.modulesAndInstructions.keys().__contains__(self.cmbFiles.currentText()) and self.modulesAndInstructions[self.cmbFiles.currentText()] is not None:
-			self.txtMultiline.resetContent()
-			self.handle_loadInstruction(self.modulesAndInstructions[self.cmbFiles.currentText()])
-			self.setDbgTabLbl(self.cmbFiles.currentText())
+		if not self.cmbFilesChangedEventDisable:
+			logDbgC(f"handle_modules_changed({idx})")
+			if len(self.allModsAndInstructions) > 0 and self.allModsAndInstructions[self.cmbFiles.itemText(idx)] is not None: # len(self.modulesAndInstructions.keys()) > 0 and self.modulesAndInstructions.keys().__contains__(self.cmbFiles.currentText()) and self.modulesAndInstructions[self.cmbFiles.currentText()] is not None:
+				self.txtMultiline.resetContent()
+				self.instCnt = 0
 
+				print(f"INSIDE MODULE CHANGE: {self.allModsAndInstructions[self.cmbFiles.itemText(idx)]} ... ")
+				for key in self.allModsAndInstructions[self.cmbFiles.itemText(idx)]:
+					value = self.allModsAndInstructions[self.cmbFiles.itemText(idx)][key]
+					print(f"Key: {key}, Value: {value}")
+					self.handle_loadSymbol(str(key))
+					for i in value:
+						self.handle_loadInstruction(i)
+				# for i, y in self.allModsAndInstructions[self.cmbFiles.itemText(idx)]:
+				# 	for z in y:
+				# 		self.handle_loadInstruction(z)
+				# self.handle_loadInstruction(self.modulesAndInstructions[self.cmbFiles.currentText()])
+				self.setDbgTabLbl(self.cmbFiles.itemText(idx))
+
+				self.modBPs = []
+				for m in self.driver.getTarget().module_iter():
+					print(f"{m}: {m.GetFileSpec().basename} ")
+					if m.GetFileSpec().basename == self.cmbFiles.itemText(idx):
+						self.modBPs = self.get_breakpoints_for_module(self.driver.getTarget(), m)
+
+						for bp in self.modBPs:
+							for bl in bp:
+								self.txtMultiline.enableBP(hex(bl.GetLoadAddress()), bl.IsEnabled())
+						break
+
+		else:
+			logDbgC(f"handle_modules_changed({idx}) => cmbFilesChangedEventDisable: {self.cmbFilesChangedEventDisable}")
+
+	def get_breakpoints_for_module(self, target, module):
+		"""
+        Returns a list of SBBreakpoint objects that are located within a given SBModule.
+        """
+		if not isinstance(target, lldb.SBTarget) or not isinstance(module, lldb.SBModule):
+			print("Invalid target or module object.")
+			return []
+
+		breakpoints = []
+
+		# Iterate through all breakpoints in the target
+		for breakpoint in target.breakpoint_iter():
+
+			# Iterate through all locations within the current breakpoint
+			for location in breakpoint.locations:
+
+				# Get the module associated with the breakpoint location's address
+				# This is a bit indirect, but necessary
+				address_module = location.GetAddress().GetModule()
+
+				# Check if the module of the location matches the target module
+				if address_module and address_module == module:
+					# Add the parent breakpoint object to our list
+					breakpoints.append(breakpoint)
+					# Break the inner loop to avoid adding the same breakpoint multiple times
+					break
+
+		return breakpoints
 
 	def setDbgTabLbl(self, moduleName=""):
 		self.tabWidgetMain.setTabText(self.idxDbgTab, f"Debugger{' - ' + moduleName if moduleName != '' else '' }")
@@ -768,7 +837,7 @@ class LLDBPyGUIWindow(QMainWindow):
 				event.accept()
 			# self.driver.terminate()
 			else:
-				print(f"if dlg.exec() and dlg.button_clicked == QDialogButtonBox.StandardButton.Ok: ELSE ...")
+				print(f"if dlg.exec() and dlg.button_clicked == QDialogButtonBox.StandardButton.Ok: ELSE {dlg.button_clicked} / {QDialogButtonBox.StandardButton.Abort} ...")
 				if dlg.button_clicked == QDialogButtonBox.StandardButton.Abort:
 					print(f"if dlg.button_clicked == QDialogButtonBox.StandardButton.Abort: ...")
 					self.detachFromTarget()
@@ -1545,16 +1614,24 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.txtMultiline.setPC(pc, True)
 		pass
 
-	def handle_loadInstructions(self, instructions):
-		self.txtMultiline.resetContent()
-		# if sym in instructions:
-		# 	self.txtMultiline.appendAsmSymbol(0x0, sym)
-
-		for key, value in instructions:
-			print(f"🔑 Key: {key}, 📦 Value: {value}")
-			# self.txtMultiline.appendAsmSymbol(0x0, key)
-			# for inst in value:
-			# 	self.handle_loadInstruction(inst)
+	allModsAndInstructions = {}
+	def handle_loadInstructions(self, connections, instructions):
+		self.allModsAndInstructions[self.attachWorker.target.GetExecutable().GetFilename()] = instructions
+		# self.allModsAndInstructions += instructions
+		# self.txtMultiline.resetContent()
+		# # if sym in instructions:
+		# # 	self.txtMultiline.appendAsmSymbol(0x0, sym)
+		# print(f"instructions: {instructions}")
+		# for key in instructions:
+		# 	value = instructions[key]
+		# 	print(f"Key: {key}, Value: {value}")
+		# 	for i in value:
+		# 		self.handle_loadInstruction(i)
+		# # for key, value in instructions:
+		# # 	print(f"🔑 Key: {key}, 📦 Value: {value}")
+		# # 	# self.txtMultiline.appendAsmSymbol(0x0, key)
+		# # 	# for inst in value:
+		# # 	# 	self.handle_loadInstruction(inst)
 
 	instCnt = 0
 	stubsLoading = False
@@ -1688,6 +1765,7 @@ class LLDBPyGUIWindow(QMainWindow):
 
 	def handle_workerFinishedNG(self, connections = [], moduleName="<no name>", instructions={}):
 		self.modulesAndInstructions = instructions
+		self.allModsAndInstructions[moduleName] = instructions
 		QApplication.processEvents()
 		self.threadDecompMod.quit()
 

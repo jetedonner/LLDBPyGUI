@@ -120,53 +120,157 @@ from config import *
 #			self.app.setAttribute(Qt.ApplicationAttribute.AA_DontUseNativeDialogs, False)
 #			
 #		return button
-#			
+#
+
+# # Dummy class for demonstration
+# class PixConfigClass:
+# 	class iconBugGreen:
+# 		@staticmethod
+# 		def pixmap(w, h):
+# 			from PyQt6.QtGui import QPixmap, QColor
+# 			from PyQt6.QtCore import QSize
+# 			pixmap = QPixmap(QSize(w, h))
+# 			pixmap.fill(QColor("green"))
+# 			return pixmap
+
+
 class ConfirmDialog(QDialog):
+
+	button_clicked = QDialogButtonBox.StandardButton.Abort
+
 	def __init__(self, title, question):
 		super().__init__()
-		
 		self.setWindowTitle(title)
-		
-		QBtn = QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel # | QDialogButtonBox.StandardButton.Close
-		
-		self.buttonBox = QDialogButtonBox(QBtn)
-		self.btnAbort = self.buttonBox.addButton(QDialogButtonBox.StandardButton.Abort)
 
+		self.buttonBox = QDialogButtonBox()
+
+		# Create buttons and add them to the button box with explicit roles.
+		# Create the Abort button and make it the default.
+		# self.btnAbort = QPushButton("Detach")
+		self.btnAbort = self.buttonBox.addButton(QDialogButtonBox.StandardButton.Abort)# (self.btnAbort, QDialogButtonBox.ButtonRole.DestructiveRole)
+		self.btnAbort.setText("Detach")
+		self.btnAbort.setDefault(True)
+		self.btnAbort.setAutoDefault(True)
 		self.btnAbort.clicked.connect(self.handle_detached)
-		# self.actDetach = self.btnAbort.addAction("Detach")
-		# self.actDetach.triggered.connect(self.handle_detached)
-		self.buttonBox.accepted.connect(self.accept)
-		# self.buttonBox.clo.connect(self.accept)
 
-		self.buttonBox.rejected.connect(self.reject)
+		# Create Ok and Cancel buttons and add them.
+		# The Ok button's role is now `AcceptRole`, but since another button is
+		# explicitly set as default, it won't be made default.
+		self.btnOk = QPushButton("OK")
+		self.buttonBox.addButton(self.btnOk, QDialogButtonBox.ButtonRole.AcceptRole)
+		self.btnOk.clicked.connect(self.accept)
+
+		self.btnCancel = QPushButton("Cancel")
+		self.buttonBox.addButton(self.btnCancel, QDialogButtonBox.ButtonRole.RejectRole)
+		self.btnCancel.clicked.connect(self.close)
+
+		# self.buttonBox.accepted.connect(self.accept)
+		# self.buttonBox.rejected.connect(self.reject)
+		#
+		# self.buttonBox.destroyed.connect(self.destroy)
+
+		# Layout setup remains the same
 		self.layout = QVBoxLayout()
 		message = QLabel(question)
 		self.icon = ConfigClass.iconBugGreen
-		pixmap = self.icon.pixmap(64, 64)  # Set desired size
+		pixmap = self.icon.pixmap(64, 64)
 		icon_label = QLabel()
 		icon_label.setPixmap(pixmap)
-		self.layoutIco = QHBoxLayout()
-		self.wdtIco = QWidget()
-		self.wdtIco.setLayout(self.layoutIco)
-		# self.layoutIco.addWidget(self.wdtIco)
-		self.layout.addWidget(self.wdtIco)
 
+		self.layoutIco = QHBoxLayout()
 		self.layoutIco.addWidget(icon_label)
 		self.layoutIco.addWidget(message)
+
+		self.layout.addLayout(self.layoutIco)
 		self.layout.addWidget(self.buttonBox)
 		self.setLayout(self.layout)
 
 	def handle_detached(self):
+		print("Abort button clicked!")
 		self.button_clicked = QDialogButtonBox.StandardButton.Abort
-		super().close()  # Call parent accept method
-	
+		self.destroy()
+
 	def accept(self):
+		print("OK button clicked!")
 		self.button_clicked = QDialogButtonBox.StandardButton.Ok
-		super().accept()  # Call parent accept method
-		
+		super().accept()
+
 	def reject(self):
+		print("Cancel button clicked!")
 		self.button_clicked = QDialogButtonBox.StandardButton.Cancel
-		super().reject()  # Call parent reject method
+		super().reject()
+
+	def destroy(self):
+		print("Destroy button clicked!")
+		self.button_clicked = QDialogButtonBox.StandardButton.Abort
+		super().destroy()
+
+# class ConfirmDialog(QDialog):
+# 	def __init__(self, title, question):
+# 		super().__init__()
+#
+# 		self.setWindowTitle(title)
+#
+# 		QBtn = QDialogButtonBox.StandardButton.Abort | QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel # | QDialogButtonBox.StandardButton.Close
+#
+# 		self.buttonBox = QDialogButtonBox(QBtn)
+# 		# self.btnAbort = self.buttonBox.addButton(QDialogButtonBox.StandardButton.Abort)
+# 		self.btnAbort = self.buttonBox.button(QDialogButtonBox.StandardButton.Abort)
+# 		self.btnAbort.setDefault(True)
+# 		self.btnAbort.setAutoDefault(True)
+# 		# self.btnAbort.setAutoDefault(True)
+# 		self.btnAbort.clicked.connect(self.handle_detached)
+# 		# self.actDetach = self.btnAbort.addAction("Detach")
+# 		# self.actDetach.triggered.connect(self.handle_detached)
+# 		self.buttonBox.accepted.connect(self.accept)
+# 		# self.buttonBox.clo.connect(self.accept)
+#
+# 		self.buttonBox.rejected.connect(self.reject)
+#
+# 		# Layout setup remains the same
+# 		self.layout = QVBoxLayout()
+# 		message = QLabel(question)
+# 		self.icon = ConfigClass.iconBugGreen
+# 		pixmap = self.icon.pixmap(64, 64)
+# 		icon_label = QLabel()
+# 		icon_label.setPixmap(pixmap)
+#
+# 		self.layoutIco = QHBoxLayout()
+# 		self.layoutIco.addWidget(icon_label)
+# 		self.layoutIco.addWidget(message)
+#
+# 		self.layout.addLayout(self.layoutIco)
+# 		self.layout.addWidget(self.buttonBox)
+# 		self.setLayout(self.layout)
+# 		# self.layout = QVBoxLayout()
+# 		# message = QLabel(question)
+# 		# self.icon = ConfigClass.iconBugGreen
+# 		# pixmap = self.icon.pixmap(64, 64)  # Set desired size
+# 		# icon_label = QLabel()
+# 		# icon_label.setPixmap(pixmap)
+# 		# self.layoutIco = QHBoxLayout()
+# 		# self.wdtIco = QWidget()
+# 		# self.wdtIco.setLayout(self.layoutIco)
+# 		# # self.layoutIco.addWidget(self.wdtIco)
+# 		# self.layout.addWidget(self.wdtIco)
+# 		#
+# 		# self.layoutIco.addWidget(icon_label)
+# 		# self.layoutIco.addWidget(message)
+# 		# self.layout.addWidget(self.buttonBox)
+# 		# self.setLayout(self.layout)
+# 		# self.buttonBox.standardButton(self.btnAbort)
+#
+# 	def handle_detached(self):
+# 		self.button_clicked = QDialogButtonBox.StandardButton.Abort
+# 		super().close()  # Call parent accept method
+#
+# 	def accept(self):
+# 		self.button_clicked = QDialogButtonBox.StandardButton.Ok
+# 		super().accept()  # Call parent accept method
+#
+# 	def reject(self):
+# 		self.button_clicked = QDialogButtonBox.StandardButton.Cancel
+# 		super().reject()  # Call parent reject method
 
 class InputDialog(QDialog):
 	def __init__(self, title = "", prompt = "", preset = "", placeholder=""):

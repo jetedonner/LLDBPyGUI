@@ -117,23 +117,25 @@ class RFlagTableWidget(BaseTableWidget):
 #		for row in range(self.rowCount(), 0):
 #			self.removeRow(row)
 			
-	def addRow(self, flag, value, desc):
+	def addRow(self, flag, value, txt, desc=""):
 		currRowCount = self.rowCount()
 		self.setRowCount(currRowCount + 1)
-		self.addItem(currRowCount, 0, str(flag))
-		self.addItem(currRowCount, 1, str(value))
-		self.addItem(currRowCount, 2, str(desc))
-		if self.cellWidget(currRowCount, 0) != None:
-			self.cellWidget(currRowCount, 0).setToolTip(desc)
+		self.addItem(currRowCount, 0, str(flag), desc)
+		self.addItem(currRowCount, 1, str(value), desc)
+		self.addItem(currRowCount, 2, str(txt), desc)
+		# if self.cellWidget(currRowCount, 0) != None:
+		# 	self.cellWidget(currRowCount, 0).setToolTip(desc)
 		self.setRowHeight(currRowCount, 18)
 		
 		
-	def addItem(self, row, col, txt):
+	def addItem(self, row, col, txt, desc=""):
 		item = QTableWidgetItem(txt, QTableWidgetItem.ItemType.Type)
 		item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable) #Qt.ItemFlag.ItemIsSelectable)
-		
+		if desc != "":
+			item.setToolTip(desc)
 		# Insert the items into the row
 		self.setItem(row, col, item)
+		return item
 
 	def loadRFlags(self, debugger):
 
@@ -177,29 +179,31 @@ class RFlagTableWidget(BaseTableWidget):
 				# rip = reg.value
 				self.rflags_value = reg.value
 				print(f"rflags_reg: {self.rflags_value} (2)")
+				break
 		# if not rflags_reg:
 		# 	result.AppendError("Could not find rflags register.")
 		# 	return
 
 		if True:
 			cpsr_value = int(self.rflags_value, 16)
+			self.decode_cpsr_flags(frame)
 			# self.decode_cpsr(int(self.rflags_value, 16))
 			quick_decoded = ''
 			flags = {
-				31: ("N", "Negative"),
-				30: ("Z", "Zero"),
-				29: ("C", "Carry"),
-				28: ("V", "Overflow"),
-				27: ("Q", "Saturation"),
-				24: ("J", "Jazelle"),
-				7: ("E", "Endianness (1 = Big-endian)"),
-				6: ("A", "Async abort mask"),
-				5: ("I", "IRQ mask"),
-				4: ("F", "FIQ mask"),
+				31: ("N", "Negative", "Negative condition flag. Set to bit[31] of the result of the last flag-setting instruction. If the result is regarded as a two's complement signed integer, then N is set to 1 if the result was negative, and N is set to 0 if the result was positive or zero."),
+				30: ("Z", "Zero", "Zero condition flag. Set to 1 if the result of the last flag-setting instruction was zero, and to 0 otherwise. A result of zero often indicates an equal result from a comparison."),
+				29: ("C", "Carry", "Carry condition flag. Set to 1 if the last flag-setting instruction resulted in a carry condition, for example an unsigned overflow on an addition."),
+				28: ("V", "Overflow", "Overflow condition flag. Set to 1 if the last flag-setting instruction resulted in an overflow condition, for example a signed overflow on an addition."),
+				27: ("Q", "Saturation", "Cumulative saturation bit. Set to 1 to indicate that overflow or saturation occurred in some instructions."),
+				24: ("J", "Jazelle", ""),
+				7: ("E", "Endianness (1 = Big-endian)", ""),
+				6: ("A", "Async abort mask", ""),
+				5: ("I", "IRQ mask", ""),
+				4: ("F", "FIQ mask", ""),
 			}
 
 			print(f"🔍 CPSR Value: 0x{cpsr_value:08X}")
-			for bit, (name, meaning) in flags.items():
+			for bit, (name, meaning, desc) in flags.items():
 				if cpsr_value & (1 << bit):
 					print(f"✅ {name} bit set ({meaning})")
 					quick_decoded += (', ' if quick_decoded != '' else '') + f'{name}'
@@ -246,14 +250,14 @@ class RFlagTableWidget(BaseTableWidget):
 
 			self.addRow("FLAG OVERVIEW:", "", "")
 			self.addRow("--- DATA TYPE ---", "--- VALUE ---", "--- INFOS ---")
-			for bit, (name, meaning) in flags.items():
+			for bit, (name, meaning, desc) in flags.items():
 				if cpsr_value & (1 << bit):
 					# print(f"✅ {name} bit set ({meaning})")
-					self.addRow(f"✅ {name} ({str(bit)} / {hex(bit)})", "set", f"{meaning}")
+					self.addRow(f"✅ {name} ({str(bit)} / {hex(bit)})", "set", f"{meaning}", desc)
 					# quick_decoded += (', ' if quick_decoded != '' else '') + f'{name}'
 				else:
 					# print(f"❌ {name} bit not set ({meaning})")
-					self.addRow(f"❌ {name} ({str(bit)} / {hex(bit)})", "not set", f"{meaning}")
+					self.addRow(f"❌ {name} ({str(bit)} / {hex(bit)})", "not set", f"{meaning}", desc)
 			self.addRow(f"CPU Mode", f"{mode_str}", f"0x{mode:08X}")
 			return
 		# else:
@@ -385,6 +389,57 @@ class RFlagTableWidget(BaseTableWidget):
 		if (int(self.rflags_value, 16) >> 20) & 1: self.addRow("VIP", "Virtual Interrupt Pending", "Virtual interrupt pending (Pentium+) - Mask: 0x0010 0000") # flags.append("VIP (Virtual Interrupt Pending)")
 
 		if (int(self.rflags_value, 16) >> 21) & 1: self.addRow("ID", "ID Flag", "Able to use CPUID instruction (Pentium+) - Mask: 0x0020 0000") # flags.append("ID (ID Flag)")
+
+	# import lldb
+
+	def decode_cpsr_flags(self, frame):
+		"""
+        Decodes the ARM CPSR register and prints the state of the flags.
+        """
+		cpsr_reg = frame.FindRegister('cpsr')
+		if not cpsr_reg.IsValid():
+			print("CPSR register not found.")
+			return
+
+		cpsr_value = cpsr_reg.unsigned
+		print(f"CPSR register value: 0x{cpsr_value:08x}")
+
+		print("Condition Code Flags:")
+		print(f"  N (Negative): {'Set' if (cpsr_value >> 31) & 1 else 'Not Set'}")
+		print(f"  Z (Zero):     {'Set' if (cpsr_value >> 30) & 1 else 'Not Set'}")
+		print(f"  C (Carry):    {'Set' if (cpsr_value >> 29) & 1 else 'Not Set'}")
+		print(f"  V (Overflow): {'Set' if (cpsr_value >> 28) & 1 else 'Not Set'}")
+		print(f"  Q (Saturation): {'Set' if (cpsr_value >> 27) & 1 else 'Not Set'}")
+		print(f"  SS (SSBS): {'Set' if (cpsr_value >> 23) & 1 else 'Not Set'}")
+		print(f"  PAN (FEAT_PAN): {'Set' if (cpsr_value >> 22) & 1 else 'Not Set'}")
+		print(f"  DIT (FEAT_DIT): {'Set' if (cpsr_value >> 21) & 1 else 'Not Set'}")
+
+		print("\nInterrupt and Control Flags:")
+		print(f"  E (Endianness):      {'Big' if (cpsr_value >> 9) & 1 else 'Little'}-endian")
+		print(f"  A (Exception):      Exception{'' if (cpsr_value >> 8) & 1 else ' not'} masked")
+		print(f"  I (IRQ):      {'Disabled' if (cpsr_value >> 7) & 1 else 'Enabled'}")
+		print(f"  F (FIQ):      {'Disabled' if (cpsr_value >> 6) & 1 else 'Enabled'}")
+		print(f"  T (Thumb):    {'Thumb state' if (cpsr_value >> 5) & 1 else 'ARM state'}")
+
+		# Decode processor mode
+		mode_value = cpsr_value & 0b11111
+		mode_map = {
+			0b10000: "User",
+			0b10001: "FIQ",
+			0b10010: "IRQ",
+			0b10011: "Supervisor",
+			0b10111: "Abort",
+			0b11011: "Undefined",
+			0b11111: "System"
+		}
+		mode_str = mode_map.get(mode_value, "Unknown")
+		print(f"  Mode:         {mode_str} (0x{mode_value:x})")
+
+	# To use this in a debugger command, you can set up a command alias or a
+	# a listener function that gets the current frame and calls this function.
+	# For example:
+	# frame = lldb.debugger.GetSelectedTarget().GetProcess().GetSelectedThread().GetSelectedFrame()
+	# decode_cpsr_flags(frame)
 
 	def decode_cpsr(self, cpsr_value):
 		quick_decoded = ''

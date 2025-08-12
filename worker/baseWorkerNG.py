@@ -487,6 +487,7 @@ class Worker(QObject):
 						print(f"🔧 Symbol: {symbol.GetName()}")
 
 
+	allModsAndInstructions = {}
 	def disassemble_entire_target(self):
 		# self.list_external_symbols(self.target)
 		self.logDbgC.emit(f"============ NEW DISASSEMBLER ===============", DebugLevel.Verbose)
@@ -533,6 +534,7 @@ class Worker(QObject):
 										self.loadSymbolCallback.emit(smbl.GetName())
 									instructions = smbl.GetStartAddress().GetFunction().GetInstructions(self.target)
 									self.allInstructions += instructions
+									self.allModsAndInstructions[subsec.GetName()] = instructions
 									for instruction in instructions:
 										# self.logDbgC.emit(f"----------->>>>>>>>>>> INSTRUCTION: {instruction.GetMnemonic(self.target)} ... ", DebugLevel.Verbose)
 										self.loadInstructionCallback.emit(instruction)
@@ -604,7 +606,7 @@ class Worker(QObject):
 		self.progressUpdateCallback.emit(35, f"Read disassembly and created control flow connections ...")
 		QApplication.processEvents()
 		self.connections.sort(key=lambda x: abs(x.jumpDist), reverse=True)
-		self.finishedLoadInstructionsCallback.emit(self.connections, self.target.GetExecutable().GetFilename())
+		self.finishedLoadInstructionsCallback.emit(self.connections, self.target.GetExecutable().GetFilename(), self.allModsAndInstructions)
 		QApplication.processEvents()
 		self.loadRegisters()
 
