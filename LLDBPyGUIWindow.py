@@ -195,9 +195,9 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.finish_startup()
 		self.isAttached = True
 
-	cmbFilesChangedEventDisable = False
+	cmbFilesChangedEventDisabled = False
 	def addToFiles(self, filename, selectItem=True):
-		self.cmbFilesChangedEventDisable = True
+		self.cmbFilesChangedEventDisabled = True
 		if self.cmbFiles.findText(filename) == -1:
 			self.cmbFiles.addItem(filename)
 
@@ -206,17 +206,30 @@ class LLDBPyGUIWindow(QMainWindow):
 			if idxFile != -1:
 				self.cmbFiles.setCurrentIndex(idxFile)
 
-				self.modBPs = []
-				for m in self.driver.getTarget().module_iter():
-					print(f"{m}: {m.GetFileSpec().basename} ")
-					if m.GetFileSpec().basename == filename:
-						self.modBPs = self.get_breakpoints_for_module(self.driver.getTarget(), m)
+				self.setupBPsForModule(filename)
+				# self.modBPs = []
+				# for m in self.driver.getTarget().module_iter():
+				# 	print(f"{m}: {m.GetFileSpec().basename} ")
+				# 	if m.GetFileSpec().basename == filename:
+				# 		self.modBPs = self.get_breakpoints_for_module(self.driver.getTarget(), m)
+				#
+				# 		for bp in self.modBPs:
+				# 			for bl in bp:
+				# 				self.txtMultiline.enableBP(hex(bl.GetLoadAddress()), bl.IsEnabled())
+				# 		break
+		self.cmbFilesChangedEventDisabled = False
 
-						for bp in self.modBPs:
-							for bl in bp:
-								self.txtMultiline.enableBP(hex(bl.GetLoadAddress()), bl.IsEnabled())
-						break
-		self.cmbFilesChangedEventDisable = False
+	def setupBPsForModule(self, moduleName):
+		self.modBPs = []
+		for m in self.driver.getTarget().module_iter():
+			print(f"{m}: {m.GetFileSpec().basename} ")
+			if m.GetFileSpec().basename == moduleName:
+				self.modBPs = self.get_breakpoints_for_module(self.driver.getTarget(), m)
+
+				for bp in self.modBPs:
+					for bl in bp:
+						self.txtMultiline.enableBP(hex(bl.GetLoadAddress()), bl.IsEnabled())
+				break
 
 	def get_main_module_filename(self, process):
 		if not process.IsValid():
@@ -740,38 +753,25 @@ class LLDBPyGUIWindow(QMainWindow):
 		self._restore_size()
 
 	def handle_modules_changed(self, idx):
-		if not self.cmbFilesChangedEventDisable:
-			logDbgC(f"handle_modules_changed({idx})")
+		if not self.cmbFilesChangedEventDisabled:
+			# logDbgC(f"handle_modules_changed({idx})")
 			if len(self.allModsAndInstructions) > 0 and self.allModsAndInstructions[self.cmbFiles.itemText(idx)] is not None: # len(self.modulesAndInstructions.keys()) > 0 and self.modulesAndInstructions.keys().__contains__(self.cmbFiles.currentText()) and self.modulesAndInstructions[self.cmbFiles.currentText()] is not None:
 				self.txtMultiline.resetContent()
 				self.instCnt = 0
 
-				print(f"INSIDE MODULE CHANGE: {self.allModsAndInstructions[self.cmbFiles.itemText(idx)]} ... ")
+				# print(f"INSIDE MODULE CHANGE: {self.allModsAndInstructions[self.cmbFiles.itemText(idx)]} ... ")
 				for key in self.allModsAndInstructions[self.cmbFiles.itemText(idx)]:
 					value = self.allModsAndInstructions[self.cmbFiles.itemText(idx)][key]
-					print(f"Key: {key}, Value: {value}")
+					# print(f"Key: {key}, Value: {value}")
 					self.handle_loadSymbol(str(key))
 					for i in value:
 						self.handle_loadInstruction(i)
-				# for i, y in self.allModsAndInstructions[self.cmbFiles.itemText(idx)]:
-				# 	for z in y:
-				# 		self.handle_loadInstruction(z)
-				# self.handle_loadInstruction(self.modulesAndInstructions[self.cmbFiles.currentText()])
+
 				self.setDbgTabLbl(self.cmbFiles.itemText(idx))
-
-				self.modBPs = []
-				for m in self.driver.getTarget().module_iter():
-					print(f"{m}: {m.GetFileSpec().basename} ")
-					if m.GetFileSpec().basename == self.cmbFiles.itemText(idx):
-						self.modBPs = self.get_breakpoints_for_module(self.driver.getTarget(), m)
-
-						for bp in self.modBPs:
-							for bl in bp:
-								self.txtMultiline.enableBP(hex(bl.GetLoadAddress()), bl.IsEnabled())
-						break
+				self.setupBPsForModule(self.cmbFiles.itemText(idx))
 
 		else:
-			logDbgC(f"handle_modules_changed({idx}) => cmbFilesChangedEventDisable: {self.cmbFilesChangedEventDisable}")
+			logDbgC(f"handle_modules_changed({idx}) => cmbFilesChangedEventDisable: {self.cmbFilesChangedEventDisabled}")
 
 	def get_breakpoints_for_module(self, target, module):
 		"""
