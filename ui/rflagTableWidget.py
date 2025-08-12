@@ -57,7 +57,7 @@ class RFlagTableWidget(BaseTableWidget):
 
 		self.setColumnCount(3)
 		self.setColumnWidth(0, 128)
-		self.setColumnWidth(1, 196)
+		self.setColumnWidth(1, 296)
 		self.setColumnWidth(2, 768)
 		self.verticalHeader().hide()
 		self.horizontalHeader().hide()

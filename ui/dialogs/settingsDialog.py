@@ -40,7 +40,7 @@ class ColorTableWidgetItem(QTableWidgetItem):
 		
 class SettingsDialog(QDialog):
 	
-	settings = QSettings("DaVe_inc", "LLDBPyGUI")
+	settings = QSettings("DaVe_inc", f"{APP_NAME}")
 	setHelper = None
 	
 	def initDefaults(self):
