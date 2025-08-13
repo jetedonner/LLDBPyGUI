@@ -1059,6 +1059,9 @@ class LLDBPyGUIWindow(QMainWindow):
 				self.resetGUI()
 				try:
 					proc = pd.getSelectedProcess()
+					if proc is None:
+						self.updateStatusBar(f"Process (PID: {pd.txtPID.text()}) not found!")
+						return
 					# print(proc)
 					# print(f"Process Idx: '{pd.cmbPID.currentIndex()}' / PID: '{proc.pid}' / Name: '{proc.name()}' selected")
 					self.setWinTitleWithState(f"PID: {proc.pid} ({proc.name()})")
