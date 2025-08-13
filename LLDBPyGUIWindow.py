@@ -713,7 +713,31 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.splitterDbgMain.setOrientation(Qt.Orientation.Vertical)
 		self.cmbFiles = QComboBox()
 		self.cmbFiles.currentIndexChanged.connect(self.handle_modules_changed)
-		self.splitterDbgMain.addWidget(self.cmbFiles)
+
+
+		self.layFiles = QHBoxLayout()
+		# self.layFiles.setContentsMargins(0, 0, 0, 0)
+		self.wdtFiles = QWidget()
+		# self.wdtFiles.setContentsMargins(0, 0, 0, 0)
+		self.wdtFiles.setLayout(self.layFiles)
+		lblFiles = QLabel(f"Modules: ")
+		lblFiles.setContentsMargins(0, 0, 0, 0)
+		lblFiles.setMaximumWidth(65)
+		self.layFiles.addWidget(lblFiles)
+		self.layFiles.addWidget(self.cmbFiles)
+		self.image_modules_label = QClickLabel(self)
+		self.image_modules_label.setContentsMargins(0, 0, 0, 0)
+		# pixmap = ConfigClass.pixUp
+		self.image_modules_label.setPixmap(ConfigClass.pixUp.scaled(QSize(18, 18), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+		self.image_modules_label.clicked.connect(self.handle_hideModulesSection)
+
+		self.image_modules_label.setMaximumWidth(32)
+		self.layFiles.addWidget(self.image_modules_label)
+		# icoBG = ConfigClass.iconBugGreen
+		# icoBG.actualSize(QSize(48, 48))
+		# self.layFiles.addWidget(icoBG)
+
+		self.splitterDbgMain.addWidget(self.wdtFiles)
 		# self.cmbFiles.setVisible(False)
 		self.splitterDbgMain.addWidget(self.tabWidgetMain)
 		self.splitterDbgMain.addWidget(self.wdtDbg)
@@ -769,6 +793,33 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.updateStatusBar(f"{APP_NAME} loaded successfully!")
 
 		self._restore_size()
+
+
+	def handle_hideModulesSection(self):
+		self.toggle_second_section()
+
+	is_second_section_hidden = False
+
+	def toggle_second_section(self):
+		# Get the current sizes of the splitter's widgets
+		sizes = self.splitterDbgMain.sizes()
+
+		# if not self.is_second_section_hidden:
+		# Hide the second section by setting its size to 0
+		# self.original_size = sizes[1]  # Store the original size to restore it later
+		# new_sizes = [sizes[0] + sizes[1], 0, sizes[2]]
+		self.original_size = sizes[0]  # Store the original size to restore it later
+		new_sizes = [0, sizes[1], sizes[2]]
+		self.splitterDbgMain.setSizes(new_sizes)
+		# self.toggle_button.setText("Show Second Section")
+		self.is_second_section_hidden = True
+		# else:
+		# 	# Show the second section by restoring its original size
+		# 	# The first section's size is reduced by the original size of the second section
+		# 	new_sizes = [self.original_size, sizes[1], sizes[2]]
+		# 	self.splitterDbgMain.setSizes(new_sizes)
+		# 	# self.toggle_button.setText("Hide Second Section")
+		# 	self.is_second_section_hidden = False
 
 	def handle_modules_changed(self, idx):
 		if not self.cmbFilesChangedEventDisabled:

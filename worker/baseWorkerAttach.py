@@ -141,11 +141,11 @@ class AttachWorker(QObject):
             print(f"❌ Failed to attach: {error.GetCString()}")
             return None
 
-
     def disassemble_entire_target(self):
         # self.list_external_symbols(self.target)
         self.logDbgC.emit(f"============ NEW DISASSEMBLER ===============", DebugLevel.Verbose)
         idx = 0
+        self.allModsAndInstructions = {}
         for module in self.target.module_iter():
             # self.logDbgC.emit(f"\n📦 Module: {module.file}", DebugLevel.Verbose)
             if module.file.GetFilename() == self.target.executable.GetFilename():  # "a_hello_world_test":

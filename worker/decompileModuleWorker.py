@@ -63,6 +63,7 @@ class DecompileModuleWorker(QObject):
         INDENT = "    "
         INDENT2 = INDENT + INDENT
         self.allInstructions = []
+        self.allModsAndInstructions = {}
         idxInstructions = 0
         idxSym = 0
         for module in self.target.module_iter():

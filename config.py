@@ -247,6 +247,7 @@ class ConfigClass():
 
 	pixName = None
 	pixSearch = None
+	pixUp = None
 	
 	iconEyeRed = None
 	iconEyeGrey = None
@@ -304,6 +305,7 @@ class ConfigClass():
 
 		ConfigClass.pixName = QPixmap(os.path.join(resources_root, 'id-card.png')).scaled(QSize(48, 48))
 		ConfigClass.pixSearch = QPixmap(os.path.join(resources_root, 'magnifying-glass-64x64.png')).scaled(QSize(32, 32))
+		ConfigClass.pixUp = QPixmap(os.path.join(resources_root, 'upload.png')).scaled(QSize(32, 32))
 
 		ConfigClass.iconClear = QIcon(os.path.join(resources_root, 'clear.png'))
 		ConfigClass.iconShrink = QIcon(os.path.join(resources_root, 'shrink.png'))
