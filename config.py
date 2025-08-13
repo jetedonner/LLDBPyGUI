@@ -170,7 +170,7 @@ class ConfigClass():
 	githubURL = "https://github.com/jetedonner/pyLLDBGUI"
 	githubPagesURL = "https://jetedonner.github.io/"
 
-	testBPsFilename = "/Volumes/Data/dev/python/LLDBPyGUI/resources/bps/testbps_withSubFunc5.json" # "/Volumes/Data/dev/_reversing/disassembler/LLDBPyGUI/pyLLDBGUI/LLDBPyGUI/testtarget/testbps_withSubFunc5.json"
+	testBPsFilename = "/Volumes/Data/dev/python/LLDBPyGUI/breakpoints-hello_library_exec.bpson"  #"/Volumes/Data/dev/python/LLDBPyGUI/resources/bps/testbps_withSubFunc5.json" # "/Volumes/Data/dev/_reversing/disassembler/LLDBPyGUI/pyLLDBGUI/LLDBPyGUI/testtarget/testbps_withSubFunc5.json"
 #	testTarget = "/Volumes/Data/dev/_reversing/disassembler/LLDBPyGUI/pyLLDBGUI/LLDBPyGUI/testtarget/hello_world_test"
 #	testTargetSource = "/Volumes/Data/dev/_reversing/disassembler/LLDBPyGUI/pyLLDBGUI/LLDBPyGUI/testtarget/hello_world_test.c"
 
@@ -246,6 +246,7 @@ class ConfigClass():
 	pixTrash = None
 
 	pixName = None
+	pixSearch = None
 	
 	iconEyeRed = None
 	iconEyeGrey = None
@@ -302,6 +303,7 @@ class ConfigClass():
 		ConfigClass.pixSave = QPixmap(os.path.join(resources_root, 'save.png')).scaled(QSize(48, 48))
 
 		ConfigClass.pixName = QPixmap(os.path.join(resources_root, 'id-card.png')).scaled(QSize(48, 48))
+		ConfigClass.pixSearch = QPixmap(os.path.join(resources_root, 'magnifying-glass-64x64.png')).scaled(QSize(32, 32))
 
 		ConfigClass.iconClear = QIcon(os.path.join(resources_root, 'clear.png'))
 		ConfigClass.iconShrink = QIcon(os.path.join(resources_root, 'shrink.png'))

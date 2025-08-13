@@ -69,6 +69,7 @@ class CommandsWidget(QWidget):
 				/*border: 1px solid #61afef;*/ /* Highlight on focus */
 			}
 		""")
+		self.txtCmd.setContentsMargins(0, 0, 0, 0)
 		
 		self.swtAutoscroll = QSwitch("Autoscroll")
 		self.swtAutoscroll.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
@@ -90,8 +91,10 @@ class CommandsWidget(QWidget):
 		self.layCmd.addWidget(self.cmdExecuteCmd)
 		self.layCmd.addWidget(self.swtAutoscroll)
 		self.layCmd.addWidget(self.cmdClear)
+		self.layCmd.setContentsMargins(0, 0, 0, 0)
 		self.wdgCmd.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)		
-		
+		self.wdgCmd.setContentsMargins(0, 0, 0, 0)
+
 		self.txtCommands = QConsoleTextEdit()
 		self.txtCommands.setReadOnly(True)
 		self.txtCommands.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
@@ -109,8 +112,10 @@ class CommandsWidget(QWidget):
 		                padding: 5px;
 				    }
 				""")
+		self.txtCommands.setContentsMargins(0, 0, 0, 0)
 		self.layCmdParent.addWidget(self.txtCommands)
 		self.layCmdParent.addWidget(self.wdgCmd)
+		self.layCmdParent.setContentsMargins(0, 0, 0, 0)
 		
 	def handle_availCompletitions(self, compl):
 		

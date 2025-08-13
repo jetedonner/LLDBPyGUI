@@ -248,6 +248,7 @@ class RFlagTableWidget(BaseTableWidget):
 			self.addRow("quick", str(quick_decoded), "Quickview all flags")
 			self.addRow("CPU mode", mode_str, "Processor mode")
 
+			self.addRow("", "", "")
 			self.addRow("FLAG OVERVIEW:", "", "")
 			self.addRow("--- DATA TYPE ---", "--- VALUE ---", "--- INFOS ---")
 			for bit, (name, meaning, desc) in flags.items():

@@ -9,6 +9,7 @@ from threading import Thread
 import lib.utils
 from ui.consoleWidget import ConsoleWidget
 from ui.customQt.QControlFlowWidget import QControlFlowWidget
+from ui.customTextEdit import CustomTextEdit
 from ui.dialogs.createTargetDialog import CreateTargetDialog
 from ui.dialogs.userActionNeededDialog import UserActionNeededDialog
 from ui.hexToStringWidget import HexToStringWidget
@@ -194,6 +195,16 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.threadAttach.quit()
 		self.finish_startup()
 		self.isAttached = True
+
+		# if self.setHelper.getValue(SettingsValues.LoadTestBPs):
+		# 	self.loadTestBPs(ConfigClass.testBPsFilename)
+
+	def loadTestBPs(self, filename):
+		if filename != None:
+			print(f'Loading Breakpoints from: {filename} ...')
+			# self.updateStatusBar(f"Loading Breakpoints from {filename} ...")
+			self.driver.handleCommand(f"breakpoint read -f {filename}")
+		pass
 
 	cmbFilesChangedEventDisabled = False
 	def addToFiles(self, filename, selectItem=True):
@@ -685,6 +696,11 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.tabWidgetDbg.addTab(self.wdtSearch, "Search")
 
 		self.wdtCommands = CommandsWidget(self.workerManager)
+
+		self.txtSearchQEditText = CustomTextEdit()
+		self.txtSearchQEditText.setContentsMargins(0, 0, 0, 0)
+		self.tabWidgetConsoles.addTab(self.txtSearchQEditText, "Search QTextEdit")
+
 		self.tabWidgetConsoles.addTab(self.wdtCommands, "LLDB")
 		self.tabWidgetConsoles.addTab(self.tabWidgetConsole, "Python")
 		self.tabWidgetConsoles.addTab(self.output_text_edit, "System shell")
@@ -748,6 +764,8 @@ class LLDBPyGUIWindow(QMainWindow):
 		# ======== DEV CMDs ##########
 		self.tabWidgetDbg.setCurrentIndex(2)
 
+		self.tabWidgetMain.setCurrentIndex(4)
+
 		self.updateStatusBar(f"{APP_NAME} loaded successfully!")
 
 		self._restore_size()
@@ -757,7 +775,7 @@ class LLDBPyGUIWindow(QMainWindow):
 			# logDbgC(f"handle_modules_changed({idx})")
 			if len(self.allModsAndInstructions) > 0 and self.allModsAndInstructions[self.cmbFiles.itemText(idx)] is not None: # len(self.modulesAndInstructions.keys()) > 0 and self.modulesAndInstructions.keys().__contains__(self.cmbFiles.currentText()) and self.modulesAndInstructions[self.cmbFiles.currentText()] is not None:
 				self.txtMultiline.resetContent()
-				self.instCnt = 0
+				self.instCnt = 1
 
 				# print(f"INSIDE MODULE CHANGE: {self.allModsAndInstructions[self.cmbFiles.itemText(idx)]} ... ")
 				for key in self.allModsAndInstructions[self.cmbFiles.itemText(idx)]:
@@ -1046,7 +1064,8 @@ class LLDBPyGUIWindow(QMainWindow):
 					self.setWinTitleWithState(f"PID: {proc.pid} ({proc.name()})")
 					self.attachWorker.startWithPID(int(proc.pid), self.threadAttach)
 					self.attach_action.setIcon(ConfigClass.iconGearsGrey)
-					self.attach_action.setToolTip("Detach from process: {proc.pid} ({proc.name()})")
+					self.attach_action.setToolTip(f"Detach from process: {proc.name()} ({proc.pid})")
+					self.attach_action.setStatusTip(f"Detach from process: {proc.name()} ({proc.pid})")
 					self.setHelper.setValue(SettingsValues.TestAttachPID, int(proc.pid))
 					self.isAttached = True
 				except Exception as e:

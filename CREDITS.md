@@ -36,5 +36,6 @@
 - <a href="https://www.flaticon.com/free-icons/shrink" title="shrink icons">Shrink icons created by Metami septiana - Flaticon</a>
 - <a href="https://www.flaticon.com/free-icons/clear" title="clear icons">Clear icons created by iconmas - Flaticon</a>
 - <a href="https://www.flaticon.com/free-icons/about-person" title="about person icons">About person icons created by Paul J. - Flaticon</a>
+- <div> Icons made by <a href="https://www.flaticon.com/authors/chanut" title="Chanut"> Chanut </a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com'</a></div>
 
 ### Event-Listener

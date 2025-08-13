@@ -34,9 +34,14 @@ class QConsoleTextEdit(QTextEdit):
 	
 	patternEscapedStdAnsi = re.compile(r"\x1b\[\d{1,}[m]")
 	patternEscapedLightAnsi = re.compile(r"\x1b\[[0][;]\d{1,}[m]")
-	
-	def __init__(self):
+	prompt = ""
+
+	def setPrompt(self, newPrompt):
+		self.prompt = newPrompt
+
+	def __init__(self, prompt=""):
 		super().__init__()
+		self.prompt = prompt
 		self.setAcceptRichText(True)
 		self.setStyleSheet("""
 			QTextEdit {
@@ -51,6 +56,8 @@ class QConsoleTextEdit(QTextEdit):
 		self.setFont(ConfigClass.font)
 
 		self.installEventFilter(self)
+		# if self.prompt != "":
+		# 	self.setText(self.prompt)
 		# self.keyPressEvent = self._custom_key_press_event
 
 		# self.output_stream = OutputStream()
