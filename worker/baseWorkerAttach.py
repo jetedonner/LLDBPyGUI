@@ -95,7 +95,7 @@ class AttachWorker(QObject):
 
             self.thread = self.process.GetThreadAtIndex(0)
             if self.thread:
-                self.isInsideTextSectionGetRangeVarsReady()
+                # self.isInsideTextSectionGetRangeVarsReady()
                 # for z in range(self.thread.GetNumFrames()):
                 self.frame = self.thread.GetFrameAtIndex(0)
                 self.loadModulesCallback.emit(self.frame, self.target.modules)
@@ -267,7 +267,7 @@ class AttachWorker(QObject):
             # else:
             # 	break
             idx += 1
-        print(f"self.loadInstructionsCallback() => {self.allModsAndInstructions} ...")
+        # print(f"self.loadInstructionsCallback() => {self.allModsAndInstructions} ...")
         # for key, value in self.allModsAndInstructions:
         #     print(f"key: {key} => value: {value}")
         #
@@ -297,16 +297,27 @@ class AttachWorker(QObject):
         rowStart = 0x0
         rowEnd = 0x0
         self.radius = 15
+        # self.isInsideTextSectionGetRangeVarsReady()
+
+        self.startAddr = 0x100003bf4 + 0x2540000
+        self.endAddr = 0x100003efc + 0x2540000
 
         for instruction in self.allInstructions:
             sMnemonic = instruction.GetMnemonic(self.target)
-            self.logDbgC.emit(f"checkLoadConnection()... => instruction: {instruction}", DebugLevel.Verbose)
+            # self.logDbgC.emit(f"checkLoadConnection()... => instruction: {instruction}", DebugLevel.Verbose)
             # if sMnemonic is None or sMnemonic == "":
             # 	return
 
             if sMnemonic is not None and sMnemonic.startswith(JMP_MNEMONICS) and not sMnemonic.startswith(
                     JMP_MNEMONICS_EXCLUDE):
                 sAddrJumpTo = instruction.GetOperands(self.target)
+                try:
+                    sAddrJumpTo = hex(int(sAddrJumpTo, 16))
+                    # return True
+                except ValueError:
+                    # return False
+                    pass
+
                 self.logDbgC.emit(f"checkLoadConnection()..... {instruction} ===>>> JumpTo: {sAddrJumpTo}", DebugLevel.Verbose)
 
                 if sAddrJumpTo is None or not is_hex_string(sAddrJumpTo):
@@ -407,8 +418,10 @@ class AttachWorker(QObject):
                 subSec = sec.GetSubSectionAtIndex(idx3)
                 if subSec.GetName() == "__text":
                     self.startAddr = subSec.GetFileAddress()
+                    self.logDbgC.emit(f"FOUND '__text' => self.startAddr: {hex(self.startAddr)} / {self.startAddr}", DebugLevel.Verbose)
                 elif subSec.GetName() == "__stubs":
                     self.endAddr = subSec.GetFileAddress() + subSec.GetByteSize()
+                    self.logDbgC.emit(f"FOUND '__stubs' => self.endAddr: {hex(self.endAddr)} / {self.endAddr}", DebugLevel.Verbose)
                     # self.logDbgC.emit(f"self.endAddr: {hex(self.endAddr)} / {self.endAddr}", DebugLevel.Verbose)
                     found = True
                     break
