@@ -2,10 +2,13 @@ import lldb
 from PyQt6.QtCore import QObject, pyqtSignal
 from PyQt6.QtWidgets import QApplication
 
-from dbg.fileInfos import is_objc_app, detect_language_by_symbols, detect_objc, GetFileHeader
+from config import JMP_MNEMONICS, JMP_MNEMONICS_EXCLUDE
+from dbg.fileInfos import is_objc_app, detect_language_by_symbols, detect_objc, GetFileHeader, is_hex_string
 from dbg.listener import LLDBListener
 from dbg.memoryHelper import getMemoryValueAtAddress
 from lib.settings import SettingsHelper
+from lib.utils import random_qcolor
+from ui.customQt.QControlFlowWidget import QControlFlowWidget
 from ui.helper.dbgOutputHelper import DebugLevel
 
 
@@ -26,6 +29,7 @@ class AttachWorker(QObject):
     loadRegisterCallback = pyqtSignal(str)
     loadRegisterValueCallback = pyqtSignal(int, str, str, str)
     loadVariableValueCallback = pyqtSignal(str, str, str, str, str)
+    finishedLoadInstructionsCallback = pyqtSignal(object, str, object)
 
 
     # Load Listener
@@ -36,6 +40,7 @@ class AttachWorker(QObject):
     attachThread = None
     _should_stop = False
 
+    mainWin = None
     debugger = None
     pid = None
     name = None
@@ -43,13 +48,18 @@ class AttachWorker(QObject):
     target = None
     thread = None
     frame = None
+    connections = []
 
     allInstructions = []
     allModsAndInstructions = {}
     initTable = True
 
-    def __init__(self, debugger, pid=None, name=None):
+    startAddr = 0x0
+    endAddr = 0x10000000
+
+    def __init__(self, debugger, pid=None, name=None, mainWin=None):
         super().__init__()
+        self.mainWin = mainWin
         self.attachThread = None
         self._should_stop = False
         self.debugger = debugger
@@ -60,6 +70,7 @@ class AttachWorker(QObject):
         self.thread = None
         self.frame = None
         self.exe = ""
+        self.connections = []
 
         self.allInstructions = []
         self.allModsAndInstructions = {}
@@ -84,6 +95,7 @@ class AttachWorker(QObject):
 
             self.thread = self.process.GetThreadAtIndex(0)
             if self.thread:
+                self.isInsideTextSectionGetRangeVarsReady()
                 # for z in range(self.thread.GetNumFrames()):
                 self.frame = self.thread.GetFrameAtIndex(0)
                 self.loadModulesCallback.emit(self.frame, self.target.modules)
@@ -145,6 +157,8 @@ class AttachWorker(QObject):
         # self.list_external_symbols(self.target)
         self.logDbgC.emit(f"============ NEW DISASSEMBLER ===============", DebugLevel.Verbose)
         idx = 0
+        self.connections = []
+        self.allInstructions = []
         self.allModsAndInstructions = {}
         for module in self.target.module_iter():
             # self.logDbgC.emit(f"\n📦 Module: {module.file}", DebugLevel.Verbose)
@@ -257,10 +271,159 @@ class AttachWorker(QObject):
         # for key, value in self.allModsAndInstructions:
         #     print(f"key: {key} => value: {value}")
         #
+        self.checkLoadConnection(self.allInstructions)
         # print("Callback returned:", repr(self.allModsAndInstructions))
-        self.loadInstructionsCallback.emit(None, self.allModsAndInstructions)
+        self.loadInstructionsCallback.emit(self.connections, self.allModsAndInstructions)
         self.loadCurrentPC.emit(hex(self.frame.GetPC()))
         self.logDbgC.emit(f"============ END DISASSEMBLER ===============", DebugLevel.Verbose)
+
+        # for inst in self.allInstructions:
+
+        #
+        # for con in self.connections:
+        #     self.logDbgC.emit(
+        #         f"===>>> Connection: {hex(con.origAddr)} / {hex(con.destAddr)} => {con.origRow} / {con.destRow}",
+        #         DebugLevel.Verbose)
+        # # pass
+        # # self.progressUpdateCallback.emit(35, f"Read disassembly and created control flow connections ...")
+        # QApplication.processEvents()
+        # self.connections.sort(key=lambda x: abs(x.jumpDist), reverse=True)
+        # self.finishedLoadInstructionsCallback.emit(self.connections, self.target.GetExecutable().GetFilename(),
+        #                                            self.allModsAndInstructions)
+        # QApplication.processEvents()
+
+    def checkLoadConnection(self, instructions):
+        sAddrJumpFrom = 0x0
+        rowStart = 0x0
+        rowEnd = 0x0
+        self.radius = 15
+
+        for instruction in self.allInstructions:
+            sMnemonic = instruction.GetMnemonic(self.target)
+            self.logDbgC.emit(f"checkLoadConnection()... => instruction: {instruction}", DebugLevel.Verbose)
+            # if sMnemonic is None or sMnemonic == "":
+            # 	return
+
+            if sMnemonic is not None and sMnemonic.startswith(JMP_MNEMONICS) and not sMnemonic.startswith(
+                    JMP_MNEMONICS_EXCLUDE):
+                sAddrJumpTo = instruction.GetOperands(self.target)
+                self.logDbgC.emit(f"checkLoadConnection()..... {instruction} ===>>> JumpTo: {sAddrJumpTo}", DebugLevel.Verbose)
+
+                if sAddrJumpTo is None or not is_hex_string(sAddrJumpTo):
+                    self.logDbgC.emit(f"checkLoadConnection() RETURN OF ERROR ..... sAddrJumpTo: {sAddrJumpTo}", DebugLevel.Verbose)
+                    continue
+
+                bOver = self.startAddr < int(sAddrJumpTo, 16) < self.endAddr
+
+                if self.isInsideTextSection(sAddrJumpTo) or bOver:
+                    if self.isInsideTextSection(sAddrJumpTo):
+                        self.logDbgC.emit(f"IS NOT OVER CONNECTION!!!!", DebugLevel.Verbose)
+                        sAddrStartInt = int(str(instruction.GetAddress().GetLoadAddress(self.target)), 10)
+                        sAddrJumpFrom = hex(sAddrStartInt)
+                        rowStart = int(self.get_line_number(
+                            sAddrStartInt))  # idxInstructions#int(self.get_line_number(int(sAddrJumpFrom, 16)))
+                        # lineEnd = self.get_line_number(int(sAddrJumpTo, 16))
+                        lineEnd = None
+                        idx = 0
+                        for inst in self.allInstructions:
+                            if inst.GetAddress().GetLoadAddress(self.target) == instruction.GetAddress().GetLoadAddress(
+                                    self.target):
+                                lineEnd = idx
+                                break
+                            idx += 1
+                        if lineEnd is None:
+                            # self.logDbgC.emit(f"IS NOT OVER CONNECTION!!!! ==>> RETURN", DebugLevel.Verbose)
+                            continue
+                        # pass
+                        rowEnd = int(lineEnd)
+                        self.logDbgC.emit(
+                            f"Found connection from line: {rowStart} to: {rowEnd} ({sAddrJumpFrom} / {sAddrJumpTo})",
+                            DebugLevel.Verbose)
+                    elif bOver:
+                        self.logDbgC.emit(f"IS OVER CONNECTION!!!!", DebugLevel.Verbose)
+                        sAddrStartInt = int(str(instruction.GetAddress().GetLoadAddress(self.target)),
+                                            10)  # int(str(instruction.GetAddress().GetLoadAddress(self.target)), 10)
+                        sAddrJumpFrom = hex(sAddrStartInt)
+                        rowStart = int(self.get_line_number(
+                            sAddrStartInt))  # idxInstructions#int(self.get_line_number(int(sAddrJumpFrom, 16)))
+                        # lineEnd = self.get_line_number(int(sAddrJumpTo, 16))
+                        lineEnd = self.mainWin.txtMultiline.table.getLineNum(sAddrJumpTo)
+                        if lineEnd is None:
+                            # self.logDbgC.emit(f"IS OVER CONNECTION!!!! ==>> RETURN", DebugLevel.Verbose)
+                            continue
+                        # pass
+                        rowEnd = int(lineEnd)
+                        self.logDbgC.emit(
+                            f"Found connection from line: {rowStart} to: {rowEnd} ({sAddrJumpFrom} / {sAddrJumpTo})",
+                            DebugLevel.Verbose)
+
+                    if rowStart < rowEnd:
+                        newConObj = QControlFlowWidget.draw_flowConnectionNG(rowStart, rowEnd, int(sAddrJumpFrom, 16),
+                                                                             int(sAddrJumpTo, 16), None,
+                                                                             random_qcolor(), self.radius, 1,
+                                                                             False)  # self.window().txtMultiline.table
+                    else:
+                        newConObj = QControlFlowWidget.draw_flowConnectionNG(rowStart, rowEnd, int(sAddrJumpFrom, 16),
+                                                                             int(sAddrJumpTo, 16), None,
+                                                                             random_qcolor(), self.radius, 1, True)
+
+                    # newConObj.mnemonic = sMnemonic
+                    # self.logDbgC.emit(f"Connection (Branch) is a: {newConObj.mnemonic} / {sMnemonic})", DebugLevel.Verbose)
+                    if abs(newConObj.jumpDist / 2) <= (newConObj.radius / 2):
+                        newConObj.radius = newConObj.jumpDist / 2
+                    self.connections.append(newConObj)
+                    if self.radius <= 130:
+                        self.radius += 15
+                else:
+                    self.logDbgC.emit(f"checkLoadConnection()..... sAddrJumpTo NOT IN TARGET", DebugLevel.Verbose)
+                # self.connections.sort(key=lambda x: abs(x.jumpDist), reverse=True)
+
+    def get_line_number(self, address_int):
+        # target = debugger.GetSelectedTarget()
+        addr = lldb.SBAddress(address_int, self.target)
+
+        # Resolve symbol context with line entry info
+        context = self.target.ResolveSymbolContextForAddress(
+            addr,
+            lldb.eSymbolContextEverything
+        )
+
+        line_entry = context.GetLineEntry()
+        if line_entry.IsValid():
+            file_spec = line_entry.GetFileSpec()
+            line = line_entry.GetLine()
+            # print(f"📍 Address 0x{address_int:x} maps to {file_spec.GetFilename()}:{line}")
+            return line  # file_spec.GetFilename(),
+        else:
+            print("❌ No line info found for this address.")
+        return None
+
+    def isInsideTextSectionGetRangeVarsReady(self):
+        self.thread = self.process.GetThreadAtIndex(0)
+        module = self.thread.GetFrameAtIndex(0).GetModule()
+        found = False
+        for sec in module.section_iter():
+            for idx3 in range(sec.GetNumSubSections()):
+                subSec = sec.GetSubSectionAtIndex(idx3)
+                if subSec.GetName() == "__text":
+                    self.startAddr = subSec.GetFileAddress()
+                elif subSec.GetName() == "__stubs":
+                    self.endAddr = subSec.GetFileAddress() + subSec.GetByteSize()
+                    # self.logDbgC.emit(f"self.endAddr: {hex(self.endAddr)} / {self.endAddr}", DebugLevel.Verbose)
+                    found = True
+                    break
+            if found:
+                break
+            # elif subSec.GetName() == "__stubs":
+            # 	logDbgC(f"GOT __stubs: {subSec.GetName()} => subSec.GetFileAddress(): {subSec.GetFileAddress()}, subSec.GetByteSize(): {subSec.GetByteSize()}, self.endAddr: {self.endAddr}")
+            # 	self.endAddr = subSec.GetFileAddress() + subSec.GetByteSize()
+
+    def isInsideTextSection(self, addr):
+        try:
+            return self.endAddr > int(addr, 16) >= self.startAddr
+        except Exception as e:
+            self.logDbgC.emit(f"Exception: {e}", DebugLevel.Error)
+            return False
 
     def loadFileStats(self):
         self.logDbgC.emit(f"def loadFileStats(...)", DebugLevel.Verbose)

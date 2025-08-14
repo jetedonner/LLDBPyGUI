@@ -296,7 +296,7 @@ class LLDBPyGUIWindow(QMainWindow):
 
 		else:
 			self.worker = Worker(self)
-			self.attachWorker = AttachWorker(self.debugger)
+			self.attachWorker = AttachWorker(self.debugger, None, None, self)
 			self.attachWorker.loadModulesCallback.connect(self.loadModulesCallback)
 			self.attachWorker.logDbg.connect(logDbg)
 			self.attachWorker.logDbgC.connect(logDbgC)
@@ -490,6 +490,11 @@ class LLDBPyGUIWindow(QMainWindow):
 
 		self.file_menu = self.menu.addMenu("&Load Action")
 		self.file_menu.addAction(self.load_action)
+
+		self.view_menu = self.menu.addMenu("V&iew")
+		# self.view_menu.addAction(self.view_action)
+		self.disTeset_menu = self.view_menu.addMenu("&Disassembly (teset) ...")
+		self.disTeset_menu.addAction(self.goep2_action)
 
 		self.file_menu.addSeparator()
 		self.oep_menu = self.file_menu.addMenu("&GoTo ...")
@@ -1690,6 +1695,17 @@ class LLDBPyGUIWindow(QMainWindow):
 	allModsAndInstructions = {}
 	def handle_loadInstructions(self, connections, instructions):
 		self.allModsAndInstructions[self.attachWorker.target.GetExecutable().GetFilename()] = instructions
+
+		self.modulesAndInstructions = instructions
+		QApplication.processEvents()
+		self.txtMultiline.setPC(self.driver.getPC(), True)
+
+		logDbgC(f"len(connections): {len(connections)} ...")
+		if connections != [] and (len(connections) > 0):
+			self.wdtControlFlow.draw_instructions()
+			self.wdtControlFlow.loadConnectionsFromWorker(connections)
+		# self.setDbgTabLbl(f"{moduleName}")
+		self.dialog.close()
 		# self.allModsAndInstructions += instructions
 		# self.txtMultiline.resetContent()
 		# # if sym in instructions:
@@ -1907,6 +1923,7 @@ class LLDBPyGUIWindow(QMainWindow):
 		tblReg2 = RFlagWidget(parent=None, driver=self.driver)
 		self.tblRegs.insert(0, tblReg2.tblRFlag)
 		self.tabWidgetReg.insertTab(0, tblReg2, "rFlags/eFlags")
+		self.tabWidgetReg.setTabText(0, f"CPSR")
 
 	def handle_loadRegisterValue(self, idx, type, register, value):
 		self.currTblDet.addRow(type, register, value)
