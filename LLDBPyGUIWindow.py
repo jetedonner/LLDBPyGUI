@@ -732,6 +732,8 @@ class LLDBPyGUIWindow(QMainWindow):
 		self.layFiles.addWidget(self.cmbFiles)
 		self.image_modules_label = QClickLabel(self)
 		self.image_modules_label.setContentsMargins(0, 0, 0, 0)
+		self.image_modules_label.setToolTip(f"Collapse 'Select Module' combobox")
+		self.image_modules_label.setStatusTip(f"Collapse 'Select Module' combobox")
 		# pixmap = ConfigClass.pixUp
 		self.image_modules_label.setPixmap(ConfigClass.pixUp.scaled(QSize(18, 18), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
 		self.image_modules_label.clicked.connect(self.handle_hideModulesSection)
