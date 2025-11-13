@@ -1,0 +1,24 @@
+[
+  {
+    "id": 11,
+    "enabled": true,
+    "name": "",
+    "locations": [
+      {
+        "id": 1,
+        "id_full": "11.1",
+        "load_address": 4294982392,
+        "offset": 52,
+        "enabled": true,
+        "symbol": "subfunc"
+      }
+    ],
+    "condition": null,
+    "thread_id": 0,
+    "thread_index": 4294967295,
+    "thread_name": null,
+    "queue_name": null,
+    "ignore_count": 0,
+    "hit_count": 0
+  }
+]

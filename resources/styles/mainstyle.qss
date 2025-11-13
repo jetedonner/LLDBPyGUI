@@ -1,0 +1,147 @@
+QMainWindow {
+    background-color: #2b2b2b;
+    color: white;
+}
+
+QPushButton {
+    background-color: #3c3f41;
+    color: white;
+    border: 1px solid #555;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+QStandardItem  {
+    color: #abb2bf; /* Light grey text */
+    font: 12px 'Courier New';
+}
+
+QLabel  {
+    color: #abb2bf; /* Light grey text */
+    /* border: 1px solid #3e4452; */
+    font: 12px 'Courier New';
+}
+
+QTextEdit {
+    background-color: #282c34; /* Dark background */
+    color: #abb2bf; /* Light grey text */
+    border: 1px solid #3e4452;
+    border-radius: 5px;
+    padding: 5px;
+    font: 12px 'Courier New';
+}
+
+QListView {
+    background-color: #282c34; /* Dark background */
+    font: 12px 'Courier New';
+    color: #abb2bf; /* Light grey text */
+    /*border: 1px solid #3e4452;*/
+    border-radius: 5px;
+    /*padding: 10px;*/
+}
+
+QConsoleTextEdit {
+    /* background-color: #f0f0f0;
+    gridline-color: #ccc;*/
+    font: 12px 'Courier New';
+    background-color: #282c34; /* Dark background */
+    color: #abb2bf; /* Light grey text */
+    /*border: 1px solid #3e4452;*/
+    border-radius: 5px;
+    padding: 5px;
+}
+
+QTableWidget {
+    /* background-color: #f0f0f0;
+    gridline-color: #ccc;
+    font: 12px 'Courier New';*/
+    background-color: #282c34; /* Dark background */
+    font: 12px 'Courier New';
+    color: #abb2bf; /* Light grey text */
+    /*border: 1px solid #3e4452;*/
+    border-radius: 5px;
+    /*padding: 10px;*/
+}
+
+QTableWidget::item {
+    /*padding: 5px;
+    color: #333;
+    background-color: #e6f2ff;*/
+    /*background-color: #282c34;*/ /* Dark background */
+    color: #abb2bf; /* Light grey text */
+    font: 12px 'Courier New';
+    /*border: 1px solid #3e4452;
+    border-radius: 5px;*/
+    /*padding: 5px;*/
+    padding-left: 5px;
+}
+
+QTableWidget::item:selected {
+    /*background-color: #3399ff;
+    color: white;*/
+    /*background-color: #282c34;*/ /* Dark background */
+    color: #abb2bf; /* Light grey text */
+    font: 12px 'Courier New';
+    background-color: #68000a;  /* Gold */
+    /*border: 1px solid #3e4452;
+    border-radius: 5px;
+    padding: 10px;*/
+}
+
+QTreeWidget {
+    /* background-color: #f0f0f0;
+    gridline-color: #ccc;
+    font: 12px 'Courier New';*/
+    background-color: #282c34; /* Dark background */
+    color: #abb2bf; /* Light grey text */
+    font: 12px 'Courier New';
+    /*border: 1px solid #3e4452;*/
+    border-radius: 5px;
+    /*padding: 10px;*/
+}
+
+QTreeWidgetItem {
+    /*padding: 5px;
+    color: #333;
+    background-color: #e6f2ff;*/
+    /*background-color: #282c34;*/ /* Dark background */
+    color: #abb2bf; /* Light grey text */
+    font: 12px 'Courier New';
+    /*border: 1px solid #3e4452;
+    border-radius: 5px;*/
+    padding: 5px;
+}
+
+QTreeWidgetItem:selected {
+    /*background-color: #3399ff;
+    color: white;*/
+    /*background-color: #282c34;*/ /* Dark background */
+    color: #abb2bf; /* Light grey text */
+    font: 12px 'Courier New';
+    /*border: 1px solid #3e4452;
+    border-radius: 5px;
+    padding: 10px;*/
+}
+
+QTableWidget::item:selected {
+    background-color: #68000a;  /* Gold */
+    color: white;
+}
+
+QTreeWidget::item:selected {
+    background-color: #68000a;  /* Gold */
+    color: white;               /* Optional: text color */
+}
+
+QLineEdit {
+    background-color: #282c34; /* Dark background */
+    color: #abb2bf; /* Light grey text */
+    border: 1px solid #3e4452;
+    border-radius: 5px;
+    padding: 5px;
+    font: 12px 'Courier New';
+}
+
+QLineEdit:focus {
+    border: 1px solid grey; /* #61afef; *//* Highlight on focus  #4134DB */
+}

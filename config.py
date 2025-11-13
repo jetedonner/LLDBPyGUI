@@ -1,162 +1,34 @@
-#!/usr/bin/env python3
-
+import lldb
 import os
-import sys
-import enum
-
-from os.path import abspath
 from os.path import dirname, realpath
-from os import getcwd, path
 
-from PyQt6.QtGui import *
-from PyQt6.QtCore import *
-
-from PyQt6.QtWidgets import *
-from PyQt6 import uic, QtWidgets
+from PyQt6.QtCore import QSize
+from PyQt6.QtGui import QFont, QColor, QIcon, QPixmap
 
 APP_NAME = "LLDBPyGUI"
-APP_VERSION = "0.0.2"
-APP_BUILD = "DEV PREVIEW"
+APP_VERSION = "0.0.5"
+APP_VERSION_DESC = "Complete new base, rebuilt and cleaned version"
+APP_BUILD = "DEV PREVIEW (nightly build)"
 APP_VERSION_AND_BUILD = APP_VERSION + " - " + APP_BUILD
-APP_RELEASE_DATE = "2025-06-25 - 09:16:18"
-APP_BUILD = "002.01"
+APP_RELEASE_DATE = "2025-10-22 - 12:52:28"
+APP_BUILD = "0.0.5.01"
 PROMPT_TEXT = "LLDBPyGUI"
-#WINDOW_SIZE = 512
 WINDOW_SIZE = 680
 
-#
-# User configurable options
-#
-CONFIG_ENABLE_COLOR = 1
-# light or dark mode
-CONFIG_APPEARANCE = "light"
-# display the instruction bytes in disassembler output
-CONFIG_DISPLAY_DISASSEMBLY_BYTES = 1
-# the maximum number of lines to display in disassembler output
-CONFIG_DISASSEMBLY_LINE_COUNT = 8
-# x/i and disas output customization - doesn't affect context disassembler output
-CONFIG_USE_CUSTOM_DISASSEMBLY_FORMAT = 1
-# enable all the register command shortcuts
-CONFIG_ENABLE_REGISTER_SHORTCUTS = 1
-# display stack contents on context stop
-CONFIG_DISPLAY_STACK_WINDOW = 0
-CONFIG_DISPLAY_FLOW_WINDOW = 0
-# display data contents on context stop - an address for the data must be set with "datawin" command
-CONFIG_DISPLAY_DATA_WINDOW = 0
-# disassembly flavor 'intel' or 'att' - default is Intel unless AT&T syntax is your cup of tea
-CONFIG_FLAVOR = "intel"
 
-# setup the logging level, which is a bitmask of any of the following possible values (don't use spaces, doesn't seem to work)
-#
-# LOG_VERBOSE LOG_PROCESS LOG_THREAD LOG_EXCEPTIONS LOG_SHLIB LOG_MEMORY LOG_MEMORY_DATA_SHORT LOG_MEMORY_DATA_LONG LOG_MEMORY_PROTECTIONS LOG_BREAKPOINTS LOG_EVENTS LOG_WATCHPOINTS
-# LOG_STEP LOG_TASK LOG_ALL LOG_DEFAULT LOG_NONE LOG_RNB_MINIMAL LOG_RNB_MEDIUM LOG_RNB_MAX LOG_RNB_COMM  LOG_RNB_REMOTE LOG_RNB_EVENTS LOG_RNB_PROC LOG_RNB_PACKETS LOG_RNB_ALL LOG_RNB_DEFAULT
-# LOG_DARWIN_LOG LOG_RNB_NONE
-#
-# to see log (at least in macOS)
-# $ log stream --process debugserver --style compact
-# (or whatever style you like)
-CONFIG_LOG_LEVEL = "LOG_NONE"
-
-# removes the offsets and modifies the module name position
-# reference: https://lldb.llvm.org/formats.html
-CUSTOM_DISASSEMBLY_FORMAT = "\"{${function.initial-function}{${function.name-without-args}} @ {${module.file.basename}}:\n}{${function.changed}\n{${function.name-without-args}} @ {${module.file.basename}}:\n}{${current-pc-arrow} }${addr-file-or-load}: \""
-
-# the colors definitions - don't mess with this
-if CONFIG_ENABLE_COLOR:
-		RESET =     "\033[0m"
-		BOLD =      "\033[1m"
-		UNDERLINE = "\033[4m"
-		BLINK =		"\033[5m"
-		REVERSE =   "\033[7m"
-		NORMAL =    "\033[22m"
-		BLACK =     "\033[30m"
-		RED =       "\033[31m"
-		GREEN =     "\033[32m"
-		YELLOW =    "\033[33m"
-		BLUE =      "\033[34m"
-		MAGENTA =   "\033[35m"
-		CYAN =      "\033[36m"
-		WHITE =     "\033[37m"
-else:
-		RESET =     ""
-		BOLD =      ""
-		UNDERLINE = ""
-		REVERSE =   ""
-		BLACK =     ""
-		RED =       ""
-		GREEN =     ""
-		YELLOW =    ""
-		BLUE =      ""
-		MAGENTA =   ""
-		CYAN =      ""
-		WHITE =     ""
-	
-# default colors - modify as you wish
-# since these are just strings modes can be combined
-if CONFIG_APPEARANCE == "light":
-		COLOR_REGVAL           = BLACK
-		COLOR_REGNAME          = GREEN
-		COLOR_CPUFLAGS         = BOLD + UNDERLINE + MAGENTA
-		COLOR_SEPARATOR        = BOLD + BLUE
-		COLOR_HIGHLIGHT_LINE   = RED
-		COLOR_REGVAL_MODIFIED  = RED
-		COLOR_SYMBOL_NAME      = BLUE
-		COLOR_CURRENT_PC       = RED
-		COLOR_CONDITIONAL_YES  = REVERSE + GREEN
-		COLOR_CONDITIONAL_NO   = REVERSE + RED
-		COLOR_HEXDUMP_HEADER   = BLUE
-		COLOR_HEXDUMP_ADDR     = BLACK
-		COLOR_HEXDUMP_DATA     = BLACK
-		COLOR_HEXDUMP_ASCII    = BLACK
-		COLOR_COMMENT          = GREEN
-elif CONFIG_APPEARANCE == "dark":
-		COLOR_REGVAL           = WHITE
-		COLOR_REGNAME          = GREEN
-		COLOR_CPUFLAGS         = BOLD + UNDERLINE + MAGENTA
-		COLOR_SEPARATOR        = CYAN
-		COLOR_HIGHLIGHT_LINE   = RED
-		COLOR_REGVAL_MODIFIED  = RED
-		COLOR_SYMBOL_NAME      = BLUE
-		COLOR_CURRENT_PC       = RED
-		COLOR_CONDITIONAL_YES  = REVERSE + GREEN
-		COLOR_CONDITIONAL_NO   = REVERSE + RED
-		COLOR_HEXDUMP_HEADER   = BLUE
-		COLOR_HEXDUMP_ADDR     = WHITE
-		COLOR_HEXDUMP_DATA     = WHITE
-		COLOR_HEXDUMP_ASCII    = WHITE
-		COLOR_COMMENT          = GREEN # XXX: test and change
-else:
-		print("[-] Invalid CONFIG_APPEARANCE value.")
-		
-
-g_current_target = ""
-g_target_hash = ""
-g_home = ""
-g_db = ""
-g_dbdata = {}
-
-JMP_MNEMONICS = ("call", "jmp", "jne", "jz", "je", "jnz", "jle", "jl", "jge", "jg", "b", "bl", "bg", "be", "ble", "blz", "bz", "bne", "bnz")
-JMP_MNEMONICS_EXCLUDE = ("jmpq")
-
-textEditStylesheet = """
-		            QTextEdit {
-		                background-color: #282c34; /* Dark background */
-		                color: #abb2bf; /* Light grey text */
-		                border: 1px solid #3e4452;
-		                border-radius: 5px;
-		                padding: 5px;
-		                font: 12px 'Courier New';
-		            }
-		        """
 class ConfigClass():
-	
 	companyName = "DaVe_inc"
 	appName = "LLDBPyGUI"
-	
-	initialCommand = "w s v idx" # "breakpoint set -a 0x100003f6a" # re read
+
+	initialCommand = "w s v idx"  # "breakpoint set -a 0x100003f6a" # re read
 	fontStr = "Courier New"
-	font = QFont(fontStr) # ("Monaco") #("Courier New")
-#	font.setFixedPitch(True)
+	font = QFont(fontStr)  # ("Monaco") #("Courier New")
+	fontStr12 = "'Courier New' 12px"
+	font12 = QFont(fontStr12)  # ("Monaco") #("Courier New")
+
+	fontBold = font
+	fontBold.setBold(True)
+	#	font.setFixedPitch(True)
 	fontSize = "12"
 	fontSizePx = fontSize + "px"
 	fontStrComplete = f"font: {fontSizePx} '{fontStr}';"
@@ -165,14 +37,16 @@ class ConfigClass():
 	fontTitle.setPointSize(18)
 
 	autofindSourcecodeFileExts = ['.c', '.cpp', '.m', '.x', '.xm', '.swift']
-	
+
 	supportURL = "https://pylldbgui.kimhauser.ch/support"
 	githubURL = "https://github.com/jetedonner/pyLLDBGUI"
 	githubPagesURL = "https://jetedonner.github.io/"
 
-	testBPsFilename = "/Volumes/Data/dev/python/LLDBPyGUI/breakpoints-hello_library_exec.bpson"  #"/Volumes/Data/dev/python/LLDBPyGUI/resources/bps/testbps_withSubFunc5.json" # "/Volumes/Data/dev/_reversing/disassembler/LLDBPyGUI/pyLLDBGUI/LLDBPyGUI/testtarget/testbps_withSubFunc5.json"
-#	testTarget = "/Volumes/Data/dev/_reversing/disassembler/LLDBPyGUI/pyLLDBGUI/LLDBPyGUI/testtarget/hello_world_test"
-#	testTargetSource = "/Volumes/Data/dev/_reversing/disassembler/LLDBPyGUI/pyLLDBGUI/LLDBPyGUI/testtarget/hello_world_test.c"
+	lldbConsoleCmdHistory = "./resources/histories/lldb_console_history.json"
+
+	testBPsFilename = "/Volumes/Data/dev/python/LLDBPyGUI/breakpoints-hello_library_exec.bpson"  # "/Volumes/Data/dev/python/LLDBPyGUI/resources/bps/testbps_withSubFunc5.json" # "/Volumes/Data/dev/_reversing/disassembler/LLDBPyGUI/pyLLDBGUI/LLDBPyGUI/testtarget/testbps_withSubFunc5.json"
+	#	testTarget = "/Volumes/Data/dev/_reversing/disassembler/LLDBPyGUI/pyLLDBGUI/LLDBPyGUI/testtarget/hello_world_test"
+	#	testTargetSource = "/Volumes/Data/dev/_reversing/disassembler/LLDBPyGUI/pyLLDBGUI/LLDBPyGUI/testtarget/hello_world_test.c"
 
 	# # SIMPLE
 	# testTarget =  "./_testtarget/a_hello_world_test" #amicable_numbers" #a_hello_world_test" #amicable_numbers" #cocoa_windowed_objc2" #amicable_numbers" #a_hello_world_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
@@ -189,17 +63,50 @@ class ConfigClass():
 	# testTargetSource = "./_testtarget/a_hello_world_test_ext.c"  # amicable_numbers.c" #a_hello_world_test.c" #amicable_numbers.c" #cocoa_windowed_objc2.m" #amicable_numbers.c" #a_hello_world_test.c"
 
 	# # SIMPLE WITH LIB / DYLIB
-	testTarget = "hello_library_exec"  # amicable_numbers" #a_hello_world_test" #amicable_numbers" #cocoa_windowed_objc2" #amicable_numbers" #a_hello_world_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
-	testTargetSource = "hello_library_exec.c"  # amicable_numbers.c" #a_hello_world_test.c" #amicable_numbers.c" #cocoa_windowed_objc2.m" #amicable_numbers.c" #a_hello_world_test.c"
+	# testTarget = "./_testtarget/hello_library_exec"  # amicable_numbers" #a_hello_world_test" #amicable_numbers" #cocoa_windowed_objc2" #amicable_numbers" #a_hello_world_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
+	# testTargetSource = "./_testtarget/hello_library_exec.c"  # amicable_numbers.c" #a_hello_world_test.c" #amicable_numbers.c" #cocoa_windowed_objc2.m" #amicable_numbers.c" #a_hello_world_test.c"
+	# testTargetArch = "arm64-apple-macosx15.1.0"
+	# testTargetArgs = ""
+
+	# # # # SIMPLE WITH TWO LIBs / DYLIBs --- 222 !!!!!
+	testTarget = "./_testtarget/hello_library_exec2"  # amicable_numbers" #a_hello_world_test" #amicable_numbers" #cocoa_windowed_objc2" #amicable_numbers" #a_hello_world_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
+	testTargetSource = "./_testtarget/hello_library_exec2.c"  # amicable_numbers.c" #a_hello_world_test.c" #amicable_numbers.c" #cocoa_windowed_objc2.m" #amicable_numbers.c" #a_hello_world_test.c"
 	testTargetArch = "arm64-apple-macosx15.1.0"
-	testTargetArgs = ""
+	# testTargetArgs = ""
+
+	# testTarget = "./_testtarget/SwiftTestApp4LLDBGUI/SwiftTestApp4LLDBGUI.app/Contents/MacOS/SwiftTestApp4LLDBGUI"  # amicable_numbers" #a_hello_world_test" #amicable_numbers" #cocoa_windowed_objc2" #amicable_numbers" #a_hello_world_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
+	# testTargetSource = "./_testtarget/SwiftTestApp4LLDBGUI/SwiftTestApp4LLDBGUI/ViewController.swift"  # amicable_numbers.c" #a_hello_world_test.c" #amicable_numbers.c" #cocoa_windowed_objc2.m" #amicable_numbers.c" #a_hello_world_test.c"
+	# testTargetArch = lldb.LLDB_ARCH_DEFAULT # "arm64-apple-macosx15.1.0"
+
+
+	# testTarget = "/Applications/SoundSource.app/Contents/MacOS/SoundSource"  # amicable_numbers" #a_hello_world_test" #amicable_numbers" #cocoa_windowed_objc2" #amicable_numbers" #a_hello_world_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
+	# testTargetSource = "" # "./_testtarget/hello_library_exec2.c"  # amicable_numbers.c" #a_hello_world_test.c" #amicable_numbers.c" #cocoa_windowed_objc2.m" #amicable_numbers.c" #a_hello_world_test.c"
+	# testTargetArch = "arm64"
+	# testTargetTriple = "arm64-apple-macosx11.0.0"
+
+	# testTarget = "./_testtarget/LLDBGUISwiftTestApp/Build/Products/Debug/LLDBGUISwiftTestApp.app/Contents/MacOS/LLDBGUISwiftTestApp"  # amicable_numbers" #a_hello_world_test" #amicable_numbers" #cocoa_windowed_objc2" #amicable_numbers" #a_hello_world_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
+	# testTargetSource = "./_testtarget/LLDBGUISwiftTestApp/LLDBGUISwiftTestApp/ViewController.swift"  # amicable_numbers.c" #a_hello_world_test.c" #amicable_numbers.c" #cocoa_windowed_objc2.m" #amicable_numbers.c" #a_hello_world_test.c"
+	# testTargetArch = "arm64-apple-macosx15.1.0"
+
+	# / Volumes / Data / dev / python / LLDBGUI / _testtarget / LLDBGUISwiftTestApp / LLDBGUISwiftTestApp / ViewController.swift
 
 	testTarget2 = "./_testtarget/a_hello_world_test"  # amicable_numbers" #a_hello_world_test" #amicable_numbers" #cocoa_windowed_objc2" #amicable_numbers" #a_hello_world_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
 	testTargetSource2 = "./_testtarget/a_hello_world_test.c"  # amicable_numbers.c" #a_hello_world_test.c" #amicable_numbers.c" #cocoa_windowed_objc2.m" #amicable_numbers.c" #a_hello_world_test.c"
 
+	# testTarget = "./_testtarget/cocoa_windowed_objc2"
+	# testTargetSource = "./_testtarget/cocoa_windowed_objc2.m"
+	# testTargetArch = "x86_64-apple-macosx15.1.1"
+
+	# testTarget = "/Volumes/Data/dev/python/LLDBGUI/_testtarget/ObjectiveCInputBox/Build/Products/Debug/ObjectiveCInputBox.app/Contents/MacOS/ObjectiveCInputBox" # "/Users/dave/Library/Developer/Xcode/DerivedData/ObjectiveCInputBox-ceppdxmjceebymdsshdrpjammbuo/Build/Products/Debug/ObjectiveCInputBox.app/Contents/MacOS/ObjectiveCInputBox"
+	# testTargetSource = "/Volumes/Data/dev/python/LLDBGUI/_testtarget/ObjectiveCInputBox/ObjectiveCInputBox/AppDelegate.m"
+	# # testTargetArch = "x86_64-apple-macosx15.1.1"
+	# testTargetArch = "arm64-apple-macosx15.1.0"
+
 	# SCANF / AMICABLE
 	# testTarget = "./_testtarget/amicable_numbers" #a_hello_world_test" #amicable_numbers" #cocoa_windowed_objc2" #amicable_numbers" #a_hello_world_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
 	# testTargetSource = "./_testtarget/amicable_numbers.c" #a_hello_world_test.c" #amicable_numbers.c" #cocoa_windowed_objc2.m" #amicable_numbers.c" #a_hello_world_test.c"
+	# testTargetArch = "x86_64-apple-macosx15.1.1"
+	# testTargetArgs = ""
 
 	# GUI
 	# testTarget = "./_testtarget/cocoa_windowed_objc2"  # a_hello_world_test" #amicable_numbers" #cocoa_windowed_objc2" #amicable_numbers" #a_hello_world_test" # "./testtarget/hello_world_test" # "/bin/ls" #/Users/dave/Library/Developer/Xcode/DerivedData/iOSNibbler-amppozfenucykfawuysrpwctoxnw/Build/Products/Debug/iOSNibblerApp.app/Contents/MacOS/iOSNibblerApp" # "./testtarget/hello_world_test"
@@ -212,15 +119,16 @@ class ConfigClass():
 	# testTargetArch = "x86_64-apple-macosx15.1.1"
 	# testTargetArgs = ""
 
-	startTestTarget = False
+	startTestTarget = True
 	settingsFilename = "./LLDBPyGUI_Settings.ini"
-	
+	recentFilesFilename = "./LLDBPyGUI_RecentFiles.ini"
+
 	toolbarIconSize = 24
 	currentDebuggerSubTab = 1
-	
+
 	iconLeft = None
 	iconRight = None
-	
+
 	iconTest = None
 	iconGears = None
 	iconGearsGrey = None
@@ -231,7 +139,7 @@ class ConfigClass():
 	iconInfo = None
 	iconShrink = None
 	iconClear = None
-	
+
 	pixGears = None
 	pixGearsGrey = None
 	pixBug = None
@@ -241,6 +149,7 @@ class ConfigClass():
 	pixAdd = None
 	pixInfo = None
 	pixSave = None
+	pixOpen = None
 	pixLoad = None
 	pixReload = None
 	pixTrash = None
@@ -248,11 +157,17 @@ class ConfigClass():
 	pixName = None
 	pixSearch = None
 	pixUp = None
-	
+	pixFunction = None
+	pixClose = None
+
+	pixSystemInt = None
+	pixString = None
+	pixYingYang = None
+
 	iconEyeRed = None
 	iconEyeGrey = None
 	iconEyeGreen = None
-	
+
 	iconBug = None
 	iconBugGreen = None
 	iconStd = None
@@ -270,31 +185,42 @@ class ConfigClass():
 	iconAnon = None
 	iconGlasses = None
 	iconMarkdown = None
-	
+
 	iconStepOver = None
 	iconStepInto = None
 	iconStepOut = None
-	
+
 	iconResume = None
-	
+
 	iconRestart = None
 	iconStop = None
-	
+
 	iconGithub = None
-	
+	iconClose = None
+	iconFunction = None
+	iconLog = None
+	iconLogBW = None
+
 	colorGreen = QColor(0, 255, 0, 128)
+	colorBurgundy = QColor(115, 0, 57, 255)
 	colorTransparent = QColor(0, 0, 0, 0)
+	colorSelected = QColor("#68000a")
+
+	controlFlowLineWidth = 1
+	controlFlowLineWidthHover = 2
 
 	resRootDir = "./"
-	
+
+	defaultMemJumpDist = 0x100
+
 	@staticmethod
 	def initIcons():
 		project_root = dirname(realpath(__file__))
 		resources_root = os.path.join(project_root, 'resources', 'img')
-		ConfigClass.resRootDir =resources_root
+		ConfigClass.resRootDir = resources_root
 
 		ConfigClass.iconStd = QIcon()
-		
+
 		ConfigClass.pixGears = QPixmap(os.path.join(resources_root, 'gears.png')).scaled(QSize(48, 48))
 		ConfigClass.pixGearsGrey = QPixmap(os.path.join(resources_root, 'gears_grey.png')).scaled(QSize(48, 48))
 		ConfigClass.pixBug = QPixmap(os.path.join(resources_root, 'bug.png')).scaled(QSize(18, 18))
@@ -302,10 +228,18 @@ class ConfigClass():
 		ConfigClass.pixBugGreen = QPixmap(os.path.join(resources_root, 'bug_green.png')).scaled(QSize(18, 18))
 		ConfigClass.pixDelete = QPixmap(os.path.join(resources_root, 'delete.png')).scaled(QSize(48, 48))
 		ConfigClass.pixSave = QPixmap(os.path.join(resources_root, 'save.png')).scaled(QSize(48, 48))
+		ConfigClass.pixOpen = QPixmap(os.path.join(resources_root, 'open-folder.png')).scaled(QSize(48, 48))
 
 		ConfigClass.pixName = QPixmap(os.path.join(resources_root, 'id-card.png')).scaled(QSize(48, 48))
-		ConfigClass.pixSearch = QPixmap(os.path.join(resources_root, 'magnifying-glass-64x64.png')).scaled(QSize(32, 32))
+		ConfigClass.pixSearch = QPixmap(os.path.join(resources_root, 'magnifying-glass-64x64.png')).scaled(
+			QSize(32, 32))
 		ConfigClass.pixUp = QPixmap(os.path.join(resources_root, 'upload.png')).scaled(QSize(32, 32))
+		ConfigClass.pixFunction = QPixmap(os.path.join(resources_root, 'function.png')).scaled(QSize(18, 18))
+		ConfigClass.pixClose = QPixmap(os.path.join(resources_root, 'close.png')).scaled(QSize(18, 18))
+		ConfigClass.pixSystemInt = QPixmap(os.path.join(resources_root, 'system-integration.png')).scaled(QSize(18, 18))
+		ConfigClass.pixString = QPixmap(os.path.join(resources_root, 'html.png')).scaled(QSize(18, 18))
+		ConfigClass.pixYingYang = QPixmap(os.path.join(resources_root, 'YinYang_RedBlack_Roses_35percent.png')).scaled(
+			QSize(300, 300))
 
 		ConfigClass.iconClear = QIcon(os.path.join(resources_root, 'clear.png'))
 		ConfigClass.iconShrink = QIcon(os.path.join(resources_root, 'shrink.png'))
@@ -317,24 +251,24 @@ class ConfigClass():
 		ConfigClass.iconTest = QIcon(os.path.join(resources_root, 'test.png'))
 		ConfigClass.iconLeft = QIcon(os.path.join(resources_root, 'left-arrow_blue.png'))
 		ConfigClass.iconRight = QIcon(os.path.join(resources_root, 'right-arrow_blue.png'))
-#		
+		#
 		ConfigClass.iconGears = QIcon(os.path.join(resources_root, 'gears.png'))
 		ConfigClass.iconGearsGrey = QIcon(os.path.join(resources_root, 'gears_grey.png'))
 
 		ConfigClass.iconInfo = QIcon(os.path.join(resources_root, 'info.png'))
-#		
+		#
 		ConfigClass.iconEyeRed = QIcon(os.path.join(resources_root, 'eye_red.png'))
 		ConfigClass.iconEyeGrey = QIcon(os.path.join(resources_root, 'eye_grey.png'))
 		ConfigClass.iconEyeGreen = QIcon(os.path.join(resources_root, 'eye_green.png'))
-		
+
 		ConfigClass.iconBug = QIcon(os.path.join(resources_root, 'bug.png'))
 		ConfigClass.iconBugGreen = QIcon(os.path.join(resources_root, 'bug_green.png'))
-		ConfigClass.iconBPEnabled = ConfigClass.iconBug #QIcon(os.path.join(resources_root, 'bug.png'))
+		ConfigClass.iconBPEnabled = ConfigClass.iconBug  # QIcon(os.path.join(resources_root, 'bug.png'))
 		ConfigClass.iconBPDisabled = QIcon(os.path.join(resources_root, 'bug_bw_greyscale.png'))
 		ConfigClass.iconPause = QIcon(os.path.join(resources_root, 'Pause_first.png'))
 		ConfigClass.iconSettings = QIcon(os.path.join(resources_root, 'settings.png'))
 		ConfigClass.iconTrash = QIcon(os.path.join(resources_root, 'delete.png'))
-#		
+		#
 		ConfigClass.iconResume = QIcon(os.path.join(resources_root, 'resume.png'))
 		ConfigClass.iconStepOver = QIcon(os.path.join(resources_root, 'stepOver.png'))
 		ConfigClass.iconStepInto = QIcon(os.path.join(resources_root, 'stepInto.png'))
@@ -342,11 +276,7 @@ class ConfigClass():
 		ConfigClass.iconStop = QIcon(os.path.join(resources_root, 'stop.png'))
 
 		ConfigClass.iconName = QIcon(os.path.join(resources_root, 'id-card.png'))
-
-
-
-class ByteGrouping(enum.Enum):
-	NoGrouping = ("No Grouping", 1) #"No grouping"
-	TwoChars = ("Two", 2) #"Two characters"
-	FourChars = ("Four", 4) #"Four characters"
-	EightChars = ("Eight", 8) #"Four characters"
+		ConfigClass.iconClose = QIcon(os.path.join(resources_root, 'close.png'))
+		ConfigClass.iconFunction = QIcon(os.path.join(resources_root, 'function.png'))
+		ConfigClass.iconLog = QIcon(os.path.join(resources_root, 'log-file.png'))
+		ConfigClass.iconLogBW = QIcon(os.path.join(resources_root, 'log-file-bw.png'))

@@ -1,5 +1,5 @@
 ---
-triple:          'arm64-apple-darwin'
-binary-path:     libexternal.dylib
-relocations:     []
+triple: 'arm64-apple-darwin'
+binary-path: libexternal.dylib
+relocations: [ ]
 ...

@@ -1,0 +1,338 @@
+@font-face {
+    font-family: "BerkeleyMonoWeb";
+    src: url("/static/BerkeleyMono-Regular.woff2") format("woff2");
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: "BerkeleyMonoWeb";
+    src: url("/static/BerkeleyMono-Bold.woff2") format("woff2");
+    font-weight: 700;
+}
+
+:root {
+    --font-main: "BerkeleyMonoWeb", "SF Mono", ui-monospace, monospace;
+
+    --font-largest: 1.73rem;
+    --font-large: 1.44rem;
+    --font-larger: 1.22rem;
+
+    --pad: 1.2rem;
+
+    --color-fg-primary: #000000;
+    --color-fg-alt: #7f10d0;
+
+    --color-bg-primary: #ffffff;
+    --color-bg-secondary: #f2f2f2;
+    --color-bg-alt: #f0f1ff;
+    --color-bg-hint: #f8f0d0;
+    --color-bg-detail: #e0f6e0;
+
+    --color-accent: #0031a9;
+    --color-selection: #efdfff;
+    --color-highlight: var(--color-bg-hint);
+
+    --border: 1px solid var(--color-fg-primary);
+    --margin-block: var(--pad) 0;
+
+    --padding-listing-v: calc(var(--pad) / 2);
+    --padding-listing-h: var(--pad);
+    --padding-listing: var(--padding-listing-v) var(--padding-listing-h);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-fg-primary: #ffffff;
+        --color-fg-alt: #9f80ff;
+
+        --color-bg-primary: #000000;
+        --color-bg-secondary: #100f10;
+        --color-bg-alt: #0e183a;
+        --color-bg-hint: #381d0f;
+        --color-bg-detail: #092f1f;
+
+        --color-accent: #2fafff;
+        --color-selection: #4f3d88;
+        --color-highlight: #7a6100;
+    }
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+}
+
+::selection {
+    background: var(--color-selection);
+}
+
+html {
+    font-size: 12px;
+    padding: var(--indent);
+
+    background: var(--color-bg-primary);
+    color: var(--color-fg-primary);
+}
+
+body {
+    font-family: var(--font-main);
+    line-height: 1.4;
+
+    max-width: 54rem;
+    margin: 0 auto;
+
+    padding: var(--pad);
+}
+
+/*===-- Common Elements ---------------------------------------------------===*/
+
+h1,
+h2,
+h3 {
+    margin-top: 1.75em;
+    margin-bottom: 0.75em;
+}
+
+h1 {
+    font-size: var(--font-largest);
+}
+
+h2 {
+    font-size: var(--font-large);
+    text-transform: uppercase;
+}
+
+h3 {
+    font-size: var(--font-larger);
+}
+
+h3.classheading {
+    text-transform: none;
+    display: flex;
+}
+
+h3.classheading br {
+    display: none;
+}
+
+h3.classheading span {
+    font-size: inherit !important;
+    margin-left: 0.6em;
+}
+
+hr {
+    border: none;
+    border-top: 1px dashed var(--color-fg-primary);
+
+    margin: var(--margin-block);
+}
+
+p {
+    margin: var(--margin-block);
+}
+
+ul {
+    list-style: none;
+    padding-left: var(--pad);
+}
+
+:not(li) > ul > li {
+    padding-left: var(--pad);
+}
+
+ul li:before {
+    content: "*";
+    margin: 0 calc(var(--pad) / 2) 0 calc(var(--pad) * -1);
+}
+
+li {
+    margin: calc(var(--pad) / 2) 0;
+}
+
+a[href] {
+    color: var(--color-accent);
+}
+
+mark {
+    background: var(--color-highlight);
+    color: var(--color-fg);
+}
+
+table {
+    border-collapse: collapse;
+}
+
+table td {
+    vertical-align: baseline;
+}
+
+/*===-- Register diagrams -------------------------------------------------===*/
+
+.regdiagram {
+    width: 100%;
+    font-size: 0.8rem;
+
+    margin: var(--margin-block);
+}
+
+.regdiagram td {
+    vertical-align: middle;
+
+    width: 3%;
+    padding: 1px;
+}
+
+/* Make bit markers even smaller */
+.regdiagram thead td {
+    font-size: 0.7rem;
+}
+
+.regdiagram tbody td.r {
+    border-right: var(--border);
+}
+
+.regdiagram tbody td.l {
+    border-left: var(--border);
+}
+
+.regdiagram tbody td.lr {
+    border-left: var(--border);
+    border-right: var(--border);
+}
+
+.regdiagram tr.firstrow td {
+    border-top: var(--border);
+    border-bottom: var(--border);
+}
+
+/*===-- Figures and listings ----------------------------------------------===*/
+
+li .asm-code,
+.armarm-xref {
+    color: var(--color-fg-alt);
+}
+
+.encoding .asm-code {
+    padding: var(--padding-listing);
+    background: var(--color-bg-secondary);
+}
+
+/* Couple of edge cases that need fixing */
+h4.encoding .asm-code {
+    font-weight: normal;
+}
+
+p.pseudocode {
+    background: var(--color-bg-alt);
+    padding: var(--padding-listing);
+
+    white-space: pre;
+    overflow-x: scroll;
+}
+
+span.pseudocode {
+    white-space: nowrap;
+}
+
+.field {
+    margin-left: var(--pad);
+}
+
+.note {
+    background: var(--color-bg-hint);
+    padding: var(--padding-listing);
+
+    margin: var(--margin-block) 0;
+}
+
+span.note-header {
+    display: none;
+}
+
+col.asyn-l {
+    width: 7.2rem;
+}
+
+col.enctype-l {
+    width: 99%;
+}
+
+table.valuetable,
+table.access_instructions {
+    margin: var(--margin-block);
+}
+
+table.valuetable {
+    margin-left: var(--pad);
+}
+
+table.valuetable th,
+table.valuetable td,
+table.aliastable th,
+table.aliastable td,
+table.access_instructions th,
+table.access_instructions td {
+    padding-right: var(--pad);
+    text-align: left;
+}
+
+table.access_instructions {
+    background: var(--color-bg-detail);
+    border-collapse: separate;
+    width: 100%;
+}
+
+table.access_instructions th:first-child,
+table.access_instructions td:first-child {
+    padding-left: var(--padding-listing-h);
+}
+
+table.access_instructions tr:first-child > * {
+    padding-top: var(--padding-listing-v);
+}
+
+table.access_instructions tr:last-child > * {
+    padding-bottom: var(--padding-listing-v);
+}
+
+/*===-- Other custom elements ---------------------------------------------===*/
+
+.topbar {
+    margin: 1rem 0.5rem 0rem 0.5rem;
+}
+
+p.versions {
+    display: none;
+}
+
+/*===-- Pagefind ----------------------------------------------------------===*/
+
+.pagefind-ui {
+    margin-top: var(--pad);
+}
+
+.pagefind-ui__form {
+    display: flex;
+    flex-direction: column;
+}
+
+.pagefind-ui__search-input {
+    flex: 1;
+    scroll-margin-top: 2rem;
+
+    background: var(--color-bg-secondary);
+    color: var(--color-fg-primary);
+
+    border: var(--border);
+    appearance: none;
+    padding: calc(var(--pad) / 2);
+}
+
+.pagefind-ui__search-input:focus {
+    border-color: var(--color-accent);
+    outline: none;
+}
+
+.pagefind-ui__search-clear {
+    display: none;
+}

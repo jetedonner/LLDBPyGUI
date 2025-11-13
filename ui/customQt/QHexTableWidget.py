@@ -1,23 +1,11 @@
 #!/usr/bin/env python3
 import lldb
+from PyQt6 import QtGui
 
-import array
-import enum
-import re
-import math
-
-from PyQt6 import *
-from PyQt6.QtGui import *
-from PyQt6.QtCore import *
-
-from PyQt6.QtWidgets import *
-from PyQt6 import uic, QtWidgets
-
-from config import *
-from ui.dialogs.settingsDialog import *
-from dbg.memoryHelper import *
+from ui.base.baseTableWidget import BaseTableWidget
 from ui.customQt.QHexTextEdit import *
-from ui.baseTableWidget import BaseTableWidget
+from ui.dialogs.settingsDialog import *
+
 
 # class ByteGrouping(enum.Enum):
 #	NoGrouping = ("No Grouping", 1) #"No grouping"
@@ -87,72 +75,73 @@ class ReadOnlySelectableTextEdit(QTextEdit):
 			self.actionWriteMemory = self.context_menu.addAction("Write memory")
 			self.actionWriteMemory.triggered.connect(self.handle_writeMemory)
 
-		#		self.textChanged.connect(self.handle_text_changed)
-		#
-		#	def handle_text_changed(self):
-		#		# Get the current cursor position
-		#		cursor = self.textCursor()
-		#
-		#		# Get the start and end positions of the edited text
-		#		start_pos = cursor.selectionStart() - 1
-		#		end_pos = cursor.selectionEnd()
-		#
-		#		# Access and process the edited text (optional)
-		#		edited_text = self.toPlainText()[start_pos:end_pos]
-		#
-		#		print(f"Text changed! Start: {start_pos}, End: {end_pos}, Edited Text: {edited_text}")
+	#		self.textChanged.connect(self.handle_text_changed)
+	#
+	#	def handle_text_changed(self):
+	#		# Get the current cursor position
+	#		cursor = self.textCursor()
+	#
+	#		# Get the start and end positions of the edited text
+	#		start_pos = cursor.selectionStart() - 1
+	#		end_pos = cursor.selectionEnd()
+	#
+	#		# Access and process the edited text (optional)
+	#		edited_text = self.toPlainText()[start_pos:end_pos]
+	#
+	#		print(f"Text changed! Start: {start_pos}, End: {end_pos}, Edited Text: {edited_text}")
 
-		def contextMenuEvent(self, event):
-			if self.context_menu != None:
-				self.context_menu.exec(event.globalPos())
+	def contextMenuEvent(self, event):
+		if self.context_menu != None:
+			self.context_menu.exec(event.globalPos())
 
-		def handle_editMemory(self):
-			self.sigEdit.emit()
-			pass
+	def handle_editMemory(self):
+		self.sigEdit.emit()
+		pass
 
-		#		self.isReadOnly = not self.isReadOnly
-		##		self.setTextBackgroundColor(QColor.green())
-		##		self.setStyleSheet("background-color: rgba(0, 255, 0, 48);")
-		#		if not self.isReadOnly:
-		#			p = self.viewport().palette()
-		#			p.setColor(self.viewport().backgroundRole(), QtGui.QColor(0, 255, 0, 24))
-		#			self.viewport().setPalette(p)
-		#		else:
-		#			p = self.viewport().palette()
-		#			p.setColor(self.viewport().backgroundRole(), QtGui.QColor(0, 255, 0, 0))
-		#			self.viewport().setPalette(p)
+	#		self.isReadOnly = not self.isReadOnly
+	##		self.setTextBackgroundColor(QColor.green())
+	##		self.setStyleSheet("background-color: rgba(0, 255, 0, 48);")
+	#		if not self.isReadOnly:
+	#			p = self.viewport().palette()
+	#			p.setColor(self.viewport().backgroundRole(), QtGui.QColor(0, 255, 0, 24))
+	#			self.viewport().setPalette(p)
+	#		else:
+	#			p = self.viewport().palette()
+	#			p.setColor(self.viewport().backgroundRole(), QtGui.QColor(0, 255, 0, 0))
+	#			self.viewport().setPalette(p)
 
-		def handle_writeMemory(self):
-			self.sigWrite.emit()
-			pass
+	def handle_writeMemory(self):
+		self.sigWrite.emit()
+		pass
 
-		#		# Target memory address to write to
-		#		memory_address = 0x304113148 #0x304112ea8 # 0x100003f50  # Replace with the actual address
-		#
-		#		# Data to write (as a byte string)
-		##		data_to_write = b"NOP"
-		##		data_to_write = b'\x05'# bytes.fromhex("05")
-		#		hex_value = "0x05"
-		#		data_to_write = bytes.fromhex(hex_value[2:])
-		#
-		##		result = write_memory(self.window().driver.getTarget().GetProcess(), memory_address, data_to_write)
-		##		print(f"WRITE MEMORY: {result}")
-		#		# Write the data to memory
-		#		error = lldb.SBError()
-		#		bytes_written = self.window().driver.getTarget().GetProcess().WriteMemory(memory_address, data_to_write, error)
-		#
-		#		if error.Success():
-		#			print(f"Wrote {bytes_written} bytes to memory address 0x{memory_address:x}")
-		#		else:
-		#			print(f"Error writing memory: {error}")
+	#		# Target memory address to write to
+	#		memory_address = 0x304113148 #0x304112ea8 # 0x100003f50  # Replace with the actual address
+	#
+	#		# Data to write (as a byte string)
+	##		data_to_write = b"NOP"
+	##		data_to_write = b'\x05'# bytes.fromhex("05")
+	#		hex_value = "0x05"
+	#		data_to_write = bytes.fromhex(hex_value[2:])
+	#
+	##		result = write_memory(self.window().driver.getTarget().GetProcess(), memory_address, data_to_write)
+	##		print(f"WRITE MEMORY: {result}")
+	#		# Write the data to memory
+	#		error = lldb.SBError()
+	#		bytes_written = self.window().driver.getTarget().GetProcess().WriteMemory(memory_address, data_to_write, error)
+	#
+	#		if error.Success():
+	#			print(f"Wrote {bytes_written} bytes to memory address 0x{memory_address:x}")
+	#		else:
+	#			print(f"Error writing memory: {error}")
 
-		def keyPressEvent(self, event):
-			if (self.isReadOnly and event.key() in (Qt.Key.Key_Left, Qt.Key.Key_Right, Qt.Key.Key_Up,
-													Qt.Key.Key_Down)) or not self.isReadOnly:
-				# Only allow arrow key selection
-				super().keyPressEvent(event)
-			else:
-				event.ignore()  # Ignore any editing-related key presses
+	def keyPressEvent(self, event):
+		# logDbgC(f"HexTable.keyPressEvent({event}) ...")
+		if (self.isReadOnly and event.key() in (Qt.Key.Key_Left, Qt.Key.Key_Right, Qt.Key.Key_Up,
+												Qt.Key.Key_Down)) or not self.isReadOnly:
+			# Only allow arrow key selection
+			super().keyPressEvent(event)
+		else:
+			event.ignore()  # Ignore any editing-related key presses
 
 
 class QHexTableWidget(BaseTableWidget):
@@ -333,6 +322,7 @@ class QHexTableWidget(BaseTableWidget):
 			self.setCellWidget(currRowCount, 0, self.txtAddr)
 
 			self.txtHex = QHexTextEdit()  # ReadOnlySelectableTextEdit(None, True) #
+			self.txtHex.textChanged.connect(self.format_text)
 			self.txtHex.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 			self.txtHex.setText(value)
 			self.txtHex.setFont(ConfigClass.font)
@@ -418,6 +408,10 @@ class QHexTableWidget(BaseTableWidget):
 
 		self.setRowHeight(currRowCount, self.get_required_row_height(self.txtAddr, self.height()))
 
+	def format_text(self):
+		logDbgC(f"self.txtHex.toPlainText(): {self.txtHex.toPlainText()} ...")
+		pass
+
 	def create_line_height_stylesheet(self, reference_line_height):
 		stylesheet = ""
 		# Loop through lines in the second text edit
@@ -485,9 +479,10 @@ class QHexTableWidget(BaseTableWidget):
 		cursorHex = self.txtHex.textCursor()
 		hexStart = cursorHex.selectionStart()
 		hexEnd = cursorHex.selectionEnd()
+		logDbgC(f"txtHex_selectionchanged => hexStart: {hexStart}, hexEnd: {hexEnd} ...")
 		dataStart = self.hexPosToData(hexStart) + (int(hexStart / 48))
 		dataEnd = self.hexPosToData(hexEnd) + (int(hexEnd / 48))
-
+		logDbgC(f"txtHex_selectionchanged => dataStart: {dataStart}, dataEnd: {dataEnd} ...")
 		#		print(f"txtHex Selection start: %d end: %d => Address: {hex(self.startAddr + self.hexPosToData(hexStart))} - {hex(self.startAddr + self.hexPosToData(hexEnd))}" % (hexStart, hexEnd))
 
 		if SettingsHelper.GetValue(SettingsValues.MemViewShowSelectedStatubarMsg):

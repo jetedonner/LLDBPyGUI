@@ -25,7 +25,14 @@ void callExternalFunc() {
     fflush(stdout);
 }
 
+void callExternalInternalFuncWithParam(int param) {
+    printf("HELLO From Library INTERNAL FUNCTION WITH PARAM: %d!!!\n", param);
+    fflush(stdout);
+}
+
 void callExternalFuncWithParam(int param) {
     printf("HELLO From Library WITH PARAM: %d!!!\n", param);
     fflush(stdout);
+
+    callExternalInternalFuncWithParam(param * 2);
 }

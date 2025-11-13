@@ -1,7 +1,7 @@
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // NG: clang -g -o hello_library_exec hello_library_exec.c -ldl -isysroot $(xcrun --show-sdk-path)
 //     clang -g -o hello_library_exec hello_library_exec.c -ldl
-//     clang -g -o hello_library_exec hello_library_exec.c -L. -lexternal
+//     clang -g -o hello_library_exec hello_library_exec.c -L. -lexternal -rpath @executable_path
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
@@ -38,7 +38,7 @@ int main() {
         return 1;
     }
 
-    void (*callExternalFuncWithParam)() = dlsym(handle, "callExternalFuncWithParam");
+    void (*callExternalFuncWithParam)(int param) = dlsym(handle, "callExternalFuncWithParam");
     if (!callExternalFuncWithParam) {
         fprintf(stderr, "❌ Failed to find symbol: %s\n", dlerror());
         dlclose(handle);

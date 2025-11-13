@@ -1,0 +1,164 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!-- saved from url=(0046)https://arm.jonpalmisc.com/latest_aarch64/adrp -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="This instruction adds an immediate value that is
+shifted left by 12 bits, to the PC value to form a PC-relative address,
+with the bottom 12 bits masked out, and writes the result to the
+destination register.">
+    <link rel="stylesheet" type="text/css" href="./ADRP _ Jon&#39;s Arm Reference_files/normalize.css">
+    <link rel="stylesheet" type="text/css" href="./ADRP _ Jon&#39;s Arm Reference_files/main.css">
+    <meta name="generator" content="iform.xsl">
+    <title>ADRP | Jon's Arm Reference</title></head>
+<body><a href="https://arm.jonpalmisc.com/" data-pagefind-ignore="index">← Home</a>
+<div id="search">
+    <div class="pagefind-ui svelte-e9gkc3">
+        <form class="pagefind-ui__form svelte-e9gkc3" role="search" aria-label="Search this site"
+              action="javascript:void(0);"><input class="pagefind-ui__search-input svelte-e9gkc3" type="text"
+                                                  placeholder="Search... (CTRL/CMD+K)" autocapitalize="none"
+                                                  enterkeyhint="search" spellcheck="false">
+            <button class="pagefind-ui__search-clear svelte-e9gkc3 pagefind-ui__suppressed">Clear</button>
+            <div class="pagefind-ui__drawer svelte-e9gkc3 pagefind-ui__hidden"></div>
+        </form>
+    </div>
+</div>
+<script src="./ADRP _ Jon&#39;s Arm Reference_files/pagefind-ui.js"></script>
+<script src="./ADRP _ Jon&#39;s Arm Reference_files/pagefind.js"></script>
+<h1 class="instruction-section">ADRP</h1>
+<p>Form PC-relative address to 4KB page</p>
+<p class="aml">This instruction adds an immediate value that is
+    shifted left by 12 bits, to the PC value to form a PC-relative address,
+    with the bottom 12 bits masked out, and writes the result to the
+    destination register.</p>
+
+<p class="desc"></p>
+<div class="regdiagram-32">
+    <table class="regdiagram">
+        <thead>
+        <tr>
+            <td>31</td>
+            <td>30</td>
+            <td>29</td>
+            <td>28</td>
+            <td>27</td>
+            <td>26</td>
+            <td>25</td>
+            <td>24</td>
+            <td>23</td>
+            <td>22</td>
+            <td>21</td>
+            <td>20</td>
+            <td>19</td>
+            <td>18</td>
+            <td>17</td>
+            <td>16</td>
+            <td>15</td>
+            <td>14</td>
+            <td>13</td>
+            <td>12</td>
+            <td>11</td>
+            <td>10</td>
+            <td>9</td>
+            <td>8</td>
+            <td>7</td>
+            <td>6</td>
+            <td>5</td>
+            <td>4</td>
+            <td>3</td>
+            <td>2</td>
+            <td>1</td>
+            <td>0</td>
+        </tr>
+        </thead>
+        <tbody>
+        <tr class="firstrow">
+            <td class="lr">1</td>
+            <td colspan="2" class="lr">immlo</td>
+            <td class="l">1</td>
+            <td>0</td>
+            <td class="r">0</td>
+            <td class="l">0</td>
+            <td class="r">0</td>
+            <td colspan="19" class="lr">immhi</td>
+            <td colspan="5" class="lr">Rd</td>
+        </tr>
+        <tr class="secondrow">
+            <td class="droppedname">op</td>
+            <td colspan="2"></td>
+            <td colspan="3"></td>
+            <td colspan="2"></td>
+            <td colspan="19"></td>
+            <td colspan="5"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<div class="encoding"><h4 class="encoding">Encoding</h4><a id="ADRP_only_pcreladdr"></a>
+    <p class="asm-code">ADRP <a href="https://arm.jonpalmisc.com/latest_aarch64/adrp#XdOrXZR__6"
+                                title="Is the 64-bit name of the general-purpose destination register, encoded in the &quot;Rd&quot; field.">&lt;Xd&gt;</a>,
+        <a href="https://arm.jonpalmisc.com/latest_aarch64/adrp#immhiimmlo_offset__2"
+           title="Is the program label whose 4KB page address is to be calculated. Its offset from the page address of this instruction, in the range +/-4GB, is encoded as &quot;immhi:immlo&quot; times 4096.">&lt;label&gt;</a>
+    </p></div>
+<h4>Decode for this encoding</h4>
+<p class="pseudocode">constant integer d = <a
+        href="https://arm.jonpalmisc.com/latest_aarch64/shared_pseudocode.html#impl-shared.UInt.1"
+        title="function: integer UInt(bits(N) x)">UInt</a>(Rd);
+    constant bits(64) imm = <a
+            href="https://arm.jonpalmisc.com/latest_aarch64/shared_pseudocode.html#impl-shared.SignExtend.2"
+            title="function: bits(N) SignExtend(bits(M) x, integer N)">SignExtend</a>(immhi:immlo:<a
+            href="https://arm.jonpalmisc.com/latest_aarch64/shared_pseudocode.html#impl-shared.Zeros.1"
+            title="function: bits(N) Zeros(integer N)">Zeros</a>(12), 64);</p>
+<div class="encoding-notes"></div>
+<h2 class="explanations">Assembler Symbols</h2>
+<div class="explanations">
+    <table>
+        <colgroup>
+            <col class="asyn-l">
+            <col class="asyn-r">
+        </colgroup>
+        <tbody>
+        <tr>
+            <td>&lt;Xd&gt;</td>
+            <td><a id="XdOrXZR__6"></a>
+
+                <p class="aml">Is the 64-bit name of the general-purpose destination register, encoded in the "Rd"
+                    field.</p>
+
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <table>
+        <colgroup>
+            <col class="asyn-l">
+            <col class="asyn-r">
+        </colgroup>
+        <tbody>
+        <tr>
+            <td>&lt;label&gt;</td>
+            <td><a id="immhiimmlo_offset__2"></a>
+
+                <p class="aml">Is the program label whose 4KB page address is to be calculated. Its offset from the page
+                    address of this instruction, in the range +/-4GB, is encoded as "immhi:immlo" times 4096.</p>
+
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<div class="syntax-notes"></div>
+<div class="ps"><a id=""></a>
+    <h2 class="pseudocode">Operation</h2>
+    <p class="pseudocode">constant bits(64) base = PC64&lt;63:12&gt;:<a
+            href="https://arm.jonpalmisc.com/latest_aarch64/shared_pseudocode.html#impl-shared.Zeros.1"
+            title="function: bits(N) Zeros(integer N)">Zeros</a>(12);
+        <a href="https://arm.jonpalmisc.com/latest_aarch64/shared_pseudocode.html#impl-aarch64.X.write.2"
+           title="accessor: X[integer n, integer width] = bits(width) value">X</a>[d, 64] = base + imm;</p></div>
+<!-- Cloudflare Pages Analytics -->
+<script defer="" src="./ADRP _ Jon&#39;s Arm Reference_files/beacon.min.js"
+        data-cf-beacon="{&quot;token&quot;: &quot;de55e78a4e194365a81a0724c5c0ee91&quot;}"></script>
+<!-- Cloudflare Pages Analytics -->
+</body>
+</html>

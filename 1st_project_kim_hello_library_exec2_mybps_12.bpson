@@ -1,0 +1,200 @@
+[
+  {
+    "id": 2,
+    "enabled": true,
+    "name": "",
+    "locations": [
+      {
+        "id": 1,
+        "id_full": "2.1",
+        "load_address": 4295081560,
+        "offset": 0,
+        "enabled": true,
+        "symbol": "callExternalFunc"
+      }
+    ],
+    "condition": "",
+    "thread_id": 0,
+    "thread_index": 4294967295,
+    "thread_name": null,
+    "queue_name": null,
+    "ignore_count": 0,
+    "hit_count": 1
+  },
+  {
+    "id": 3,
+    "enabled": true,
+    "name": "",
+    "locations": [
+      {
+        "id": 1,
+        "id_full": "3.1",
+        "load_address": 4294982340,
+        "offset": 0,
+        "enabled": true,
+        "symbol": "subfunc"
+      }
+    ],
+    "condition": "",
+    "thread_id": 0,
+    "thread_index": 4294967295,
+    "thread_name": null,
+    "queue_name": null,
+    "ignore_count": 0,
+    "hit_count": 5
+  },
+  {
+    "id": 4,
+    "enabled": false,
+    "name": "",
+    "locations": [
+      {
+        "id": 1,
+        "id_full": "4.1",
+        "load_address": 4295081576,
+        "offset": 16,
+        "enabled": false,
+        "symbol": "callExternalFunc"
+      }
+    ],
+    "condition": "",
+    "thread_id": 0,
+    "thread_index": 4294967295,
+    "thread_name": null,
+    "queue_name": null,
+    "ignore_count": 0,
+    "hit_count": 0
+  },
+  {
+    "id": 5,
+    "enabled": true,
+    "name": "",
+    "locations": [
+      {
+        "id": 1,
+        "id_full": "5.1",
+        "load_address": 4295130644,
+        "offset": 0,
+        "enabled": true,
+        "symbol": "callExternalFunc2"
+      }
+    ],
+    "condition": "",
+    "thread_id": 0,
+    "thread_index": 4294967295,
+    "thread_name": null,
+    "queue_name": null,
+    "ignore_count": 0,
+    "hit_count": 3
+  },
+  {
+    "id": 6,
+    "enabled": false,
+    "name": "",
+    "locations": [
+      {
+        "id": 1,
+        "id_full": "6.1",
+        "load_address": 4295130688,
+        "offset": 44,
+        "enabled": false,
+        "symbol": "callExternalInternalFuncWithParam2"
+      }
+    ],
+    "condition": "",
+    "thread_id": 0,
+    "thread_index": 4294967295,
+    "thread_name": null,
+    "queue_name": null,
+    "ignore_count": 0,
+    "hit_count": 0
+  },
+  {
+    "id": 7,
+    "enabled": true,
+    "name": "",
+    "locations": [
+      {
+        "id": 1,
+        "id_full": "7.1",
+        "load_address": 4294982344,
+        "offset": 4,
+        "enabled": true,
+        "symbol": "subfunc"
+      }
+    ],
+    "condition": "",
+    "thread_id": 0,
+    "thread_index": 4294967295,
+    "thread_name": null,
+    "queue_name": null,
+    "ignore_count": 0,
+    "hit_count": 5
+  },
+  {
+    "id": 8,
+    "enabled": true,
+    "name": "",
+    "locations": [
+      {
+        "id": 1,
+        "id_full": "8.1",
+        "load_address": 4295130684,
+        "offset": 40,
+        "enabled": true,
+        "symbol": "callExternalFunc2"
+      }
+    ],
+    "condition": "",
+    "thread_id": 0,
+    "thread_index": 4294967295,
+    "thread_name": null,
+    "queue_name": null,
+    "ignore_count": 0,
+    "hit_count": 3
+  },
+  {
+    "id": 9,
+    "enabled": true,
+    "name": "",
+    "locations": [
+      {
+        "id": 1,
+        "id_full": "9.1",
+        "load_address": 4294982420,
+        "offset": 80,
+        "enabled": true,
+        "symbol": "subfunc"
+      }
+    ],
+    "condition": "",
+    "thread_id": 0,
+    "thread_index": 4294967295,
+    "thread_name": null,
+    "queue_name": null,
+    "ignore_count": 0,
+    "hit_count": 5
+  },
+  {
+    "id": 10,
+    "enabled": true,
+    "name": "",
+    "locations": [
+      {
+        "id": 1,
+        "id_full": "10.1",
+        "load_address": 4294983060,
+        "offset": 720,
+        "enabled": true,
+        "symbol": "main"
+      }
+    ],
+    "condition": "",
+    "thread_id": 0,
+    "thread_index": 4294967295,
+    "thread_name": null,
+    "queue_name": null,
+    "ignore_count": 0,
+    "hit_count": 13
+  }
+]

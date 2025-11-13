@@ -1,5 +1,5 @@
 ---
-triple:          'x86_64-apple-darwin'
-binary-path:     cocoa_windowed_objc2
-relocations:     []
+triple: 'x86_64-apple-darwin'
+binary-path: cocoa_windowed_objc2
+relocations: [ ]
 ...

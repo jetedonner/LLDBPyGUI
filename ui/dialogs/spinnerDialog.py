@@ -1,20 +1,16 @@
 #!/usr/bin/env python3
-import time
 
-from PyQt6.QtGui import *
 from PyQt6.QtCore import *
-from PyQt6.QtWidgets import *
-from PyQt6 import uic, QtWidgets
-
-from ui.customQt.QClickLabel import *
-import os
 from PyQt6.QtCore import QThread
+from PyQt6.QtGui import *
 
 from config import *
-from ui.helper.dbgOutputHelper import logDbgC, DebugLevel
+from helper.debugHelper import logDbgC, DebugLevel
+from ui.customQt.QClickLabel import *
 
 
 class SpinnerDialog(QDialog):
+
 	def __init__(self, parent=None):
 		super(QDialog, self).__init__(parent)
 		self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Tool)
@@ -27,9 +23,10 @@ class SpinnerDialog(QDialog):
 		self.setLayout(layout)
 		self.lblMsg = QLabel(f"Loading target ...")
 		layout.addWidget(self.lblMsg, alignment=Qt.AlignmentFlag.AlignCenter)
-	
+
 		# Load and set the animated GIF
-		self.movie = QMovie(f"{os.path.join(ConfigClass.resRootDir, 'Bean-Eater@1x-1.0s-200px-200px.gif')}") # 1472.gif") # Linear-DNA.gif") #Bean-Eater@1x-1.0s-200px-200px.gif") #DoubleRingSpinner.gif") #Loading-Eclipse-200pxX200px.gif") #
+		self.movie = QMovie(
+			f"{os.path.join(ConfigClass.resRootDir, 'Bean-Eater@1x-1.0s-200px-200px.gif')}")  # 1472.gif") # Linear-DNA.gif") #Bean-Eater@1x-1.0s-200px-200px.gif") #DoubleRingSpinner.gif") #Loading-Eclipse-200pxX200px.gif") #
 		self.movie.setCacheMode(QMovie.CacheMode.CacheAll)
 		self.movie.setScaledSize(QSize(64, 64))
 		self.gif_label.setMovie(self.movie)
@@ -38,7 +35,7 @@ class SpinnerDialog(QDialog):
 		# from PyQt6.QtCore import QThread
 		print("Current thread isMainThread(): ", QThread.currentThread().isMainThread())
 		# print(QThread.currentThread().currentThreadId())
-		
+
 		bg_color = QColor(220, 220, 220, 128)  # Adjust alpha value for desired transparency
 
 		palette = self.palette()
@@ -48,21 +45,21 @@ class SpinnerDialog(QDialog):
 		# Set default corner radius
 		self.corner_radius = 10
 		self.border_width = 5
-		
+
 		# Create rounded corner mask
 		self.create_rounded_mask()
-		
+
 		# Set the mask for the dialog
 		self.setMask(self.rounded_mask)
-		
+
 		self.setModal(True)
-		
+
 	def create_rounded_mask(self):
 		size = self.rect().size()
-		
+
 		mask = QBitmap(size)
 		mask.fill(Qt.GlobalColor.white)  # Transparent background
-		
+
 		painter = QPainter(mask)
 		painter.setRenderHint(QPainter.RenderHint.Antialiasing)  # Enable antialiasing for smoother edges
 		path = QPainterPath()
@@ -70,20 +67,20 @@ class SpinnerDialog(QDialog):
 		painter.fillPath(path, QBrush(Qt.GlobalColor.black))  # Fill with white (adjust as needed)
 		painter.end()
 		self.rounded_mask = mask
-		
+
 	def paintEvent(self, event):
 		size = self.rect().size()
 		painter = QPainter(self)
-		
+
 		# Draw white border
 		pen = QPen(QColor(100, 100, 100), self.border_width)  # White pen with border width
 		painter.setPen(pen)
 		path = QPainterPath()
 		path.addRoundedRect(0, 0, size.width(), size.height(), self.corner_radius, self.corner_radius)
-#		painter.drawRect(self.rect())  # Draw rectangle around the entire dialog
+		#		painter.drawRect(self.rect())  # Draw rectangle around the entire dialog
 		painter.strokePath(path, pen)
 		super().paintEvent(event)
-		
+
 	def set_background_color(self, color):
 		"""Sets the background color of the dialog with desired transparency.
 
@@ -93,10 +90,11 @@ class SpinnerDialog(QDialog):
 		self.setWindowOpacity(color.alpha() / 255)
 		palette = self.palette()
 		palette.setColor(palette.ColorRole.Window, color)
-#		palette.setWindowColor(color)
+		#		palette.setWindowColor(color)
 		self.setPalette(palette)
 
 	def keyPressEvent(self, event: QKeyEvent):
+		logDbgC(f"SpinnerDialog.keyPressEvent({event}) ...")
 		if event.key() == Qt.Key.Key_Escape:
 			logDbgC("Escape ignored.", DebugLevel.Verbose)
 			event.ignore()  # Prevent default reject()

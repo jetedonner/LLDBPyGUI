@@ -1,0 +1,90 @@
+[
+  {
+    "id": 2,
+    "enabled": true,
+    "name": "",
+    "locations": [
+      {
+        "id": 1,
+        "id_full": "2.1",
+        "load_address": 4294982392,
+        "offset": 52,
+        "enabled": true,
+        "symbol": "subfunc"
+      }
+    ],
+    "condition": null,
+    "thread_id": 0,
+    "thread_index": 4294967295,
+    "thread_name": null,
+    "queue_name": null,
+    "ignore_count": 0,
+    "hit_count": 5
+  },
+  {
+    "id": 3,
+    "enabled": true,
+    "name": "",
+    "locations": [
+      {
+        "id": 1,
+        "id_full": "3.1",
+        "load_address": 4295081560,
+        "offset": 0,
+        "enabled": true,
+        "symbol": "callExternalFunc"
+      }
+    ],
+    "condition": null,
+    "thread_id": 0,
+    "thread_index": 4294967295,
+    "thread_name": null,
+    "queue_name": null,
+    "ignore_count": 0,
+    "hit_count": 2
+  },
+  {
+    "id": 4,
+    "enabled": true,
+    "name": "",
+    "locations": [
+      {
+        "id": 1,
+        "id_full": "4.1",
+        "load_address": 4295081576,
+        "offset": 16,
+        "enabled": true,
+        "symbol": "callExternalFunc"
+      }
+    ],
+    "condition": null,
+    "thread_id": 0,
+    "thread_index": 4294967295,
+    "thread_name": null,
+    "queue_name": null,
+    "ignore_count": 0,
+    "hit_count": 2
+  },
+  {
+    "id": 5,
+    "enabled": true,
+    "name": "",
+    "locations": [
+      {
+        "id": 1,
+        "id_full": "5.1",
+        "load_address": 4295081752,
+        "offset": 0,
+        "enabled": true,
+        "symbol": "fflush"
+      }
+    ],
+    "condition": null,
+    "thread_id": 0,
+    "thread_index": 4294967295,
+    "thread_name": null,
+    "queue_name": null,
+    "ignore_count": 0,
+    "hit_count": 3
+  }
+]

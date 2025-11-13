@@ -146,6 +146,36 @@
            <string>Order proccesses by name</string>
           </property>
          </row>
+         <row>
+          <property name="text">
+           <string>Automatically disassemble modules</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Save window  / panel state on exit app</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Show tips and tricks at startup</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Show mnemonic info on hover in disassembly</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>Confirm Detach On Quit</string>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>URL for ARM64 instruction reference</string>
+          </property>
+         </row>
          <column>
           <property name="text">
            <string>Setting</string>
@@ -483,8 +513,101 @@
           </property>
          </item>
          <item row="20" column="1">
+          <property name="text">
+           <string/>
+          </property>
           <property name="checkState">
            <enum>Checked</enum>
+          </property>
+         </item>
+         <item row="21" column="0">
+          <property name="text">
+           <string>Automatically disassemble modules</string>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+         </item>
+         <item row="21" column="1">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+         </item>
+         <item row="22" column="0">
+          <property name="text">
+           <string>Save window  / panel state on exit app</string>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+         </item>
+         <item row="22" column="1">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+         </item>
+         <item row="23" column="0">
+          <property name="text">
+           <string>Show tips and tricks at startup</string>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+         </item>
+         <item row="23" column="1">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+         </item>
+         <item row="24" column="0">
+          <property name="text">
+           <string>Show mnemonic info on hover in disassembly</string>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+         </item>
+         <item row="24" column="1">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+         </item>
+         <item row="25" column="0">
+          <property name="text">
+           <string>Confirm detach on app quit</string>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+         </item>
+         <item row="25" column="1">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checkState">
+           <enum>Checked</enum>
+          </property>
+         </item>
+         <item row="26" column="0">
+          <property name="text">
+           <string>URL for ARM64 instruction reference</string>
+          </property>
+         </item>
+         <item row="26" column="1">
+          <property name="text">
+           <string>https://</string>
           </property>
          </item>
         </widget>

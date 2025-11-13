@@ -1,0 +1,32 @@
+qdef startLLDBPyGUING(debugger, command, result, dict):
+    # debugger = lldb.SBDebugger.Create()
+    debugger.SetAsync(False)
+
+    binary_path = "/Applications/SoundSource.app/Contents/MacOS/SoundSource"
+    target = debugger.CreateTargetWithFileAndArch(binary_path, "arm64")
+
+    if not target.IsValid():
+        print("Failed to create target.")
+
+    funcs = target.FindFunctions("main")
+    print(f"funcs: {len(funcs)} => {funcs}")
+    if funcs.GetSize() > 0:
+        symbol = funcs.GetContextAtIndex(0).GetSymbol()
+        # insts = symbol.instructions(target) # .GetInstructions(target)
+        start_addr = symbol.GetStartAddress().GetLoadAddress(target)
+        # start_addr -= 4
+        size = symbol.GetSize()
+        # self.logDbgC.emit(f"size of __stubs: {hex(size)} / {hex(start_addr)}", DebugLevel.Verbose)
+        # Disassemble instructions
+        end_addr = start_addr + size
+        # func_start = subsec.GetStartAddress()
+        # func_end = subsec.GetEndAddress()
+        # logDbgC(f"__stubs: start_addr: {start_addr} / end_addr: {end_addr}")
+        estimated_count = size // 4
+        # symbol.GetStartAddress()
+        insts = target.ReadInstructions(lldb.SBAddress(start_addr, target), int(estimated_count)) #lldb.SBAddress(start_addr, target),
+                                                    #int(estimated_count))
+        # insts = target.ReadInstructions(symbol.GetStartAddress(), symbol.GetEndAddress())
+        for inst in insts:
+            print(inst)
+    return

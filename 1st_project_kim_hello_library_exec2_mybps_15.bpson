@@ -1,0 +1,68 @@
+[
+  {
+    "id": 2,
+    "enabled": true,
+    "name": "",
+    "locations": [
+      {
+        "id": 1,
+        "id_full": "2.1",
+        "load_address": 4294982392,
+        "offset": 52,
+        "enabled": true,
+        "symbol": "subfunc"
+      }
+    ],
+    "condition": null,
+    "thread_id": 0,
+    "thread_index": 4294967295,
+    "thread_name": null,
+    "queue_name": null,
+    "ignore_count": 0,
+    "hit_count": 2
+  },
+  {
+    "id": 3,
+    "enabled": true,
+    "name": "",
+    "locations": [
+      {
+        "id": 1,
+        "id_full": "3.1",
+        "load_address": 4295130644,
+        "offset": 0,
+        "enabled": true,
+        "symbol": "callExternalFunc2"
+      }
+    ],
+    "condition": null,
+    "thread_id": 0,
+    "thread_index": 4294967295,
+    "thread_name": null,
+    "queue_name": null,
+    "ignore_count": 0,
+    "hit_count": 1
+  },
+  {
+    "id": 4,
+    "enabled": true,
+    "name": "",
+    "locations": [
+      {
+        "id": 1,
+        "id_full": "4.1",
+        "load_address": 4295130660,
+        "offset": 16,
+        "enabled": true,
+        "symbol": "callExternalFunc2"
+      }
+    ],
+    "condition": null,
+    "thread_id": 0,
+    "thread_index": 4294967295,
+    "thread_name": null,
+    "queue_name": null,
+    "ignore_count": 0,
+    "hit_count": 1
+  }
+]

@@ -2,13 +2,10 @@
 
 from enum import Enum
 
-from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 
-from PyQt6.QtWidgets import *
-from PyQt6 import uic, QtWidgets
-
 from config import *
+
 
 class SettingsValues(Enum):
 	ConfirmRestartTarget = ("Confirm restart target", True, bool)
@@ -30,6 +27,15 @@ class SettingsValues(Enum):
 	ASMMaxLines = ("Disassembly flow max lines", 5, int)
 	MaxCommandHistoryCharCount = ("How many chars should the command history remember", 5000, int)
 	OrderPIDsByName = ("Load selection 'attach to processes' by name", True, bool)
+	AutomaticallyDisassembleModules = ("Automatically disassemble modules while debugging (stepping, breakpoints etc)",
+									   True, bool)
+	SaveWindowStateOnExit = ("Save window state on app exit", True, bool)
+	ShowTipsAtStartup = ("Show tips and tricks at startup", True, bool)
+	ShowMnemonicInfo = ("Show mnemonic info on hover disassembly", True, bool)
+	ConfirmDetachOnQuit = ("Show a confirmation dialog on quit app before detaching from target", True, bool)
+	URLARM64InstRef = ("Standard URL for the online ARM64 instruction reference",
+					   "https://arm.jonpalmisc.com/latest_aarch64/", str)
+	SelectedRowColor = ("Background color of selected treeview and tableview items", "#552233ff", str)
 
 	# Developer Settings
 	LoadTestTarget = ("Load test target", True, bool)
@@ -43,27 +49,31 @@ class SettingsValues(Enum):
 	PersistentCommandHistory = ("Save and reload command history when restarting app", True, bool)
 
 	WindowSize = ("Window Size", QSize(1024, 800), QSize)
-	
-class SettingsHelper(QObject):
 
+	# Internal / Invisible settings
+	WindowState = ("windowState", QByteArray(), QByteArray)
+	Geometry = ("geometry", QByteArray(), QByteArray)
+
+
+class SettingsHelper(QObject):
 	settings = QSettings(ConfigClass.settingsFilename, QSettings.Format.IniFormat)
-	
+
 	def __init__(self):
 		super().__init__()
 		self.settings.setDefaultFormat(QSettings.Format.IniFormat)
-		
+
 	@staticmethod
 	def getSettings():
 		return QSettings(ConfigClass.companyName, ConfigClass.appName)
-	
+
 	@staticmethod
 	def GetChecked(setting):
 		return SettingsHelper().getChecked(setting)
-	
+
 	@staticmethod
 	def GetValue(setting):
 		return SettingsHelper().getValue(setting)
-	
+
 	def initDefaults(self):
 		self.settings.setValue(SettingsValues.ConfirmRestartTarget.value[0], True)
 		self.settings.setValue(SettingsValues.ConfirmQuitApp.value[0], True)
@@ -84,10 +94,17 @@ class SettingsHelper(QObject):
 		self.settings.setValue(SettingsValues.ASMMaxLines.value[0], 5)
 		self.settings.setValue(SettingsValues.MaxCommandHistoryCharCount.value[0], 5000)
 		self.settings.setValue(SettingsValues.OrderPIDsByName.value[0], True)
+		self.settings.setValue(SettingsValues.AutomaticallyDisassembleModules.value[0], True)
+		self.settings.setValue(SettingsValues.SaveWindowStateOnExit.value[0], True)
+		self.settings.setValue(SettingsValues.ShowTipsAtStartup.value[0], True)
+		self.settings.setValue(SettingsValues.ShowMnemonicInfo.value[0], True)
+		self.settings.setValue(SettingsValues.ConfirmDetachOnQuit.value[0], True)
+		self.settings.setValue(SettingsValues.URLARM64InstRef.value[0], "https://arm.jonpalmisc.com/latest_aarch64/")
+		self.settings.setValue(SettingsValues.SelectedRowColor.value[0], "#552233ff")
 
 		self.settings.setValue(SettingsValues.LoadTestTarget.value[0], True)
 		self.settings.setValue(SettingsValues.LoadTestBPs.value[0], True)
-		
+
 		self.settings.setValue(SettingsValues.StopAtEntry.value[0], False)
 		self.settings.setValue(SettingsValues.BreakAtMainFunc.value[0], True)
 		self.settings.setValue(SettingsValues.MainFuncName.value[0], "main")
@@ -95,35 +112,36 @@ class SettingsHelper(QObject):
 		self.settings.setValue(SettingsValues.ClearConsoleComplete.value[0], True)
 		self.settings.setValue(SettingsValues.PersistentCommandHistory.value[0], True)
 
-
-
+		self.settings.setValue(SettingsValues.Geometry.value[0], QByteArray())
+		self.settings.setValue(SettingsValues.WindowState.value[0], QByteArray())
 
 	def beginWriteArray(self, prefix):
 		self.settings.beginWriteArray(prefix)
-		
+
 	def beginReadArray(self, prefix):
 		self.settings.beginReadArray(prefix)
-	
+
 	def setArrayValue(self, setting, value):
 		self.settings.setValue(setting, value)
-	
+
 	def getArrayValue(self, setting):
 		return self.settings.value(setting)
-	
+
 	def getArrayChecked(self, setting):
 		return Qt.CheckState.Checked if self.settings.value(setting) == "true" else Qt.CheckState.Unchecked
-		
+
 	def endArray(self):
 		self.settings.endArray()
-		
+
 	def setValue(self, setting, value):
 		self.settings.setValue(setting.value[0], value)
-		
+
 	def setChecked(self, setting, checkableItem):
 		self.settings.setValue(setting.value[0], checkableItem.checkState() == Qt.CheckState.Checked)
-		
+
 	def getChecked(self, setting):
-		return Qt.CheckState.Checked if self.settings.value(setting.value[0], setting.value[1], setting.value[2]) else Qt.CheckState.Unchecked
-	
+		return Qt.CheckState.Checked if self.settings.value(setting.value[0], setting.value[1],
+															setting.value[2]) else Qt.CheckState.Unchecked
+
 	def getValue(self, setting):
 		return self.settings.value(setting.value[0], setting.value[1], setting.value[2])

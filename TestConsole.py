@@ -1,54 +1,29 @@
-from PyQt6.QtWidgets import QApplication, QTextEdit
-from PyQt6.QtGui import QTextCursor, QKeyEvent
-from PyQt6.QtCore import Qt
+import pexpect
 
-class ConsoleWidget(QTextEdit):
-    def __init__(self):
-        super().__init__()
-        self.setFontFamily("Courier")
-        self.setText("Welcome to the PyQt Console!\n>>> ")
-        self.prompt = ">>> "
-        self.setUndoRedoEnabled(False)
-        self.setTabChangesFocus(True)
+shell = pexpect.spawn("zsh", encoding="utf-8")
+shell.sendline("cd ..")
+shell.sendline("pwd")
+shell.expect("\n")  # Wait for output
+print("PWD:", shell.before.strip())
 
-        self.setStyleSheet("""
-            QTextEdit {
-                background-color: #282c34; /* Dark background */
-                color: #abb2bf; /* Light grey text */
-                border: 1px solid #3e4452;
-                border-radius: 5px;
-                padding: 5px;
-            }
-        """)
-
-    def keyPressEvent(self, event):
-        cursor = self.textCursor()
-        doc_text = self.toPlainText()
-        last_line_start = doc_text.rfind('\n') + 1
-        prompt_pos = doc_text.rfind(self.prompt, last_line_start)
-
-        cursor_pos = cursor.position()
-        input_start = prompt_pos + len(self.prompt)
-
-        # Prevent backspacing into prompt
-        if event.key() == Qt.Key.Key_Backspace:
-            if cursor_pos <= input_start:
-                return  # Block backspace
-        elif cursor_pos < input_start:
-            # Move cursor back into safe zone
-            cursor.setPosition(len(doc_text))
-            self.setTextCursor(cursor)
-
-        if event.key() == Qt.Key.Key_Return:
-            user_input = doc_text[input_start:]
-            self.append(f"{user_input}\n")
-            self.insertPlainText(f"{self.prompt}")
-            self.moveCursor(QTextCursor.MoveOperation.End)
-        else:
-            super().keyPressEvent(event)
-
-app = QApplication([])
-console = ConsoleWidget()
-console.resize(600, 400)
-console.show()
-app.exec()
+# import pexpect
+#
+# class TestConsole:
+#
+#     def __init__(self):
+#         self.shell = pexpect.spawn("zsh", encoding="utf-8")
+#         self.shell.sendline("source ~/.zshrc")
+#
+#         self.shell.sendline("cd ..")
+#         self.shell.sendline("pwd")
+#         self.shell.expect("\n")
+#         output = self.shell.before
+#
+#         print(f"output: {output} ...")
+#
+# if __name__ == "__main__":
+#     TestConsole()
+#     # app = QApplication(sys.argv)
+#     # window = ConsoleWindow()
+#     # window.show()
+#     # sys.exit(app.exec())

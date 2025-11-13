@@ -1,0 +1,40 @@
+[
+  {
+    "id": 2,
+    "enabled": true,
+    "name": "",
+    "locations": [
+      {
+        "load_address": 4294982448,
+        "offset": 108,
+        "symbol": "main"
+      }
+    ],
+    "condition": "",
+    "thread_id": 0,
+    "thread_index": 4294967295,
+    "thread_name": null,
+    "queue_name": null,
+    "ignore_count": 0,
+    "hit_count": 0
+  },
+  {
+    "id": 3,
+    "enabled": true,
+    "name": "",
+    "locations": [
+      {
+        "load_address": 4294982340,
+        "offset": 0,
+        "symbol": "subfunc"
+      }
+    ],
+    "condition": "",
+    "thread_id": 0,
+    "thread_index": 4294967295,
+    "thread_name": null,
+    "queue_name": null,
+    "ignore_count": 0,
+    "hit_count": 0
+  }
+]
