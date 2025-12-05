@@ -46,8 +46,8 @@ sneak-preview of the tool I have in mind.
 
 ## Download / Github
 
-- [Source code at GitHub](https://github.com/jetedonner/LLDBPyGUI) - Latest Release
-- [Source code at GitHub](https://github.com/jetedonner/pyLLDBGUI) - OLD / INITIAL SKETCH Version
+- [LLDBPyGUI at GitHub](https://github.com/jetedonner/LLDBPyGUI) - Latest Release
+- [pyLLDBGUI at GitHub](https://github.com/jetedonner/pyLLDBGUI) - OLD / INITIAL SKETCH Version
 
 <!-- - Zip file from mirror -->
 
