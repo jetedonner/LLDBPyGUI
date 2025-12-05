@@ -53,5 +53,5 @@ sneak-preview of the tool I have in mind.
 
 ## <a id="credits"></a>Credits
 
-- [developer.arm.com](https://developer.arm.com/documentation){:target="_blank" rel="noopener"}
-- [Mach-O Wikipedia](https://en.wikipedia.org/wiki/Mach-O){:target="_blank" rel="noopener"}
+- [developer.arm.com](https://developer.arm.com/documentation) {:target="_blank" rel="noopener"}
+- [Mach-O Wikipedia](https://en.wikipedia.org/wiki/Mach-O) {:target="_blank" rel="noopener"}
